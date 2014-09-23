@@ -1,0 +1,4 @@
+stringmol
+=========
+
+Automata Chemistry
