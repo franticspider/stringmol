@@ -30,7 +30,7 @@ FURTHER INFORMATION
 
 Stringmol only builds in linux. Maybe one day we'll make it work on other platforms, but to be honest we are more interested in deploying it on the web and running experiments. email sjh436@gmail.com if this policy is causing you problems.
 
-If you are reading this, you'll have unzipped the tarball. To compile stringmol on your system:
+To compile stringmol on your system:
 
 $ cd src
 $ make all
