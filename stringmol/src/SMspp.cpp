@@ -31,7 +31,7 @@ SMspp::SMspp() {
 }
 
 SMspp::~SMspp() {
-	/* nothing needs doing here at present */
+	// TODO Auto-generated destructor stub
 }
 
 
