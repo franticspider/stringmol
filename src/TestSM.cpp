@@ -1145,30 +1145,30 @@ int comass_GA(int argc, char *argv[]){
 
 	/*TODO: set up random seed properly - the best result was *without* a random seed, and has been lost */
 	/* Funny business with unsigned longs... */
-		//printf("%u\n", -873302838);//-2041524348);
-		char test[128];
-		memset(test,0,128*sizeof(char));
-		sprintf(test,"-873302838");
-		long dummy;
-		sscanf(test,"%d",&dummy);
-		//printf("Random seed is %d\n",dummy);
-		//printf("Random seed is %lu (unsigned)\n",dummy);
+	//printf("%u\n", -873302838);//-2041524348);
+	char test[128];
+	memset(test,0,128*sizeof(char));
+	sprintf(test,"-873302838");
+	long dummy;
+	sscanf(test,"%d",&dummy);
+	//printf("Random seed is %d\n",dummy);
+	//printf("Random seed is %lu (unsigned)\n",dummy);
 
 
-		unsigned long seedin =  2846144656u;
+	unsigned long seedin =  2846144656u;
 
-		int qnnscoring = 1;
+	int qnnscoring = 1;
 
-		FILE *fpr;
-		if((fpr=fopen(argv[2],"r"))!=NULL){
-			int stmp;
-			int rerr = read_param_int(fpr,"RANDSEED",&stmp,1);
-			rerr = read_param_int(fpr,"GAQNN",&qnnscoring,1);
-			if(rerr)
-				qnnscoring=1;
-			seedin = stmp;
-		}
-		fclose(fpr);
+	FILE *fpr;
+	if((fpr=fopen(argv[2],"r"))!=NULL){
+		int stmp;
+		int rerr = read_param_int(fpr,"RANDSEED",&stmp,1);
+		rerr = read_param_int(fpr,"GAQNN",&qnnscoring,1);
+		if(rerr)
+			qnnscoring=1;
+		seedin = stmp;
+	}
+	fclose(fpr);
 
 	unsigned long rseed = longinitmyrand(&seedin);//437);//-1);//437);
 	//unsigned long rseed = longinitmyrand(NULL);//437);//-1);//437);
@@ -1293,7 +1293,10 @@ int comass_GA(int argc, char *argv[]){
 		//eval[rr] = -1*  EAqnn_summary(gg);
 		if(qnnscoring){
 			if(lifetime>45000)
+				eval[rr] = -1 * EAqnn_summary(rr);
+				/*MERGE NOTE, 23/1/15: possibly the following is the correct configuration:
 				eval[rr] = -1 * EAqnn_summary(gg);
+				*/
 			else
 				eval[rr]=0;
 		}
@@ -1566,10 +1569,12 @@ int SmPm_conpop(int argc, char *argv[]){
 
 	//SMspp		SP;			//Global Species list:
 
-	const int 	NCON = 4;	//Number of containers
+	int 	NCON = 4;	//Number of containers
+
+
+
+
 	const int 	NRUNS = 10000000;	//Number of runsTODO: This should be many more!
-	SMspp		*SP[NCON];
-	stringPM	*A[NCON];	//Array of containers;
 	int c,c2,r=0;			//counters
 	FILE *fp;
 	//char *signal;
@@ -1588,7 +1593,40 @@ int SmPm_conpop(int argc, char *argv[]){
 	//sprintf(signal,"FVTANYFVTANYFVTANYFVTANY");
 
 	//437 divides at 167000
-	long rseed = initmyrand(437);//-1);//437);
+	FILE *fpr;
+	unsigned long seedin = 0;
+	if((fpr=fopen(argv[2],"r"))!=NULL){
+		int stmp;
+		int rerr = read_param_int(fpr,"RANDSEED",&stmp,1);
+		seedin = stmp;
+
+		int nctmp;
+		rerr = read_param_int(fpr,"NCONTAINERS",&nctmp,1);
+		if(!rerr){
+			NCON = nctmp;
+		}
+
+	}
+	fclose(fpr);
+
+	unsigned long rseed;
+
+
+	if(seedin){
+		rseed = longinitmyrand(&seedin);//437);//-1);//437);
+	}
+	else{
+		rseed = longinitmyrand(NULL);
+	}
+
+	printf("rseed = %d, seedin = %d, NCON = %d\n",rseed,seedin,NCON);
+
+
+	SMspp		*SP[NCON];
+	stringPM	*A[NCON];	//Array of containers;
+
+
+	//long rseed = initmyrand(437);//-1);//437);
 	//R.printasint();
 
 	//int comp2[4];
@@ -1746,7 +1784,7 @@ int SmPm_conpop(int argc, char *argv[]){
 		}
 		//Longer-term diagnostics:
 		if(!(gclock%10000000)){
-			printf("Printing species list\n");
+			printf("Printing species lists\n");
 			for(c=0;c<NCON;c++){
 				sprintf(fn,"splistc%02dt%d.dat",c,gclock);
 				fp = fopen(fn,"w");

@@ -432,8 +432,6 @@ int stringPM::load_agents(char *fn, char *fntab, int test, int verbose){
 	maxl0 = maxl+1;
 
 
-
-
 	const int llen = maxl0 + 256;
 	FILE *fp;
 	char line[llen];

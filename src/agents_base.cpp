@@ -285,8 +285,6 @@ int agents_base::load_params(char *fn, int test, int verbose){
 		if(e>1)err++;
 		//err += 	read_param_float(fp,"DIVTIME",&divtime);
 
-
-
 		if(err){
 			printf("Some error reading config file\n");
 			fclose(fp);

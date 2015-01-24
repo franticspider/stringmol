@@ -49,7 +49,7 @@ int read_param_int(FILE *fp,const char *label, int *val, int verbose){
 	const int maxl = 128;
 	char line[maxl];
 	int found=0;
-	int err;
+	int err = 1;
 
 	rewind(fp);
 	while((fgets(line,maxl,fp))!=NULL){
