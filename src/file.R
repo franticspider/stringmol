@@ -143,4 +143,4 @@ sink("qnn.txt")
 cat(    sprintf(  "%e\n",qnn))
 sink()
 
-q("no");x
+q("no");
