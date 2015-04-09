@@ -637,4 +637,52 @@ void check_config( int argc, char *argv[]){
 }
 
 
+void init_randseed_config(int argc, char *argv[]){
+
+	/*TODO: set up random seed properly - the best result was *without* a random seed, and has been lost */
+	/* Funny business with unsigned longs... */
+	//printf("%u\n", -873302838);//-2041524348);
+	char test[128];
+	memset(test,0,128*sizeof(char));
+	sprintf(test,"-873302838");
+	long dummy;
+	sscanf(test,"%d",&dummy);
+	//printf("Random seed is %d\n",dummy);
+	//printf("Random seed is %lu (unsigned)\n",dummy);
+
+
+	unsigned long seedin =  2846144656u;
+
+	int qnnscoring = 1;
+
+	FILE *fpr;
+	if((fpr=fopen(argv[2],"r"))!=NULL){
+		int stmp;
+		int rerr = read_param_int(fpr,"RANDSEED",&stmp,1);
+		rerr = read_param_int(fpr,"GAQNN",&qnnscoring,1);
+		if(rerr)
+			qnnscoring=1;
+		seedin = stmp;
+		fclose(fpr);
+	}
+
+	unsigned long rseed = longinitmyrand(&seedin);//437);//-1);//437);
+	//unsigned long rseed = longinitmyrand(NULL);//437);//-1);//437);
+	FILE *frs;
+	if((frs=fopen("randseed.txt","w"))==NULL){
+		printf("Coundln't open randseed.txt\n");
+		getchar();
+	}
+	fprintf(frs,"(unsigned) random seed is %lu \n",rseed);
+	fflush(frs);
+	fclose(frs);
+
+}
+
+
+
+
+
+
+
 

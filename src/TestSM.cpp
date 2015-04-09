@@ -1143,7 +1143,10 @@ int comass_GA(int argc, char *argv[]){
 	double * eval;
 	int **params;
 
-	/*TODO: set up random seed properly - the best result was *without* a random seed, and has been lost */
+	/*TODO: use
+	void init_randseed_config(int argc, char *argv[]); to set up randseed
+	 */
+
 	/* Funny business with unsigned longs... */
 	//printf("%u\n", -873302838);//-2041524348);
 	char test[128];
@@ -1174,7 +1177,7 @@ int comass_GA(int argc, char *argv[]){
 	//unsigned long rseed = longinitmyrand(NULL);//437);//-1);//437);
 	FILE *frs;
 	if((frs=fopen("randseed.txt","w"))==NULL){
-		printf("Coundlnt open randseed.txt\n");
+		printf("Coundln't open randseed.txt\n");
 		getchar();
 	}
 	fprintf(frs,"(unsigned) random seed is %lu \n",rseed);
@@ -1206,6 +1209,7 @@ int comass_GA(int argc, char *argv[]){
 	int **mutnet;
 	mutnet = (int **) malloc(POPN*sizeof(int *));
 
+	/*INITIALISE: iterate over each member of the population */
 	for(int rr=0;rr<POPN;rr++){
 
 		FILE *mc;char fn[256],pfn[256];FILE *ftmp;
@@ -1293,10 +1297,10 @@ int comass_GA(int argc, char *argv[]){
 		//eval[rr] = -1*  EAqnn_summary(gg);
 		if(qnnscoring){
 			if(lifetime>45000)
-				eval[rr] = -1 * EAqnn_summary(rr);
-				/*MERGE NOTE, 23/1/15: possibly the following is the correct configuration:
+				//eval[rr] = -1 * EAqnn_summary(rr);
+				//MERGE NOTE, 23/1/15: possibly the following is the correct configuration:
 				eval[rr] = -1 * EAqnn_summary(gg);
-				*/
+
 			else
 				eval[rr]=0;
 		}
@@ -1323,6 +1327,237 @@ int comass_GA(int argc, char *argv[]){
 	fclose(gafp);
 	return 0;
 }
+
+float *generate_avg_conc(char *fn, int *en){
+
+	FILE *fp;
+
+
+	float *avg;
+	avg = NULL;
+
+	printf("Opening %s..\n",fn);
+	if((fp=fopen(fn,"r"))!=NULL){
+
+		const int navg = 20; //TODO: read this in from somewhere;
+		int line_number[navg];
+		float fitness[navg];
+		char line[2000];
+		float minfit = 0;
+
+
+		/*Initialise register */
+		for(int i=0;i<navg;i++){
+			line_number[i]=-1;
+			fitness[i]=0;
+		}
+
+		/*Read in the data*/
+		int lno = 0;
+		while((fgets(line,2000,fp))!=NULL){
+			/* Get the fitness value */
+			float fit;
+			lno++;
+
+			sscanf(line,"%*d %*d %e",&fit);
+			fit = -fit;
+
+			//NB: fitness is negative...
+			if(fit>minfit){
+				for(int j=0;j<navg;j++){
+					if(fit > fitness[j]){
+						if(line_number[j]>-1){
+							//We need to shunt everything down..
+							for(int jj=navg-1;jj>j;jj--){
+								fitness[jj]=fitness[jj-1];
+								line_number[jj]=line_number[jj-1];
+							}
+						}
+						line_number[j]=lno;
+						fitness[j]=fit;
+						break;
+					}
+				}
+				minfit = fitness[navg-1];
+			}
+		}
+
+
+		/*Calculate the averages*/
+		const char *opcodes="ABC$DEF%GH^IJK?LMN}OPQ>RST=UVWXYZ";
+		const int nops = strlen(opcodes);
+		*en = nops;
+
+		avg = (float *) malloc(nops*sizeof(float));
+		memset(avg,0,nops*sizeof(float));
+
+
+		for(int j=0;j<navg;j++){
+			rewind(fp);
+			int l=1;
+			while(l!=line_number[j]){//TODO: Can't quite get this right without the extra fgets after the while - this'll fail - line_number[j]==1 (unlikely)
+				fgets(line,2000,fp);
+				l++;
+			}
+			fgets(line,2000,fp);
+			char *lptr,*p;
+			lptr = line;
+			//Tokenize the line
+			p = strtok(lptr, "\t");
+			//skip through the data to get to the concs
+			printf("Parsing run %s, on line %d, fitness %f\n",p,line_number[j],fitness[j]);
+			p = strtok(NULL, "\t");
+			p = strtok(NULL, "\t");
+			p = strtok(NULL, "\t");
+			//p = strtok(NULL, "\t");
+			for(int c = 0;c<nops;c++){
+				int tconc;
+				p = strtok(NULL, "\t");
+				sscanf(p,"%d",&tconc);
+				avg[c] += (float)tconc;
+
+			}
+		}
+
+		for(int c = 0;c<nops;c++){
+			avg[c] /= navg;
+			printf("Opcode %c has avg conc %f\n",opcodes[c],avg[c]);
+		}
+
+		fclose(fp);
+	}
+	else{
+		printf("Unable to open garun file %s\n",fn);
+		fflush(stdout);
+	}
+
+	return avg;
+}
+
+
+
+int * load_concs(int row, char *fn){
+
+	/* We're going to go through a directory of files, using the path as a guide */
+	//char fn[300];
+	float *aconc;
+	int *conc;
+	int nops;
+	//sprintf(fn,"%s\garun%03d.txt",path,row,&nops);
+
+	//TODO: There are other ways to achieve this!
+	aconc = generate_avg_conc(fn,&nops);
+
+	conc = (int *) malloc(nops*sizeof(int));
+
+	for(int n=0;n<nops;n++){
+		conc[n] = floor(aconc[n]);
+	}
+
+
+
+
+	return conc;
+}
+
+
+int comass_GA_boostwinners(int argc, char *argv[]){
+
+	/* Experiment 3 in comass paper, submitted to ecal 2015
+	 * 1: take a high-fitness run with low conc of '='
+	 * 2: boost conc of '=' by 1 order of magnitude
+	 * 3: run the simulation
+	 * 4: calc. qnn value - does it go up or down significantly...?
+	 */
+
+	FILE *gafp;
+
+	init_randseed_config(argc,argv);
+
+	SMspp		SP;
+	stringPM	A(&SP);
+	struct runparams R;
+
+	clearfiles(argv);
+	setupSMol(R, argc, argv);
+
+	int crow=1;
+	int *concs;
+
+	char sfn[300];
+	sprintf(sfn,"%s.summary.txt",argv[3]);
+
+	FILE *sfp;
+	sfp = fopen(sfn,"w");
+
+
+	gafp = fopen("boostgarun.txt","w");
+	fclose(gafp);
+
+	//Go through each row in the concentrations file.
+	//while( (concs = load_concs(crow,argv[3])) != NULL){
+	concs = load_concs(crow,argv[3]);
+
+
+	//TODO: increase the conc of '=':(check the right index is 26!)
+	//concs[26] *= 10;
+	for(int cc =0;cc<33;cc++){
+		if(concs[cc]<400){
+			concs[cc] *= 10;
+			printf("Changed conc of opcode %d, to %d\n",cc,concs[cc]);
+		}
+	}
+
+
+	for(int run=0;run<20;run++){
+
+		for(int n=0;n<33;n++){
+			if(n)fprintf(sfp,"\t");
+			fprintf(sfp,"%d",concs[n]);
+		}
+		fprintf(sfp,"\n");
+
+
+		float eval =0.;
+		//FILE *mc;char fn[256],pfn[256];FILE *ftmp;
+
+		//Reload the config:
+		A.spl->clear_list();
+		A.load(argv[2],NULL,0,1);
+
+
+		A.set_mass(concs);
+
+		int lifetime = run_one_comass_trial(crow, &A, concs, &R);
+
+		if(lifetime>45000)
+			eval = -1 * EAqnn_summary(crow);
+			/*MERGE NOTE, 23/1/15: possibly the following is the correct configuration:
+			eval[rr] = -1 * EAqnn_summary(gg);
+			*/
+		else
+			eval=0;
+
+		A.clearout();
+
+		gafp = fopen("boostgarun.txt","a");
+		//print_ga(gafp,crow,crow,eval,concs,A.blosum->N,lifetime);
+		fprintf(gafp,"%d\t%d\t%e\t%d",crow,crow,eval,lifetime);
+		for(int j=0;j<A.blosum->N;j++){
+			fprintf(gafp,"\t%d",concs[j]);
+		}
+		fprintf(gafp,"\n");
+		fflush(gafp);
+		fclose(gafp);
+
+		printf("Fitness for entry %d: %f, lifetime = %d\n", crow, eval, lifetime);
+
+		crow++;
+	}
+	fclose(sfp);
+	return 0;
+}
+
 
 
 int energetic_AlifeXII(int argc, char *argv[]){
@@ -2531,6 +2766,12 @@ int main(int argc, char *argv[]) {
 			break;
 		case 10:
 			check_setup(argc,argv);
+			break;
+
+		/*************************************************/
+		case 44:
+			comass_GA_boostwinners(argc,argv);
+			break;
 		}
 		printf("Finished!\n");
 	}
@@ -2548,7 +2789,8 @@ int main(int argc, char *argv[]) {
 		printf("swdist           (7)\n");
 		printf("Comass ALXII     (8)\n");
 		printf("speigmonst       (9)\n");
-		printf("Check setup       10          1: .conf;  (2: .mtx)\n\n\n");
+		printf("Check setup       10          1: .conf;  (2: .mtx)\n");
+		printf("Comass GA boost   44          1: .conf;   2: boost.dat\n\n\n");
 	}
 
 	return 0;

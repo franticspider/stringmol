@@ -1,1 +1,0 @@
-(unsigned) random seed is 5 

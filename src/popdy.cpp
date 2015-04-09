@@ -1,4 +1,4 @@
-/* Copyright (C) 2009-2012 Simon Hickinbotham                           */
+/* Copyright (C) 2009-2015 Simon Hickinbotham                           */
 /* When you use this, send an email to: sjh436@gmail.com                */
 /* with an appropriate reference to your work.                          */
 

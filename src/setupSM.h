@@ -48,6 +48,11 @@
 
 	float * self_stats(char * Afn);
 
+	/* Premiminary check that a config is sane */
 	void check_config( int argc, char *argv[]);
+
+	/* Standard initialisation of random number seed */
+	void init_randseed_config(int argc, char *argv[]);
+
 
 #endif /* SETUPSM_H_ */
