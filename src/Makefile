@@ -40,7 +40,7 @@ debug: CC += -DDEBUG -g
 
 
 
-all: stringmol
+all: stringmol stringmol_dbg
 
 debug: stringmol_dbg
 
@@ -69,20 +69,20 @@ smlib: 		stringmanip.o	alignment.o	instructions.o \
 			signalSM.o
 
 
-stringmol: 	TestSM.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
+stringmol: 	stringmol.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
 			hsort.o	mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
-			stringmanip.o	alignment.o	instructions.o
-	$(CC) -o stringmol -lm TestSM.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
+			stringmanip.o	alignment.o	instructions.o tests.o
+	$(CC) -o stringmol -lm stringmol.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
 			hsort.o mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
-			stringmanip.o	alignment.o	instructions.o
+			stringmanip.o	alignment.o	instructions.o tests.o
 			
 
-stringmol_dbg: 	TestSM.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
+stringmol_dbg: 	stringmol.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
 			hsort.o	mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
-			stringmanip.o	alignment.o	instructions.o
-	$(CC) -o stringmol_dbg -lm TestSM.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
+			stringmanip.o	alignment.o	instructions.o tests.o
+	$(CC) -o stringmol_dbg -lm stringmol.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
 			hsort.o mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
-			stringmanip.o	alignment.o	instructions.o			
+			stringmanip.o	alignment.o	instructions.o tests.o			
 			
 
 
@@ -120,6 +120,8 @@ microbial_ga.o: microbial_ga.c microbial_ga.h
 
 #stringmol cpp files:
 
+tests.o:	tests.cpp tests.h
+	$(CC) -c tests.cpp
 
 signalSM.o: 	signalSM.cpp signalSM.h
 	$(CC) -c signalSM.cpp
@@ -164,10 +166,11 @@ setupSM.o:	setupSM.cpp \
 			
 
 
-TestSM.o:  	TestSM.cpp \
+stringmol.o:  	stringmol.cpp \
 			randutil.h	alignment.h \
-			rules.h agents_base.h SMspp.h stringPM.h signalSM.h
-	$(CC) -c TestSM.cpp 	
+			rules.h agents_base.h SMspp.h stringPM.h signalSM.h \
+			tests.h
+	$(CC) -c stringmol.cpp 	
 
 
 

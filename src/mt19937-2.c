@@ -147,6 +147,15 @@ unsigned long genrandint()
      return y;  /* for integer generation */
 }
 
+/*UTILITY FUNCTION FOR RE-SEEDING ON RESTART*/
+int mt_get_mti(){
+	return mti;
+}
+
+void mt_set_mti(int val){
+	mti = val;
+}
+
 
 // this main() outputs first 1000 generated numbers
 /*

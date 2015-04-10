@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include "randutil.h"
 
-#define USING_MT 		/* This means we are using the Mersenne twister      */
+#define USING_MT 			/* This means we are using the Mersenne twister      */
 #define USING_SEED_DEVRAND 	/* This means we are using dev/random to get a seed. */
 
 #ifdef USING_MT
@@ -56,11 +56,12 @@ int initmyrand(int seed){
 	if(seed<0){
 #ifdef USING_SEED_DEVRAND
 		seed = devrandomseed();
-		printf("in initmyrand, seed is %d (%u)\n",seed,seed);
 #else
 		seed = time(NULL);
 #endif
 	}
+
+	printf("in initmyrand, seed is %d (%u)\n",seed,seed);
 
 #ifdef USING_MT
 	sgenrand(seed);
@@ -194,4 +195,24 @@ int * randboolarray(const int size){
 	}
 	return array;
 }
+
+
+/*UTILITY FUNCTION FOR RE-SEEDING ON RESTART*/
+int get_mti(){
+#ifdef USING_MT
+	return mt_get_mti();
+#else
+	printf("NOT USING MERSENNE TWISTER - CAN'T GET MTI!!\n");
+	return 0;
+#endif
+}
+
+void set_mti(int val){
+#ifdef USING_MT
+	mt_set_mti(val);
+#else
+	printf("NOT USING MERSENNE TWISTER - CAN'T SET MTI!!\n");
+#endif
+}
+
 

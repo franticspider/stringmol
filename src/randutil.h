@@ -1,4 +1,4 @@
-/* Copyright (C) 2009-2012 Simon Hickinbotham                           */
+/* Copyright (C) 2009-2015 Simon Hickinbotham                           */
 /* When you use this, send an email to: sjh436@gmail.com                */
 /* with an appropriate reference to your work.                          */
 
@@ -9,7 +9,7 @@
 /* the Free Software Foundation, either version 3 of the License, or    */
 /* (at your option) any later version.                                  */
 
-/* This program is distributed in the hope that it will be useful,      */
+/* STRINGMOL is distributed in the hope that it will be useful,         */
 /* but WITHOUT ANY WARRANTY; without even the implied warranty of       */
 /* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        */
 /* GNU General Public License for more details.                         */
@@ -35,6 +35,10 @@
 		unsigned long randint();
 		int * randintarray(const int size,const int Min,const int max);
 		int * randboolarray(const int size);
+
+		//functions to get and set the Mersenne Twister index
+		int get_mti();
+		void set_mti(int val);
 
 #endif /*RANDUTIL_H_*/
 

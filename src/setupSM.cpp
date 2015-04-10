@@ -1,4 +1,4 @@
-/* Copyright (C) 2009-2012 Simon Hickinbotham                           */
+/* Copyright (C) 2009-2015 Simon Hickinbotham                           */
 /* When you use this, send an email to: sjh436@gmail.com                */
 /* with an appropriate reference to your work.                          */
 
@@ -9,7 +9,7 @@
 /* the Free Software Foundation, either version 3 of the License, or    */
 /* (at your option) any later version.                                  */
 
-/* This program is distributed in the hope that it will be useful,      */
+/* STRINGMOL is distributed in the hope that it will be useful,         */
 /* but WITHOUT ANY WARRANTY; without even the implied warranty of       */
 /* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        */
 /* GNU General Public License for more details.                         */
@@ -18,7 +18,11 @@
 /* along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 
-/* TODO: Description */
+/* Description
+ *
+ * This file contains helper functions to set up stringmol runs
+ *
+ * */
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -680,6 +684,14 @@ void init_randseed_config(int argc, char *argv[]){
 }
 
 
+
+void make_soup_out(){
+
+	//Write the config values and flags:
+
+
+
+}
 
 
 

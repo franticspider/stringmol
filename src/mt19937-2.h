@@ -34,6 +34,9 @@ void	sgenrand(unsigned long seed);
 double 	genrand(); /* generating reals */
 unsigned long genrandint();/* unsigned long */ /* for integer generation */
 
+int mt_get_mti();
+void mt_set_mti(int val);
+
 #endif /* MT199372_H_ */
 
 #ifdef __cplusplus

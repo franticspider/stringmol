@@ -51,6 +51,10 @@
 //microbial GA
 #include "microbial_ga.h"
 
+//tests
+#include "tests.h"
+
+
 
 //DEFINES
 //Calculate the ancestry & epochs inline
@@ -2713,6 +2717,18 @@ int speigmonst(int argc, char *argv[]){
 }
 
 
+int test_config(){
+
+
+
+
+
+}
+
+
+
+
+
 
 int main(int argc, char *argv[]) {
 
@@ -2772,6 +2788,11 @@ int main(int argc, char *argv[]) {
 		case 44:
 			comass_GA_boostwinners(argc,argv);
 			break;
+
+		/*************************************************/
+		case 99:
+			test_all(argc,argv);
+			break;
 		}
 		printf("Finished!\n");
 	}
@@ -2791,6 +2812,7 @@ int main(int argc, char *argv[]) {
 		printf("speigmonst       (9)\n");
 		printf("Check setup       10          1: .conf;  (2: .mtx)\n");
 		printf("Comass GA boost   44          1: .conf;   2: boost.dat\n\n\n");
+		printf("Test All          99          1: .conf;  (2: .mtx)\n\n\n");
 	}
 
 	return 0;
