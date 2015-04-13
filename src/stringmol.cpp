@@ -221,9 +221,6 @@ int biomass_config(stringPM *A, char *fout, const int nbio, const int nag, SMspp
 	FILE *out;
 	int j;
 
-
-
-
 	//find out ntypes
 	//find out len
 	//find out pop
@@ -371,7 +368,10 @@ int random_config(stringPM *A, char *fout, const int nnew,const int nag){
 }
 
 
-
+/* This function is intended for experiments with random molecules.
+ * The idea is that novel mechanisms will arise if we don't code in the answer
+ * STATUS: Experimental / Untested / Unpublished
+ */
 int origlife(int argc, char *argv[]){
 	int i,div;
 

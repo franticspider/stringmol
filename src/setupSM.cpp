@@ -43,7 +43,9 @@
 
 #include "setupSM.h"
 
-
+/* Used in comass_ga and comass_ga_boostwinners
+ *
+ */
 void clearfiles(char *argv[]){
 
 	char fn[256];
@@ -56,6 +58,11 @@ void clearfiles(char *argv[]){
 	fclose(ftmp);
 }
 
+
+
+/* Used in comass_ga and comass_ga_boostwinners
+ *
+ */
 void setupSMol(struct runparams &R, int argc, char *argv[]){
 
 	FILE *fp;
@@ -103,6 +110,10 @@ void setupSMol(struct runparams &R, int argc, char *argv[]){
 }
 
 
+
+/* Used in comass_ga and comass_ga_boostwinners
+ *
+ */
 void record_spp(stringPM *A){
 	char fn[256];
 	FILE *fp;
@@ -120,7 +131,9 @@ void record_spp(stringPM *A){
 	}
 }
 
-
+/* used in SmPm_conpop
+ *
+ */
 float ctspp(stringPM *A, const int spp){
 
 	float count = 0;
@@ -138,11 +151,10 @@ float ctspp(stringPM *A, const int spp){
 }
 
 
-
-
-
-
-
+/* used in comass_AlifeXII, energetic_AlifeXII, origlife,
+ * comass_GA, comass_GA_boostwinners, SmPm_AlifeXII, SmPm_conpop and speigmonst
+ *
+ */
 void printsppct(stringPM *A, int t){
 
 	char fn[128];
@@ -295,11 +307,12 @@ void setmaxcode(stringPM *A, int *maxcode){
 }
 
 //These are the functions we need to manipulate mutation networks:
-int ** random_mtx(const int N){
-	int ** matrix;
+//int ** random_mtx(const int N){
+//	int ** matrix;
+//
+//
+//}
 
-
-}
 
 int make_mtx_file(char *fn, char *basisfn, int **mut, const int N){
 	FILE *in,*out;
@@ -640,7 +653,9 @@ void check_config( int argc, char *argv[]){
 	printf("..c'est ca!\n\n");
 }
 
-
+/* This is used in the comass GA - see test.cpp for how to set up randseed properly
+ *
+ */
 void init_randseed_config(int argc, char *argv[]){
 
 	/*TODO: set up random seed properly - the best result was *without* a random seed, and has been lost */
@@ -684,14 +699,6 @@ void init_randseed_config(int argc, char *argv[]){
 }
 
 
-
-void make_soup_out(){
-
-	//Write the config values and flags:
-
-
-
-}
 
 
 

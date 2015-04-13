@@ -4681,6 +4681,11 @@ int stringPM::print_conf(FILE *fp){
 	if(fp==NULL)
 		fp=stdout;
 
+
+
+/* TODO: record RANDSEED and NCONTAINERS values */
+
+
 /*
 	%%%CELL PARAMETERS
 	CELLRAD		2500
