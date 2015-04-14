@@ -16,10 +16,10 @@ These are the values that are used in the config files (missing parameters are s
 
 ###RANDSEED
 
-0: not set
-1: initmyrand(-1) sets rseed
-2: longinitmyrand() based on seedin sets rseed 
-4: longinitmyrand() based on seedin sets rseed 
+* 0: not set
+* 1: initmyrand(-1) sets rseed
+* 2: longinitmyrand() based on seedin sets rseed 
+* 4: longinitmyrand() based on seedin sets rseed 
 
 ###NSTEPS / MAXNSTEPS
 
