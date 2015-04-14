@@ -2190,7 +2190,7 @@ int SmPm_conpop(int argc, char *argv[]){
 void check_setup(int argc, char *argv[]){
 	//for now, all we'll do is check the parameters:
 
-	check_config(argc, argv);
+	test_config_settings(argc, argv, 0);
 	return;
 
 }
@@ -2755,32 +2755,41 @@ int main(int argc, char *argv[]) {
 			SmPm_conpop(argc,argv);
 			break;
 
-		//NOTE: Development code from here on!
 		case 3:
 			//Now let's try a container population
 			origlife(argc,argv);
 			break;
+
 		case 4:
 			comass_GA(argc,argv);
 			break;
+
 		case 5:
 			joinsplists(argc,argv);
 			break;
+
 		case 6:
 			//printf("First thing to do is run two pops on the alifeXII model\n(Running two to check mem alloc)\n");
 			energetic_AlifeXII(argc,argv);
 			break;
+
 		case 7:
 			swdist(argc,argv);
 			break;
+
+		/*************************************************/
 		case 8:
 			comass_AlifeXII(argc,argv);
 			//comass_GA(argc,argv);
 			break;
+
+		/*************************************************/
 		case 9:
 			speigmonst(argc,argv);
 			break;
-		case 10:
+
+		/*************************************************/
+		case 10://TODO: This is probably obsolete now we have test_all() (case 99)
 			check_setup(argc,argv);
 			break;
 

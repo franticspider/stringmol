@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <float.h>
 
 #include "memoryutil.h"
 #include "randutil.h"
@@ -337,7 +338,7 @@ int stringPM::load_table(char *fn){
 		}
 		fclose(fp);
 		if(!found){
-			printf("No MIS file name found\n");
+			printf("No MIS or MTX file name found\n");
 			sprintf(swt_fn,"NoMISfilenameFound");
 			return 1;
 		}
@@ -4700,10 +4701,48 @@ int stringPM::print_conf(FILE *fp){
 	fprintf(fp,"CELLRAD		%d\n",(int) cellrad);
 	fprintf(fp,"AGRAD		%d\n",(int) agrad);
 	fprintf(fp,"ENERGY		%d\n",(int) energy);
-	fprintf(fp,"NSTEPS		1200000000\n");
-	//fprintf(fp,"USING	/n/staff/sjh/current/ewSTRING/SMconfigs/instr_set1.mis\n\n");
-	fprintf(fp,"USING	%s\n\n",swt_fn);
+	fprintf(fp,"NSTEPS		%d\n",(int) nsteps);//1200000000\n");
 
+	/*TODO: Mutation rate is complicated. In the original paper, there were two rates:
+	 * 		Indelrate: The rate of insertion and deletion
+	 * 		Subrate: The rate of substitution.
+	 * 	Later papers set these to be equal, read in by the MUTATE option. This means there are three possible
+	 * 	settings:
+	 * 		1: original rates - these rates are hard-coded, and set if there is no MUTATE parameter
+	 * 		2: mutation rate - happens if a MUTATE value is set
+	 * 		3: no mutation - happens with the line MUTATE 0
+	 * 	There is also a parameter called 'domut' which can be set to zero at anytime to turn mutation off.
+	 *
+	 */
+
+
+	if((indelrate - subrate)<FLT_EPSILON){
+		if(indelrate<FLT_EPSILON)
+			fprintf(fp,"MUTATE		0\n",indelrate);
+		else
+			fprintf(fp,"MUTATE		%f\n",indelrate);
+	}
+	else{
+		//No mutation rate needs to be set: the hard-wired alife values will be loaded.
+	}
+
+
+	/*TODO: Need to distinguish between 'USING' and 'SUBMAT' configurations.
+	 * USING: files have the '.mis' extension
+	 * SUBMAT: files have the '.mtx' extension
+	 * Also need to know what to do if these are missing - do we create a separate file?
+	 */
+	if(strstr(swt_fn,".mtx")!=NULL){
+		fprintf(fp,"SUBMAT	%s\n\n",swt_fn);
+	}
+	else{
+		if(strstr(swt_fn,".mis")!=NULL){
+			fprintf(fp,"USING	%s\n\n",swt_fn);
+		}
+		else{
+			printf("Warning! no SWT substitution matrix specified\n");
+		}
+	}
 
 	s_ag *spp,*pa;
 	int spc,count;

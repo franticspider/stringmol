@@ -63,7 +63,7 @@ void clearfiles(char *argv[]){
 /* Used in comass_ga and comass_ga_boostwinners
  *
  */
-void setupSMol(struct runparams &R, int argc, char *argv[]){
+void setupSMol(struct runparams &RunPar, int argc, char *argv[]){
 
 	FILE *fp;
 
@@ -79,7 +79,7 @@ void setupSMol(struct runparams &R, int argc, char *argv[]){
 			printf("Setting NTRIALS to %d\n",rlim);
 			break;
 		default:
-			printf("NTRIALS not sepcifid;\nSetting NTRIALS to %d\n",rlim);
+			printf("NTRIALS not specified;\nSetting NTRIALS to %d\n",rlim);
 			break;
 		}
 		fclose(fp);
@@ -87,18 +87,18 @@ void setupSMol(struct runparams &R, int argc, char *argv[]){
 
 	//Read nsteps:
 	if((fp=fopen(argv[2],"r"))!=NULL){
-		rerr = read_param_int(fp,"NSTEPS",&(R.maxnsteps),1);
+		rerr = read_param_int(fp,"NSTEPS",&(RunPar.maxnsteps),1);
 		switch(rerr){
 		case 2:
 			printf("Multiple NSTEPS specified. Check config file\n");
 			getchar();
 			exit(0);
 		case 0:
-			printf("Setting NSTEPS to %d\n",R.maxnsteps);
-			R.indefinite=0; //TODO: fix the indefinite thing if NSTEPS is not specified..
+			printf("Setting NSTEPS to %d\n",RunPar.maxnsteps);
+			RunPar.indefinite=0; //TODO: fix the indefinite thing if NSTEPS is not specified..
 			break;
 		default:
-			printf("NSTEPS not sepcified;\nEach trial will run to extinction\n");
+			printf("NSTEPS not specified;\nEach trial will run to extinction\n");
 			break;
 		}
 		fclose(fp);
@@ -576,7 +576,7 @@ float * self_stats(char * Afn){
 
 int arg_load(stringPM *A, int argc, char *argv[], int verbose ){
 
-
+	//TODO: This can be a bit fragile for runs with >2 arguments... be careful!
 	switch(argc){
 	case 3:
 		if(verbose)printf("Traditional config\n");
@@ -626,31 +626,6 @@ void print_params(stringPM *A, int ntrials, int nsteps){
 	printf("ESTEP       %d\n",A->estep);
 
 
-}
-
-void check_config( int argc, char *argv[]){
-	/** The idea here is to report the default values of the parameters, then parse the config and report them again. */
-	SMspp		SP;
-	stringPM A(&SP);
-	int ntrials = -1;
-	int nsteps = -1;
-
-	printf("\nBEFORE loading the config, params are:\n");
-	print_params(&A,ntrials,nsteps);
-	printf("..c'est ca!\n\n");
-
-	//int readordef_param_int(char *fn, const char *label, int *val, const int defaultvalue, const int verbose)
-	readordef_param_int(argv[2], "NTRIALS", &ntrials, 1, 1);
-	int nns = readordef_param_int(argv[2], "NSTEPS", &nsteps, -1, 1);
-
-	if(!arg_load(&A, argc, argv, 0))
-		return;
-
-	printf("\n\nAFTER loading the config, params are:\n");
-	print_params(&A,ntrials,nsteps);
-	if(nns==1)
-		printf("NSTEPS was not specified. Simulations will run indefinitely");
-	printf("..c'est ca!\n\n");
 }
 
 /* This is used in the comass GA - see test.cpp for how to set up randseed properly

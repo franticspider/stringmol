@@ -20,9 +20,12 @@
 #ifndef SETUPSM_H_
 #define SETUPSM_H_
 
+	/*Flags and parameters that exist outside the stringPM object*/
 	struct runparams{
-		int indefinite;
-		int maxnsteps;
+		int gaqnn;		//0 or 1: whether to use the QNN measure in comass_GA
+		int randseed;	//if >= 0, random number seed, if -1, use /dev/random as the seed
+		int indefinite;	//if 1, run forever
+		int maxnsteps;	//if 0, run forever(?) if positive, max number of steps to run
 	};
 
     void clearfiles( char *argv[]);
@@ -48,11 +51,12 @@
 
 	float * self_stats(char * Afn);
 
-	/* Premiminary check that a config is sane */
-	void check_config( int argc, char *argv[]);
 
 	/* Standard initialisation of random number seed */
 	void init_randseed_config(int argc, char *argv[]);
+
+	/* Print parameters of the trial */
+	void print_params(stringPM *A, int ntrials, int nsteps);
 
 
 #endif /* SETUPSM_H_ */
