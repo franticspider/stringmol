@@ -680,3 +680,75 @@ void init_randseed_config(int argc, char *argv[]){
 
 
 
+/*
+ * NB: To get identical trials to those run for ALifeXII, do the following:
+ * 1: Use the file "replicase.conf" as the input
+ * 2: Fix the random number seed to 437
+ * 3: #define DO_ANCESTRY to get ancestry files out...
+ * 4: Run on a 32-bit linux slackware system, circa 2008 vintage...:)
+ */
+//todo: SmPm_AlifeXII() should call this
+int run_one_AlifeXII_trial(stringPM *A){
+
+	int i,div;
+
+
+
+	A->print_agents(stdout,"NOW",0);
+
+	A->r=0;
+	//sprintf(pfn,"popdy%d%02d.dat",proc,A.r);
+	//ftmp = fopen(pfn,"w");
+	//fclose(ftmp);
+
+#ifdef DO_ANCESTRY
+	int lastepoch=A.get_ecosystem(),thisepoch,nepochs=1;
+#endif
+
+	int nsteps=0;
+	//TODO: Accommodate indefinitre runs, like this:
+	//for(i=0;indefinite || nsteps <= maxnsteps;i++){
+
+	for(i=0;nsteps <= A->nsteps;i++){
+
+		//TODO: find out what this does - rename the variable to  make it clear.
+		A->extit = i;
+
+		A->make_next();
+		A->update();
+
+		if(!(i%1000)){
+			A->print_spp_count(stdout,0,-1);
+		}
+
+		if(!(i%1000)){
+			printf("At  time %d e=%d, mutrate = %0.9f & %0.9f\n",i,(int)A->energy,A->subrate,A->indelrate);
+			printsppct(A,i);
+		}
+
+//TODO: See equivalent line in SmPm_AlifeXII() function for what should be in the following #ifdef...
+//#ifdef DO_ANCESTRY
+//#endif
+
+		if(!A->nagents(A->nowhead,-1)){
+			printf("DEATH\n");
+			printf("At  time %d e=%d, mutrate = %0.9f & %0.9f\t",i,(int)A->energy,A->indelrate,A->subrate);
+			A->print_spp_count(stdout,0,-1);
+			nsteps=i;
+			break;
+		}
+		nsteps++;
+
+		A->energy += A->estep;
+	}
+
+	printf("Finished - alls well!\nclear out memory now:\n");
+	fflush(stdout);
+
+	//TODO: need to do this outside the function!
+	//A.clearout();
+
+	return 0;
+}
+
+

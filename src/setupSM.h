@@ -35,6 +35,7 @@
 
 	void setmaxcode(stringPM *A, int *maxcode);
 	int run_one_comass_trial(const int rr, stringPM *A, int * params, struct runparams *R);
+	int run_one_AlifeXII_trial(stringPM *A);
 
 	void setmutnet(int * mutnet, swt *blosum);
 

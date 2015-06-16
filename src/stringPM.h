@@ -98,6 +98,9 @@ public:
 	void preset();
 	void clearout(int verbose = 0);
 
+	//return a string describing the error
+	char * parse_error(int errno);
+
 	//Loading
 	//int load_agents(char *fn,                int test, int verbose);
 	// VJH version for youShare

@@ -75,8 +75,11 @@ void print_status(FILE *fp,s_bind st){
 
 stringPM::stringPM(SMspp * pSP){
 
-
-	spl = pSP;
+	if(pSP!=NULL)
+		spl = pSP;
+	else{
+		spl = new SMspp();
+	}
 
 	dodecay=1;
 
@@ -180,11 +183,28 @@ void stringPM::testprop(){
 
 }
 
+/* Make sure the masseage memory is freed - so you can't do printf("%s",parse_error(1)); - the memory will not be freed.
+ *
+ */
+char * stringPM::parse_error(int errno){
+
+	char * message;
+	message = (char *) malloc(100*sizeof(char));
+
+	memset(message,0,100*sizeof(char));
+
+	sprintf(message,"Unspecified error");
+
+	return message;
+
+}
+
 
 float stringPM::load_mut(char *fn, int verbose){
 
 	FILE *fp;
 	float mut;
+	char *emsg;
 	int finderr=1;
 
 	if((fp=fopen(fn,"r"))!=NULL){
@@ -196,16 +216,22 @@ float stringPM::load_mut(char *fn, int verbose){
 		case 0:
 			subrate = mut;
 			indelrate = mut;
+			if(mut<FLT_MIN)
+				domut=0;
+			else
+				domut=1;
 			if(verbose)printf("MUTATE setting: subrate = %f, indelrate = %f\n",subrate,indelrate);
 			return 0;
 		case 1:
 			printf("No mutation rate found in config file\nUsing ALifeXII values instead\n");
 			indelrate = 0.0000000306125;
 			subrate=0.00001;
+			domut=1;
 			return 0;
 			break;
 		default: //Some other error
-			printf("Error %d in loading mutation scheme\n",finderr);
+			printf("Error %d(%s) in loading mutation scheme\n",finderr,emsg=parse_error(finderr));
+			free(emsg);
 			return 1;
 			break;
 
@@ -251,7 +277,7 @@ float stringPM::load_decay(char *fn, int verbose){
 
 
 
-
+//TODO: This should be in alignment.cpp
 int stringPM::load_table_matrix(char *fn){
 	FILE *fp;
 	char line[maxl];
@@ -338,9 +364,9 @@ int stringPM::load_table(char *fn){
 		}
 		fclose(fp);
 		if(!found){
-			printf("No MIS or MTX file name found\n");
-			sprintf(swt_fn,"NoMISfilenameFound");
-			return 1;
+			printf("No MIS or MTX file name found - using default values\n");
+			sprintf(swt_fn,"UsingDefaults!");
+			found = 3;
 		}
 
 
@@ -391,6 +417,11 @@ int stringPM::load_table(char *fn){
 			break;
 		case 2:
 			return load_table_matrix(swt_fn);
+			return 0;
+			break;
+		case 3:
+			blosum =  default_table();
+			return 0;
 			break;
 		}
 		print_swt(stdout,blosum);
@@ -563,6 +594,7 @@ int stringPM::load_agents(char *fn, char *fntab, int test, int verbose){
 		return 1;
 	}
 	else{
+		printf("Unable to open file %s\n",fn);
 		return 0;
 	}
 }
@@ -4676,6 +4708,26 @@ int stringPM::share_agents(s_ag **hp){
 */
 
 
+void print_agent_cfg(FILE *fp, s_ag *pa){
+
+	if(pa->status == B_ACTIVE){
+		fprintf(fp,"############### ,%d,%s\n",pa->spp->spp,pa->spp->S);
+		fprintf(fp,"REACTION_ACTIVE ,%d,%s,irwf:",pa->spp->spp,pa->S);
+		//IRWF
+		fprintf(fp,",%d,%d,%d",pa->it , (int) (pa->i[0]-&(pa->pass->S[0])) , (int) (pa->i[1]-&(pa->S[1])) );
+		fprintf(fp,",%d,%d,%d",pa->rt , (int) (pa->r[0]-&(pa->pass->S[0])) , (int) (pa->r[1]-&(pa->S[1])) );
+		fprintf(fp,",%d,%d,%d",pa->wt , (int) (pa->w[0]-&(pa->pass->S[0])) , (int) (pa->w[1]-&(pa->S[1])) );
+		fprintf(fp,",%d,%d,%d",pa->ft , (int) (pa->f[0]-&(pa->pass->S[0])) , (int) (pa->f[1]-&(pa->S[1])) );
+		fprintf(fp,"\n");
+	}
+	else{
+		fprintf(fp,"REACTION_PASSIVE,%d,%s\n",pa->spp->spp,pa->S);
+		fprintf(fp,"############### ,%d,%s\n\n",pa->spp->spp,pa->spp->S);
+	}
+
+}
+
+
 int stringPM::print_conf(FILE *fp){
 
 
@@ -4718,7 +4770,7 @@ int stringPM::print_conf(FILE *fp){
 
 	if((indelrate - subrate)<FLT_EPSILON){
 		if(indelrate<FLT_EPSILON)
-			fprintf(fp,"MUTATE		0\n",indelrate);
+			fprintf(fp,"MUTATE		0\n");
 		else
 			fprintf(fp,"MUTATE		%f\n",indelrate);
 	}
@@ -4789,6 +4841,20 @@ int stringPM::print_conf(FILE *fp){
 		}
 
 	}while(!finished);
+
+	//Now write the reacting molecules (could be a bit tricky this)
+
+	int nreactions = 0;
+	for(i=0,pa=nowhead;i<nag;i++,pa=pa->next){
+		if(pa->status == B_ACTIVE){
+			fprintf(fp,"%%%%%% REACTION %d\nREACTION\n",++nreactions);
+			print_agent_cfg(fp, pa);
+			print_agent_cfg(fp,pa->pass);
+		}
+	}
+
+
+
 	free(done);
 
 	return 0;

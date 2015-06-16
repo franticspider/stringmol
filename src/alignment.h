@@ -109,6 +109,10 @@ char sym_from_adj(char X, swt *swt);
 
 float score_sw(char *s1, char *s2, swt *swT);
 
+//Create a default Blosum table with the "ALXII" values - this will be used if no alternative in the config
+swt * default_table();
+
+
 /*TESTING:*/
 void test_adj(swt *swt);
 

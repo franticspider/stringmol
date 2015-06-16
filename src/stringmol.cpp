@@ -1810,10 +1810,7 @@ int SmPm_conpop(int argc, char *argv[]){
 
 	int 	NCON = 4;	//Number of containers
 
-
-
-
-	const int 	NRUNS = 10000000;	//Number of runsTODO: This should be many more!
+	const int 	MAXCONSTEPS = 10000000;	//Number of runsTODO: This should be many more!
 	int c,c2,r=0;			//counters
 	FILE *fp;
 	//char *signal;
@@ -1953,7 +1950,7 @@ int SmPm_conpop(int argc, char *argv[]){
 
 	//We're going to run NRUNSindividual containers, but in parallel
 	int gclock=0;
-	while(r<=NRUNS){
+	while(r<=MAXCONSTEPS){
 
 		for(c=0;c<NCON;c++){
 			A[c]->make_next();

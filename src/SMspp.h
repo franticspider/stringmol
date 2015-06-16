@@ -41,6 +41,7 @@ struct s_ag{//THIS DEFINES AN INDIVIDUAL AGENT IN A STRINGMOL SYSTEM
 	char *r[2]; 	//read pointer
 	char *w[2]; 	//write pointer
 	char *f[2];		//flow (loop) pointer
+	//Toggles: passive == 0; active == 1.
 	int	it;			//intruction pointer toggle
 	int rt;			//read pointer toggle
 	int wt;			//write pointer toggle
