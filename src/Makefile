@@ -44,6 +44,8 @@ all: stringmol stringmol_dbg
 
 debug: stringmol_dbg
 
+web_api: bind
+
 
 # removes all the object files. Not automatically done by a call to make,
 # need to type "make clean" (without the quotes) into the terminal.	
@@ -52,6 +54,7 @@ clean:
 	rm -f *.o
 	rm stringmol
 	rm stringmol_dbg
+	rm bind
 	
 	
 #############################################################
@@ -84,7 +87,13 @@ stringmol_dbg: 	stringmol.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o 
 			hsort.o mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
 			stringmanip.o	alignment.o	instructions.o tests.o			
 			
-
+bind: 	webapi_bind.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
+			hsort.o	mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
+			stringmanip.o	alignment.o	instructions.o tests.o
+	$(CC) -o bind -lm webapi_bind.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
+			hsort.o mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
+			stringmanip.o	alignment.o	instructions.o tests.o			
+		
 
 
 	
@@ -171,6 +180,16 @@ stringmol.o:  	stringmol.cpp \
 			rules.h agents_base.h SMspp.h stringPM.h signalSM.h \
 			tests.h
 	$(CC) -c stringmol.cpp 	
+
+#########################
+### web_api executables ###
+#########################
+
+webapi_bind.o:  webapi_bind.cpp \
+			randutil.h	alignment.h \
+			rules.h agents_base.h SMspp.h stringPM.h signalSM.h \
+			tests.h
+	$(CC) -c webapi_bind.cpp 	
 
 
 

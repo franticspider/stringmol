@@ -3,3 +3,7 @@
 
 # Executable:
 src/stringmol
+src/stringmol_dbg
+
+# gedit backups
+*~

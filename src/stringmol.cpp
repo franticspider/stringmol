@@ -1950,7 +1950,7 @@ int SmPm_conpop(int argc, char *argv[]){
 
 	//We're going to run NRUNSindividual containers, but in parallel
 	int gclock=0;
-	while(r<=MAXCONSTEPS){
+	while(r<=MAXCONSTEPS){ //TODO: amend this so that immortal containers are possible
 
 		for(c=0;c<NCON;c++){
 			A[c]->make_next();
@@ -2019,7 +2019,7 @@ int SmPm_conpop(int argc, char *argv[]){
 
 		}
 		//Longer-term diagnostics:
-		if(!(gclock%10000000)){
+		if(!(gclock%MAXCONSTEPS)){
 			printf("Printing species lists\n");
 			for(c=0;c<NCON;c++){
 				sprintf(fn,"splistc%02dt%d.dat",c,gclock);
