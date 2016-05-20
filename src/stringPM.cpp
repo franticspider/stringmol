@@ -547,11 +547,17 @@ int stringPM::load_agents(char *fn, char *fntab, int test, int verbose){
 				for(i=0;i<nag;i++){
 					l_spp *s;
 
-					pag = make_ag(lab,1);
+					//TODO: Should be passing 'code' into this, not 'lab'..
+					pag = make_ag(lab);//,1);
 
 					pag->S =(char *) malloc(maxl0*sizeof(char));
 					pag->label = code;
 					memset(pag->S,0,maxl0*sizeof(char));
+
+					if(strlen(label) > maxl0){
+						printf("Unable to allocate enough space for this agent: \n%s\nConsider specifying MAXL in your config\n",label);
+					}
+
 					strncpy(pag->S,label,strlen(label));
 					pag->len = strlen(pag->S);
 
@@ -993,8 +999,16 @@ s_ag * stringPM::rand_ag(s_ag *head, int state){
 
 
 
-
-s_ag * stringPM::make_ag(int alab, int randpos){
+/**
+ * Create an 'agent', which is a string 'molecule'
+ * NB: The string is not allocated here - done outside the function
+ *
+ * parameters:
+ *
+ * alab: a single-character label for the string (e.g. 'C')
+ * randpos: unused ...
+ */
+s_ag * stringPM::make_ag(int alab){
 
 	s_ag *ag;
 
@@ -1864,7 +1878,7 @@ int stringPM::cleave(s_ag *act){
 		//1: MAKE THE NEW MOLECULE FROM THE CLEAVE POINT
 
 		//Can't really say what the label is easily - for ECAL, it's always pass
-		c = make_ag(pass->label,1);
+		c = make_ag(pass->label);//,1);
 
 		//Copy the cleaved string to the agent
 		char *cs;
@@ -4158,7 +4172,7 @@ int stringPM::Network_cleave(s_ag *act){
 		//1: MAKE THE NEW MOLECULE FROM THE CLEAVE POINT
 
 		//Can't really say what the label is easily - for ECAL, it's always pass
-		c = make_ag(pass->label,1);
+		c = make_ag(pass->label);//,1);
 
 
 		//if(c->idx>2375){
@@ -4421,9 +4435,9 @@ void stringPM::get_spp_network(char *fn){
 	int newmolc=0;
 	int newmold=0;
 
-	pag=make_ag('A',0);
+	pag=make_ag('A');//,0);
 	pag->S =(char *) malloc(maxl0*sizeof(char));
-	bag=make_ag('B',0);
+	bag=make_ag('B');//,0);
 	bag->S =(char *) malloc(maxl0*sizeof(char));
 
 	FILE *fpd;
@@ -4440,6 +4454,7 @@ void stringPM::get_spp_network(char *fn){
 		while (sp2!=NULL){
 			if(sp1->pf && sp2->pf){
 				//bprob = SmithWaterman(comp,sp2->sp->S,&sw,blosum,0);
+				//TODO: SimthWatermanV2 should use get_bprob to get the binding probabilities
 				bprob = SmithWatermanV2(comp,sp2->S,&sw,blosum,0);
 				if(sw.match){
 					bprob = get_bprob(&sw);

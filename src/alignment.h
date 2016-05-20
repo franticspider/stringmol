@@ -25,7 +25,7 @@ extern "C" {
 #ifndef ALIGNMENT_H_
 #define ALIGNMENT_H_
 
-
+//Structure to hold the output of a Smith-Waterman alignment
 typedef struct td_s_sw{
 	//First, equivalences to s_align
 	int match;		// the number of matching characters.

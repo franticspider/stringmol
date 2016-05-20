@@ -86,7 +86,7 @@ int joinsplists(int argc, char *argv[]){
 	A = &oA;
 
 
-	pag = A->make_ag('A',1);
+	pag = A->make_ag('A');//,1);
 	pag->S =(char *) malloc(A->maxl0*sizeof(char));
 //First lets do the loading:
 	for(i=0;i<nlists;i++){
@@ -186,9 +186,9 @@ void add_spp(const int nag, stringPM *A, char *label, char symbol){
 	s_ag *pag;
 
 	for(i=0;i<nag;i++){
-	l_spp *s;
+	l_spp *species;
 
-		pag = A->make_ag(symbol,1);
+		pag = A->make_ag(symbol);//,1);
 
 		pag->S =(char *) malloc(A->maxl0*sizeof(char));
 		memset(pag->S,0,A->maxl0*sizeof(char));
@@ -201,10 +201,10 @@ void add_spp(const int nag, stringPM *A, char *label, char symbol){
 		if(!i){
 			//int stringPM::update_lineage(s_ag *p, char sptype, int add, l_spp *paspp, l_spp * ppspp)
 			A->update_lineage(pag,'I',1,NULL,NULL,0);
-			s = A->spl->getspp(pag,0,A->maxl0);
-			s->tspp = 0;
+			species = A->spl->getspp(pag,0,A->maxl0);
+			species->tspp = 0;
 		}
-		pag->spp=s;
+		pag->spp=species;
 		if(A->nowhead == NULL){
 			A->nowhead = pag;
 		}
@@ -330,7 +330,7 @@ int random_config(stringPM *A, char *fout, const int nnew,const int nag){
 		for(i=0;i<nag;i++){
 			l_spp *s;
 
-			pag = A->make_ag('A'+j,1);
+			pag = A->make_ag('A'+j);//,1);
 
 			pag->S =(char *) malloc(A->maxl0*sizeof(char));
 			memset(pag->S,0,A->maxl0*sizeof(char));
@@ -2419,7 +2419,7 @@ int speigpipette(stringPM *A, const int nmols, const int nrep, char *repstring, 
 
 		l_spp *s;
 
-		pag = A->make_ag('R',1);
+		pag = A->make_ag('R');//,1);
 
 		pag->S =(char *) malloc(A->maxl0*sizeof(char));
 		pag->label = 'R';
@@ -2718,7 +2718,7 @@ int test_config(){
 
 
 
-
+	return 0;
 
 }
 

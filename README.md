@@ -22,7 +22,7 @@ THE QUICK WAY
 
 Type the following at the command prompt:
 
- sh install
+    sh install
  
  
 FURTHER INFORMATION
@@ -32,8 +32,8 @@ Stringmol only builds in linux. Maybe one day we'll make it work on other platfo
 
 To compile stringmol on your system:
 
-$ cd src
-$ make all
+    cd src
+    make all
 
 should build an executable called stringmol in that directory. Do NOT run stringmol in there - it'll just make a mess. 
 Instead, read the next section and do what it recommends. 
@@ -45,9 +45,9 @@ It is NOT a good idea to run stringmol from the directory it was compiled into, 
 
 Let's assume that we are starting from the directory containing this README. We recommend you try the following:
 
-$ mkdir test1
-$ cd test1
-$ ../src/stringmol
+    mkdir test1
+    cd test1
+    ../src/stringmol
 
 If all goes well, you'll get the following output:
 
@@ -60,8 +60,8 @@ If all goes well, you'll get the following output:
 	NAME          TRIAL No:   ARGUMENTS
 
 	1 on 1            0       .conf (.mtx)
-	ALife XII         1	.conf (.mtx)
-	Con Pop           2		.conf (.mtx)
+	ALife XII         1       .conf (.mtx)
+	Con Pop           2       .conf (.mtx)
 	Origlife         (3)
 	Comass GA        (4)
 	Joinsplists      (5)
@@ -69,7 +69,7 @@ If all goes well, you'll get the following output:
 	swdist           (7)
 	Comass ALXII     (8)
 	speigmonst       (9)
-	Check setup       10		.conf (.mtx)
+	Check setup       10      .conf (.mtx)
 	Finished!
 
 This shows the current ways that stringmol can be run. More details below.

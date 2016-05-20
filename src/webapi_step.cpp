@@ -24,10 +24,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-//extern const int maxl;//150;// 512;
-//extern const int maxl0; //allow room for a terminating 0
 
 
+//utils
+//extern "C" {
 #include "randutil.h"
 #include "params.h"
 #include "hsort.h"
@@ -48,22 +48,25 @@
 //setup
 #include "setupSM.h"
 
-
 #include "webapi_util.h"
 
+//extern const int maxl;//150;// 512;
+//extern const int maxl0; //allow room for a terminating 0
 
-//TODO: this is defined in webapi_util.cpp
+
+//#define DEBUG
+
 const int MAXSTR = 5000;
-
-
 
 
 int main(int argc, char*argv[]){
 
-	char 	*output;
-	char 	*string1,	//[] = "ADFAERQEDAGADGAERQEWRQERDFSDFASDFERQEW",
-			*string2;	//[] = "DSFASDFAFQEREWASDFASDFAREQRQWEFDSFAEQWR";
-	char 	*data;
+	char * output;
+
+	char 	*string1,//[] = "ADFAERQEDAGADGAERQEWRQERDFSDFASDFERQEW",
+			*string2;//[] = "DSFASDFAFQEREWASDFASDFAREQRQWEFDSFAEQWR";
+
+	char *data;
 
 	string1 = (char *) malloc(MAXSTR*sizeof(char));
 	string2 = (char *) malloc(MAXSTR*sizeof(char));
@@ -77,6 +80,9 @@ int main(int argc, char*argv[]){
 	data = getenv("QUERY_STRING");
 
 #ifdef DEBUG
+	//FILE *fp;
+	//printf ("Hello web!\n");
+	/** Print a html header */
 	printf("%s%c%c\n",
 	"Content-Type:text/html;charset=iso-8859-1",13,10);
 	printf("<TITLE>Multiplication results</TITLE>\n");
@@ -117,4 +123,6 @@ int main(int argc, char*argv[]){
 	free(string2);
 
 	return 0;
+
+
 }

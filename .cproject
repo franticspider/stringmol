@@ -59,7 +59,7 @@
 					<folderInfo id="cdt.managedbuild.toolchain.gnu.base.1268411700.1449367026." name="/" resourcePath="">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.base.585668559" name="Linux GCC" superClass="cdt.managedbuild.toolchain.gnu.base">
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.target.gnu.platform.base.1878823839" name="Debug Platform" osList="linux,hpux,aix,qnx" superClass="cdt.managedbuild.target.gnu.platform.base"/>
-							<builder buildPath="${workspace_loc:/stringmolgit/src}" id="cdt.managedbuild.target.gnu.builder.base.692677741" incrementalBuildTarget="debug" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.base"/>
+							<builder arguments="debug" buildPath="${workspace_loc:/stringmolgit/src}" command="make" id="cdt.managedbuild.target.gnu.builder.base.692677741" incrementalBuildTarget="debug" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.964750844" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.1878557278" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.908132863" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>

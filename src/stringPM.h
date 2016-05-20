@@ -32,7 +32,7 @@ class stringPM: public agents_base
 private:
 
 public:
-	s_ag * make_ag(int alab, int randpos);
+	s_ag * make_ag(int alab);//, int randpos);
 
 	s_ag *nowhead;
 	s_ag *nexthead;
