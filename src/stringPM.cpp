@@ -548,10 +548,10 @@ int stringPM::load_agents(char *fn, char *fntab, int test, int verbose){
 					l_spp *s;
 
 					//TODO: Should be passing 'code' into this, not 'lab'..
-					pag = make_ag(lab);//,1);
+					pag = make_ag(code);//,1);
 
 					pag->S =(char *) malloc(maxl0*sizeof(char));
-					pag->label = code;
+
 					memset(pag->S,0,maxl0*sizeof(char));
 
 					if(strlen(label) > maxl0){
@@ -749,14 +749,12 @@ void stringPM::print_spp_count(FILE *fp,int style, int state){
 
 void stringPM::get_spp_count(int state){
 
-	//char fn[128];
-	s_ag *pa;
 	int nag,*done;
 	int *spno, *spct, nspp = count_spp();
 
 	nag = nagents(nowhead,-1);
 
-	l_spp *pA;
+	l_spp *pSpp;
 
 	done = (int *) malloc(nag*sizeof(int));
 	memset(done,0,nag*sizeof(int));
@@ -767,14 +765,14 @@ void stringPM::get_spp_count(int state){
 	memset(spct,0,nspp*sizeof(int));
 
 	//Set the spl->count param to zero
-	for(pA=spl->species;pA!=NULL;pA=pA->next){
-		pA->count = 0;
+	for(pSpp=spl->species;pSpp!=NULL;pSpp=pSpp->next){
+		pSpp->count = 0;
 	}
 
 
 	s_ag *p;
 	for(p = nowhead;p!=NULL;p=p->next){
-		if(state==-1 || pa->status == state){
+		if(state==-1 || p->status == state){
 			p->spp->count++;
 		}
 	}
@@ -1006,7 +1004,7 @@ s_ag * stringPM::rand_ag(s_ag *head, int state){
  * parameters:
  *
  * alab: a single-character label for the string (e.g. 'C')
- * randpos: unused ...
+ *
  */
 s_ag * stringPM::make_ag(int alab){
 
@@ -2969,6 +2967,8 @@ int stringPM::load_comass(char *fn, int verbose){
 	mass = (int*) malloc(blosum->N * sizeof(int));
 
 	if((fp=fopen(fn,"r"))!=NULL){
+
+		//todo: do something with the error...
 		finderr=read_param_int(fp,"MASS",&massval,verbose);
 		fclose(fp);
 		//Load the massvalue into the mass table;
@@ -2985,11 +2985,8 @@ int stringPM::load_comass(char *fn, int verbose){
 
 
 int stringPM::set_mass(int *param){
-	//int massval = 2000;
-	FILE *fp;
-	int finderr;
+
 	int i;
-	int massval;
 
 	mass = (int*) malloc(blosum->N * sizeof(int));
 
@@ -3329,8 +3326,8 @@ int stringPM::energetic_exec_step(s_ag *act, s_ag *pass){//pset *p,char *s1, swt
 
 
 
-	return 1;
-	//return finished;
+	//return 1;
+	return finished;
 }
 
 
@@ -3394,7 +3391,6 @@ int stringPM::energetic_testbind(s_ag *pag){
 
 void stringPM::energetic_make_next(){
 	s_ag *pag,*bag;
-	s_bind bb;
 	int changed;
 	while(nowhead!=NULL){
 
@@ -3404,7 +3400,6 @@ void stringPM::energetic_make_next(){
 
 		//extract any partner:
 		bag = NULL;
-		bb = pag->status;
 		switch(pag->status){
 		case B_UNBOUND:
 			break;
@@ -4257,15 +4252,12 @@ int stringPM::Network_cleave(s_ag *act){
 
 
 
-
+/* Used to calculate a network...needs work*/
 int stringPM::Network_exec_step(s_ag *act, s_ag *pass){
 
 	int finished=0;
 	char *tmp; //Holds the modifier, where needed
-	//s_ag *c;
-	//int cpy;
 	int dac=0;
-	int safe_append=1;
 
 	switch(*(act->i[act->it])){
 
@@ -4377,7 +4369,6 @@ int stringPM::Network_exec_step(s_ag *act, s_ag *pass){
 				//unbind_ag(act);
 				//unbind_ag(pass);
 				finished = 1;
-				safe_append=0;	//extract_ag(&nowhead,p);
 			}
 			break;
 
@@ -4405,8 +4396,7 @@ int stringPM::Network_exec_step(s_ag *act, s_ag *pass){
 //	print_exec(stdout,act,pass);
 //#endif
 
-	return 1;
-	//return finished;
+	return finished;
 }
 
 void stringPM::get_spp_network(char *fn){
@@ -4592,7 +4582,7 @@ void stringPM::set_epochs(){
 int stringPM::share_agents(s_ag **hp){
 
 	s_ag *pa,**head,*tmp,*aa,*tmphead;
-	int ntot=0,herect=0,therect=0,*pct,*nact;
+	int ntot=0,herect=0,therect=0;
 	float rno;
 
 	tmphead = *hp;
@@ -4606,12 +4596,10 @@ int stringPM::share_agents(s_ag **hp){
 		if((rno = rand0to1()) < 0.5){
 			head = hp;
 			therect++;
-			nact = &therect;
 		}
 		else{
 			head = &nowhead;
 			herect++;
-			nact = &herect;
 		}
 
 		//Move it and any partners.
@@ -4632,7 +4620,6 @@ int stringPM::share_agents(s_ag **hp){
 		}
 
 		if(aa){
-			*pct++;
 			ntot++;
 			if(tmp==aa)
 				tmp=tmp->next;
@@ -4764,7 +4751,7 @@ int stringPM::print_conf(FILE *fp){
 	USING	/n/staff/sjh/current/ewSTRING/SMconfigs/instr_set1.mis
 */
 	fprintf(fp,"%%%%%%AUTOMATICALLY GENERATED Stringmol CONFIG FILE\n");
-	fprintf(fp,"%%%%%%Generated at time: %d\n\n",extit);
+	fprintf(fp,"%%%%%%Generated at time: %ld\n\n",extit);
 	fprintf(fp,"%%%%%%CELL PARAMETERS\n");
 	fprintf(fp,"CELLRAD		%d\n",(int) cellrad);
 	fprintf(fp,"AGRAD		%d\n",(int) agrad);

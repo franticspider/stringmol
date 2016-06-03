@@ -214,14 +214,10 @@ void printsppct(stringPM *A, int t){
 
 int run_one_comass_trial(const int rr, stringPM *A,  int * params, struct runparams *R){
 
-
-	FILE *mc;char fn[256],pfn[256];FILE *ftmp;
-	//sprintf(fn,"maxcodes%03d.txt",rr);
-	//mc = fopen(fn,"w");
-	//fclose(mc);
-
+	char pfn[256];FILE *ftmp;
 
 	int *maxcode;
+
 	//todo: what is the relationship between maxcode and params...?
 	//if(!rr)
 	maxcode = (int *) malloc(A->blosum->N * sizeof(int));
@@ -314,30 +310,6 @@ void setmaxcode(stringPM *A, int *maxcode){
 //}
 
 
-int make_mtx_file(char *fn, char *basisfn, int **mut, const int N){
-	FILE *in,*out;
-	char line[2048];
-	int ncodes;
-	//int **mut;
-	in = fopen(basisfn,"r");
-	out = fopen(fn,"w");
-
-	//Get the 1st line - it contains the codes:
-	fscanf(in,line);
-	ncodes = strlen(line);
-	fprintf(out,"%s\n",line);
-
-	//Copy the sw table
-	for(int i=0;i<ncodes+1;i++){
-		fscanf(in,line);
-		fprintf(out,"%s\n",line);
-	}
-
-	//print the mutation network
-
-	return 0;
-}
-
 void setmutnet(int * mutnet, swt *blosum){
 
 	int i,j;
@@ -385,7 +357,8 @@ float **swdt(stringPM * A, stringPM * B,s_sw **spp_matches, int *mol_class, floa
 				if(swa==NULL){
 					swa = read_sw(*spp_matches,pB->spp,pA->spp);
 					if(swa==NULL){
-						float	bprob = SmithWatermanV2(pA->S,pB->S,&sw,A->blosum,0);
+						//TODO: this returns a float - we don't use it...
+						SmithWatermanV2(pA->S,pB->S,&sw,A->blosum,0);
 
 						lB = strlen(pB->S);
 						L = lA>lB?lA:lB;
@@ -641,7 +614,7 @@ void init_randseed_config(int argc, char *argv[]){
 	memset(test,0,128*sizeof(char));
 	sprintf(test,"-873302838");
 	long dummy;
-	sscanf(test,"%d",&dummy);
+	sscanf(test,"%ld",&dummy);
 	//printf("Random seed is %d\n",dummy);
 	//printf("Random seed is %lu (unsigned)\n",dummy);
 
@@ -691,7 +664,7 @@ void init_randseed_config(int argc, char *argv[]){
 //todo: SmPm_AlifeXII() should call this
 int run_one_AlifeXII_trial(stringPM *A){
 
-	int i,div;
+	int i;
 
 
 
