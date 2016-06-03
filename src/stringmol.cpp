@@ -1157,7 +1157,7 @@ int comass_GA(int argc, char *argv[]){
 	memset(test,0,128*sizeof(char));
 	sprintf(test,"-873302838");
 	long dummy;
-	sscanf(test,"%d",&dummy);
+	sscanf(test,"%l",&dummy);
 	//printf("Random seed is %d\n",dummy);
 	//printf("Random seed is %lu (unsigned)\n",dummy);
 

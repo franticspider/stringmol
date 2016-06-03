@@ -22,6 +22,8 @@
 #include <time.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <unistd.h>
+
 #include "randutil.h"
 
 #define USING_MT 			/* This means we are using the Mersenne twister      */
@@ -88,7 +90,7 @@ unsigned long longdevrandomseed(){
 	// you now have a random integer!
 	close(randomData);
 
-	printf("in devrandomseed, seed is %d (%u)\n",sjhRandomInteger,sjhRandomInteger);
+	printf("in devrandomseed, seed is %ld (%lu)\n",sjhRandomInteger,(unsigned long int) sjhRandomInteger);
 	return sjhRandomInteger;
 }
 
@@ -98,7 +100,8 @@ unsigned long longinitmyrand(unsigned long *inseed){
 	if(inseed==NULL){
 #ifdef USING_SEED_DEVRAND
 		seed = devrandomseed();
-		printf("in initmyrand, seed is %d (%u)\n",seed,seed);
+		printf("in initmyrand, seed is %ld", (long int) seed  );
+		printf("(%lu)\n",(unsigned long int) seed);
 #else
 		seed = time(NULL);
 #endif

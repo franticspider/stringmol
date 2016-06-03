@@ -221,7 +221,7 @@ char * generate_bind_data(char * string1, char * string2){
 
 
 
-/*
+/*TODO: This is what the output string data needs to be:
 'string1=('+$(".stringActive", currentState).html().replace(/&gt;/g, "1")+')&'+
 'string2=('+$(".stringPassive", currentState).html().replace(/&gt;/g, "1")+')&'+
 'instr1=('+$(".instr1", currentState).html()+')&'+
@@ -241,19 +241,51 @@ char * generate_step_data(char * string1, char * string2, int instr1, int instr2
 
 	char * output;
 
+	output = NULL;
 
-	/*Run the bind*/
+	//Run the bind
 	SMspp		SP;
 	stringPM 	A(&SP);
-	align sw;
-	s_ag* a1,*a2,*pact;
-	 //Load default table
+	s_ag *a1,*a2;
+
+
+	//Load default table
 	A.blosum = default_table();
-	 //Construct the molecules
+
+	//Construct the molecules
 	a1 = make_mol(&A,string1);
 	a2 = make_mol(&A,string2);
 
-/*
+	//TODO: We are assuming that mol1 is active - this may not be the case...
+	a1->status = B_ACTIVE;
+	a2->status = B_PASSIVE;
+
+	a1->i[1] = &(a1->S[instr1]);
+	a1->i[0] = &(a2->S[instr2]);
+
+	a1->f[1] = &(a1->S[flow1]);
+	a1->f[0] = &(a2->S[flow2]);
+
+	a1->r[1] = &(a1->S[read1]);
+	a1->r[0] = &(a2->S[read2]);
+
+	a1->w[1] = &(a1->S[write1]);
+	a1->w[0] = &(a2->S[write2]);
+
+	a1->it = instrToggle;
+	a1->ft = flowToggle;
+	a1->rt = readToggle;
+	a1->wt = writeToggle;
+
+	//Execute the next step:
+	A.exec_step(a1,a2);
+
+	//Now write the string
+
+/*TODO: Finish this function...
+
+
+
 		instr1 = pact->i[1] - pact->S;
 		instr2 = pact->i[0] - pact->pass->S;
 		flow1 =  pact->f[1] - pact->S;
@@ -268,11 +300,6 @@ char * generate_step_data(char * string1, char * string2, int instr1, int instr2
 		writeToggle	= pact->wt;		//22
 */
 	
-
-
-
-
-
 	return output;
 }
 

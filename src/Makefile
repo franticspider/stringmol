@@ -24,8 +24,8 @@ HEADERS = $(MAIN_DIR)
 # which compiler to use 
 #C4C = gcc -O0 -Wall
 #CC = g++  -O0 -Wall
-C4C = gcc -O0 -Wall 
-CC = g++ -O0 -Wall 
+C4C = gcc -O0 -Wall -Wunused
+CC = g++ -O0 -Wall -Wunused
 
 #DBGC4C = $(C4C) -DDEBUG -g
 #DBGCC = $(CC) -DDEBUG -g

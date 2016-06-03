@@ -52,7 +52,6 @@
 int test_mti(int pos){
 	const int ntests=10;
 	double dres[ntests]; //holds a seqence of random doubles
-	int newpos;
 
 	set_mti(pos);
 	for(int i=0;i<ntests;i++){
@@ -68,7 +67,7 @@ int test_mti(int pos){
 		printf("Call %d, position is %d, value is %f\n",i,get_mti(),dres[i]);
 	}
 
-
+	return 0;
 }
 
 
@@ -90,7 +89,7 @@ int test_rand(int verbose){
 		printf("FAILED - requested seed from dev/random, but got -1\n");
 	}
 	else
-		if(verbose)printf("PASSED - init set seed as %d (%u)\n",rout);
+		if(verbose)printf("PASSED - init set seed as %d (%u)\n",rout,(unsigned int) rout);
 
 	if(verbose)printf("Testing seeding using dev/rand again... \n");fflush(stdout);
 	rout = rout - initmyrand(-1);

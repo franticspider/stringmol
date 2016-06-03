@@ -87,7 +87,8 @@ class agents_base{
 
 		//creators and destructors
 		agents_base();
-		~agents_base();
+		//TODO: the destructor is virtual because I got a warning otherwise...need to check this out..?
+		virtual ~agents_base();
 		void preset();
 		void clearout(int verbose);
 

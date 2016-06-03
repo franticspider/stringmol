@@ -335,6 +335,7 @@ int make_mtx_file(char *fn, char *basisfn, int **mut, const int N){
 
 	//print the mutation network
 
+	return 0;
 }
 
 void setmutnet(int * mutnet, swt *blosum){

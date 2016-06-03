@@ -2218,6 +2218,7 @@ void stringPM::make_next(){
 		extract_ag(&nowhead,pag);
 		changed = 0;
 
+		//TODO: This is a debug option:
 		//if(0){//extit>=10){
 		//	if(pag->status==B_PASSIVE)
 		//		//if(pag->exec->idx==1041){
@@ -3075,7 +3076,7 @@ int stringPM::comass_testdecay(s_ag *pag){
 
 void stringPM::comass_make_next(){
 	s_ag *pag,*bag;
-	s_bind bb;
+
 	int changed;
 
 	//SUGGEST: write function to count what's around (saves rechecking every time)
@@ -3109,7 +3110,7 @@ void stringPM::comass_make_next(){
 
 		//extract any partner:
 		bag = NULL;
-		bb = pag->status;
+
 		switch(pag->status){
 		case B_UNBOUND:
 			break;
