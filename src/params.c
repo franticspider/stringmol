@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "params.h"
-
+/* This holds parameters */
 
 
 int read_flag(FILE *fp,const char *label, int verbose){
