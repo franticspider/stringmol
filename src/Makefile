@@ -43,11 +43,11 @@ debug: CC += -DDEBUG -g
 # 	We have to run a `cleano' before all/debug because otherwise there'll be .o files that may have been built with a different config
 
 #Make everything from scratch:
-all: clean release debug
+all: clean release debug 
 
-release: cleano stringmol web_api
+release: cleano stringmol web_api smspatial
 
-debug: cleano stringmol_dbg web_api_dbg
+debug: cleano stringmol_dbg web_api_dbg smspatial_dbg
 
 web_api: bind step
 
@@ -60,7 +60,11 @@ clean:
 	rm -f *.o
 	rm -f stringmol
 	rm -f stringmol_dbg
+	rm -f smspatial
+	rm -f smspatial_dbg
 	rm -f webapi_*.cgi
+
+#just remove the object files:
 cleano:
 	rm -f *.o
 
@@ -79,7 +83,28 @@ smlib: 		stringmanip.o	alignment.o	instructions.o \
 			SMspp.o	rules.o agents_base.o stringPM.o \
 			signalSM.o
 
+#############################################################
+# spatial stringmol
+smspatial: 	smspatial.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
+			hsort.o	mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
+			stringmanip.o	alignment.o	instructions.o tests.o
+	$(CC) -o smspatial -s -lm -lSDL smspatial.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
+			hsort.o mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
+			stringmanip.o	alignment.o	instructions.o tests.o
+			
 
+smspatial_dbg: 	smspatial.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
+			hsort.o	mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
+			stringmanip.o	alignment.o	instructions.o tests.o
+	$(CC) -o smspatial_dbg -lm \
+	        -funroll-loops -fomit-frame-pointer -s  \
+	        smspatial.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
+			hsort.o mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
+			stringmanip.o	alignment.o	instructions.o tests.o \
+			-lSDL
+
+###########################################################
+# stringmol
 stringmol: 	stringmol.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
 			hsort.o	mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
 			stringmanip.o	alignment.o	instructions.o tests.o
@@ -217,6 +242,14 @@ stringmol.o:  	stringmol.cpp \
 			rules.h agents_base.h SMspp.h stringPM.h signalSM.h \
 			tests.h
 	$(CC) -c stringmol.cpp 	
+			
+
+
+smspatial.o:  	smspatial.cpp \
+			randutil.h	alignment.h \
+			rules.h agents_base.h SMspp.h stringPM.h signalSM.h \
+			tests.h
+	$(CC) -c smspatial.cpp 	
 
 #########################
 ### web_api executables ###
