@@ -131,8 +131,8 @@ stringPM * test_config_settings( int argc, char *argv[], int return_SM){
 	stringPM *A;
 
 	A = new stringPM(NULL);
-	int ntrials = -1;
-	int nsteps = -1;
+	unsigned int ntrials = 0;
+	unsigned int nsteps = 0;
 
 	printf("\nBEFORE loading the config, params are:\n");
 	print_params(A,ntrials,nsteps);

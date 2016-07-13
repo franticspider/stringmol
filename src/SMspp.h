@@ -57,6 +57,11 @@ struct s_ag{//THIS DEFINES AN INDIVIDUAL AGENT IN A STRINGMOL SYSTEM
 
 	//biomass
 	int			biomass; //the biomass created during a reaction
+
+	//spatial
+	bool 		set;
+	int 		x;
+	int			y;
 };
 
 /*

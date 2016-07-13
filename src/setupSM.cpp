@@ -34,6 +34,7 @@
 
 //stringmol
 #include "alignment.h"
+#include "instructions.h"
 
 //metabolism
 #include "rules.h"
@@ -67,7 +68,7 @@ void setupSMol(struct runparams &RunPar, int argc, char *argv[]){
 
 	FILE *fp;
 
-	int rerr=1,rlim=20;
+	unsigned int rerr=1,rlim=20;
 	if((fp=fopen(argv[2],"r"))!=NULL){
 		rerr = read_param_int(fp,"NTRIALS",&rlim,1);
 		switch(rerr){
@@ -233,7 +234,7 @@ int run_one_comass_trial(const int rr, stringPM *A,  int * params, struct runpar
 	//int lastepoch=A->get_ecosystem(),thisepoch,nepochs=1;
 
 	A->domut=0;
-	int nsteps=0;
+	unsigned int nsteps=0;
 	int i;
 	for(i=0;R->indefinite || nsteps <= R->maxnsteps;i++){
 
@@ -621,11 +622,11 @@ void init_randseed_config(int argc, char *argv[]){
 
 	unsigned long seedin =  2846144656u;
 
-	int qnnscoring = 1;
+	unsigned int qnnscoring = 1;
 
 	FILE *fpr;
 	if((fpr=fopen(argv[2],"r"))!=NULL){
-		int stmp;
+		unsigned int stmp;
 		int rerr = read_param_int(fpr,"RANDSEED",&stmp,1);
 		rerr = read_param_int(fpr,"GAQNN",&qnnscoring,1);
 		if(rerr)
@@ -725,4 +726,815 @@ int run_one_AlifeXII_trial(stringPM *A){
 	return 0;
 }
 
+//////////////////////////////////////////////////////////////////////////
+// SPATIAL STRINGMOL CODE - CALLED FROM stringmol.cpp AND smspatial.cpp //
+//////////////////////////////////////////////////////////////////////////
 
+
+
+int randy_Moore(const int X, const int Y, const int Xlim, const int Ylim, int *xout, int *yout){
+
+	int pos = 8. * rand0to1();
+
+	/*    012
+	 *    3*4
+	 *    567
+	 */
+
+	int xoff = 0;
+	int yoff = 0;
+
+	switch(pos){
+	case 0:
+		xoff = -1;
+		yoff = -1;
+		break;
+	case 1:
+		yoff = -1;
+		break;
+	case 2:
+		xoff = 1;
+		yoff = -1;
+		break;
+	case 3:
+		xoff = -1;
+		break;
+	case 4:
+		xoff = 1;
+		break;
+	case 5:
+		xoff = -1;
+		yoff = 1;
+		break;
+	case 6:
+		yoff = 1;
+		break;
+	case 7:
+		xoff = 1;
+		yoff = 1;
+		break;
+	}
+
+	*xout = (X+Xlim+xoff)%Xlim;
+	*yout = (Y+Ylim+yoff)%Ylim;
+	return 0;
+}
+
+
+
+
+
+smsprun * init_smprun(const int gridx, const int gridy){
+
+	smsprun *run;
+	run = (smsprun *) malloc(sizeof(smsprun));
+
+	//TODO: make grid size changeable via config...
+	run->gridx=gridx;
+	run->gridy=gridy;
+
+	run->grid=(s_ag ***) malloc(run->gridx*sizeof(s_ag **));
+	run->status=(s_gstatus **) malloc(run->gridx*sizeof(s_gstatus *));
+
+	for(int i=0;i<run->gridx;i++){
+		run->grid[i] = (s_ag **) malloc(run->gridy*sizeof(s_ag *));
+		run->status[i] = (s_gstatus *) malloc(run->gridy*sizeof(s_gstatus));
+
+		for(int j=0;j<run->gridy;j++){
+			run->grid[i][j]=NULL;
+			run->status[i][j]=G_EMPTY;
+		}
+	}
+
+	return run;
+}
+
+void obsolete_find_ag_gridpos(s_ag *pag,smsprun *run, int *x, int *y){
+	for(int i=0;i<run->gridx;i++){
+		for(int j=0;j<run->gridy;j++){
+			if( run->grid[i][j] == pag ){
+				*x=i;
+				*y=j;
+				return;
+			}
+		}
+	}
+	printf("Unable to find agent %d\n",pag);
+}
+
+
+s_ag * pick_partner(stringPM *A, smsprun *run,int x, int y){
+
+	int i,j,xx,yy;
+
+	//first, let's count the agents
+	int count = 0;
+	for(i=-1;i<2;i++){
+		for(j=-1;j<2;j++){
+			if( !(i == 0 && j ==0) ){
+				xx = (x + i + run->gridx)%run->gridx;
+				yy = (y + j + run->gridy)%run->gridy;
+				if(run->grid[xx][yy]!=NULL){
+					if(run->grid[xx][yy]->status == B_UNBOUND){
+						if(run->status[xx][yy] == G_NOW){
+							count++;
+						}
+					}
+				}
+			}
+		}
+	}
+	if(!count)
+		return NULL;
+
+	int it = count * rand0to1();
+
+
+	//now, let's choose the agents
+	count = 0;
+	for(i=-1;i<2;i++){
+		for(j=-1;j<2;j++){
+			if( !(i == 0 && j ==0) ){
+				xx = (x + i + run->gridx)%run->gridx;
+				yy = (y + j + run->gridy)%run->gridy;
+				if(run->grid[xx][yy]!=NULL){
+					if(run->grid[xx][yy]->status == B_UNBOUND){
+						if(run->status[xx][yy] == G_NOW){
+							if(count==it)
+								run->status[xx][yy] = G_NEXT;
+								return run->grid[xx][yy];
+							count++;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	//We should never get to here
+	printf("Something's wrong - neighbour detected in first pass but none selected\n");
+	return NULL;
+}
+
+
+void update_grid(smsprun *run){
+	for(int i=0;i<run->gridx;i++){
+		for(int j = 0;j<run->gridy;j++){
+			if(run->grid[i][j]!=NULL){
+				if(run->status[i][j]==G_NEXT)
+					run->status[i][j] = G_NOW;
+			}
+			else{
+				run->status[i][j] = G_EMPTY;
+			}
+		}
+	}
+}
+
+void place_mol(s_ag *ag,smsprun *run,int x, int y){
+	//TODO: error checking!
+	run->grid[x][y] = ag;
+	//Set status to next - placing the molecule has used up the 'now'
+	run->status[x][y] = G_NEXT;
+	ag->set=true;
+	ag->x=x;
+	ag->y=y;
+}
+
+
+s_ag * place_neighbor(stringPM *A, smsprun *run,s_ag *c,int x,int y){
+
+
+	int xx,yy;
+	int nvacant=0;
+	for(int i=-1;i<2;i++){
+		for(int j=-1;j<2;j++){
+			xx = (x+i+run->gridx)%run->gridx;
+			yy = (y+j+run->gridy)%run->gridy;
+			//No need to ingnore x,y because it is occupied by the parent!
+			if(run->grid[xx][yy]==NULL)
+				nvacant++;
+		}
+	}
+	if(nvacant){
+		//Decide where to put it:
+		int pos = nvacant * rand0to1();
+		int here=0;
+		for(int i=-1;i<2;i++){
+			for(int j=-1;j<2;j++){
+				xx = (x+i+run->gridx)%run->gridx;
+				yy = (y+j+run->gridy)%run->gridy;
+				//No need to ingnore x,y because it is occupied by the parent!
+				if(run->grid[xx][yy]==NULL){
+					if(here == pos){
+						place_mol(c,run,xx,yy);
+						return c;
+					}
+					here++;
+				}
+			}
+		}
+	}
+	else{
+		return NULL;
+	}
+	/*TODO: Need to decide whether to replace or not
+	else{
+		int noccupied = 8-nvacant;
+		if(run->grid[x][y]==NULL){
+			//This should never happen....
+			printf("Alert! empty parent cell!\n");
+			noccupied++;
+		}
+
+		int pos = nvacant * rand0to1();
+		int here=0;
+		for(int i=-1;i<2;i++){
+			for(int j=-1;j<2;j++){
+				xx = (x+i+run->gridx)%run->gridx;
+				yy = (y+j+run->gridy)%run->gridy;
+				//No need to ingnore x,y because it is occupied by the parent!
+				if(i!=0 && j!=0){
+					if(run->grid[xx][yy]!=NULL){
+						if(here == pos){
+							//Remove the incumbent
+
+
+							run->grid[xx][yy]=c;
+							return;
+						}
+						here++;
+					}
+				}
+			}
+		}
+	}
+	*/
+}
+
+
+
+int spatial_cleave(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
+
+	int dac = 0,cpy;
+	s_ag *c,*pass,*csite;
+	c = NULL;
+	pass = act->pass;
+
+	//pick the mol containing the cleave site:
+	csite = act->ft?act:pass;
+
+	if(act->f[act->ft]-csite->S < csite->len){
+
+		//1: MAKE THE NEW MOLECULE FROM THE CLEAVE POINT
+		c = A->make_ag(pass->label);//,1);
+
+		//Copy the cleaved string to the agent
+		char *cs;
+		c->S =(char *) malloc(A->maxl0*sizeof(char));
+		memset(c->S,0,A->maxl0*sizeof(char));
+		cs = csite->S;
+		cpy = strlen(cs);
+
+		//Check that we aren't creating a zero-length molecule:
+		if(!cpy){
+			printf("WARNING: Zero length molecule being created!\n");
+		}
+
+		cpy -= act->f[act->ft]-cs;
+
+		if(!cpy){
+			printf("ERROR: Zero length molecule definitely being created!\nbail..\n");
+			A->free_ag(c);
+		}
+		else{
+
+			strncpy(c->S,act->f[act->ft],cpy);
+			c->len = strlen(c->S);
+
+#ifdef VERBOSE
+		printf("String %d created:\n%s\n",c->idx,c->S);
+#endif
+
+			//Check the lineage
+			A->update_lineage(c,'C',1,act->spp,pass->spp,act->biomass);
+			act->biomass=0; //reset this; we might continue to make stuff!
+
+			//TODO: place the new agent on the grid
+			if((place_neighbor(A,run,c,act->x,act->y))!=NULL){//,x,y))!=NULL){
+				//append the agent to nexthead
+				A->append_ag(&(A->nexthead),c);
+			}
+			else{
+				A->free_ag(c);
+			}
+		}
+		//TODO: check string lens of act and pass?
+
+
+		//2: HEAL THE PARENT
+		memset(act->f[act->ft],0,cpy*sizeof(char));
+
+		csite->len = strlen(csite->S);
+		if(csite->len==0){
+			printf("zero length parent string!\n");
+		}
+
+
+		//Get rid of zero-length strings...
+		//NB - grid status will be updated at the end of the timestep - simpler.
+		if((dac = A->check_ptrs(act))){
+			int x,y;
+			switch(dac){
+			case 1://Destroy active - only append passive
+				A->unbind_ag(pass,'P',1,act->spp,pass->spp);
+				A->append_ag(&(A->nexthead),pass);
+				//find_ag_gridpos(pass,run,&x,&y);
+				//run->status[x][y]=G_NEXT;
+				run->status[pass->x][pass->y]=G_NEXT;
+
+				//find_ag_gridpos(act,run,&x,&y);
+				run->grid[act->x][act->y]=NULL;
+				run->status[act->x][act->y]=G_EMPTY;
+
+				A->free_ag(act);
+
+				break;
+			case 2://Destroy passive - only append active
+				A->unbind_ag(act,'A',1,act->spp,pass->spp);
+				A->append_ag(&(A->nexthead),act);
+				//find_ag_gridpos(act,run,&x,&y);
+				run->status[act->x][act->y]=G_NEXT;
+
+
+				//find_ag_gridpos(pass,run,&x,&y);
+				run->grid[pass->x][pass->y]=NULL;
+				run->status[pass->x][pass->y]=G_EMPTY;
+
+				A->free_ag(pass);
+				break;
+			case 3://Destroy both
+				printf("Destroying both parents after cleave!\nThis should never happen!\n");
+				A->unbind_ag(act,'A',1,act->spp,pass->spp);
+				A->unbind_ag(pass,'P',1,act->spp,pass->spp);
+				A->free_ag(act);
+				A->free_ag(pass);
+				break;
+			default://This can't be right can it?
+				if(act->ft == act->it){
+					act->i[act->it]--;
+				}
+				break;
+			}
+		}
+	}
+	if(!dac){
+		act->i[act->it]++;
+	}
+
+	return dac;
+}
+
+
+
+
+
+
+int spatial_exec_step(stringPM *A, smsprun *run, s_ag *act, s_ag *pass){//, int x, int y){
+
+	char *tmp;
+	int dac=0;
+	int safe_append=1;
+
+	switch(*(act->i[act->it])){//*iptr[it]){
+
+	case '$'://h-search
+		//act->ft = act->it;
+		char *cs;
+		if(act->ft)
+			cs = act->S;
+		else
+			cs = act->pass->S;
+		tmp = HSearch(act->i[act->it],cs,A->blosum,&(act->it),&(act->ft),A->maxl);
+		act->f[act->ft] = tmp;
+		act->i[act->it]++;
+		break;
+
+	/*************
+	 *   P_MOVE  *
+	 *************/
+	case '>':
+			tmp=act->i[act->it];
+			tmp++;
+			switch(*tmp){
+			case 'A':
+				act->it = act->ft;
+				act->i[act->it] = act->f[act->ft];
+				act->i[act->it]++;
+				break;
+			case 'B':
+				act->rt = act->ft;
+				act->r[act->rt] = act->f[act->ft];
+				act->i[act->it]++;
+				break;
+			case 'C':
+				act->wt = act->ft;
+				act->w[act->wt] = act->f[act->ft];
+				act->i[act->it]++;
+				break;
+			default:
+				act->it = act->ft;
+				act->i[act->it] = act->f[act->ft];
+				act->i[act->it]++;
+				break;
+			}
+			break;
+
+
+	/************
+	 *   HCOPY  *
+	 ************/
+	case '='://h-copy
+		if(A->hcopy(act)<0){
+			A->unbind_ag(act,'A',1,act->spp,pass->spp);
+			A->unbind_ag(pass,'P',1,act->spp,pass->spp);
+		}
+		break;
+
+
+	/************
+	 *   INC_R  *
+	 ************/
+	case '+'://h-copy
+		if(A->granular_1==1){
+			//printf("Incrementing read \n");
+			/* Select the modifier */
+			tmp=act->i[act->it];
+			tmp++;
+			switch(*tmp){
+			case 'A':
+				act->i[act->it]++;
+				break;
+			case 'B':
+				act->r[act->rt]++;
+				break;
+			case 'C':
+				act->w[act->wt]++;
+				break;
+			default:
+				act->f[act->ft]++;
+				break;
+			}
+		}
+		act->i[act->it]++;
+		break;
+
+
+
+	/************
+	 *  TOGGLE  *
+	 ************/
+	case '^'://p-toggle: toggle active pointer
+			tmp=act->i[act->it];
+			tmp++;
+			switch(*tmp){
+			case 'A':
+				act->it = 1-act->it;
+				break;
+			case 'B':
+				act->rt = 1-act->rt;
+				break;
+			case 'C':
+				act->wt = 1-act->wt;
+				break;
+			default:
+				act->ft = 1-act->ft;
+				break;
+			}
+			act->i[act->it]++;
+			break;
+
+	/************
+	 *  IFLABEL *
+	 ************/
+	case '?'://If-label
+			act->i[act->it]=IfLabel(act->i[act->it],act->r[act->rt],act->S,A->blosum,A->maxl);
+			break;
+
+
+	/************
+	 *  CLEAVE  *
+	 ************/
+	case '%':
+			//Decide where to put the cleaved molecule
+			if((dac = spatial_cleave(A,run,act))){//,x,y))){
+				//TODO: Need to determine what safe_append is used for (after looking at cleave)
+				safe_append=0;	//extract_ag(&nowhead,p);
+			}
+			break;
+
+	/**************
+	 *  TERMINATE *
+	 **************/
+	case 0:
+	case '}'://ex-end - finish execution
+
+#ifdef V_VERBOSE
+			printf("Unbinding...\n");
+#endif
+
+			A->unbind_ag(act,'A',1,act->spp,pass->spp);
+			run->status[act->x][act->y] = G_NEXT;
+
+			A->unbind_ag(pass,'P',1,act->spp,pass->spp);
+			//int xx,yy;
+			//find_ag_gridpos(pass,run,&xx,&yy);
+			run->status[pass->x][pass->y] = G_NEXT;
+
+			break;
+
+	default://Just increment the i-pointer
+		act->i[act->it]++;
+		break;
+	}
+#ifdef V_VERBOSE
+	printf("Exec step - looks like:\n");
+	print_exec(stdout,act,pass);
+#endif
+
+
+	//TODO: This action should be elsewhere - much harder to follow here
+	if(safe_append){
+		act->ect++;
+		A->append_ag(&(A->nexthead),act);
+		A->append_ag(&(A->nexthead),pass);
+	}
+	A->energy--;
+
+
+	return 1;
+
+}
+
+int spatial_testdecay(stringPM *A, smsprun *run, s_ag *pag){
+
+ 	float prob = A->decayrate;//1./pow(65,2);//4./3.); //This is now done in load_decay...
+
+	float rno = rand0to1();
+
+	if(rno<prob){
+		//unbind_ag(pag);
+
+
+		s_ag *bag;
+		switch(pag->status){
+		case B_UNBOUND:
+			bag = NULL;
+			break;
+		case B_ACTIVE:
+			bag = pag->pass;
+			break;
+		case B_PASSIVE:
+			bag = pag->exec;
+			break;
+		}
+		int x,y;
+
+		//find_ag_gridpos(pag,run,&x,&y);
+		run->grid[pag->x][pag->y]=NULL;
+		run->status[pag->x][pag->y]=G_EMPTY;
+
+		A->free_ag(pag);
+
+		if(bag!=NULL){
+
+			//find_ag_gridpos(bag,run,&x,&y);
+			run->grid[bag->x][bag->y]=NULL;
+			run->status[bag->x][bag->y]=G_EMPTY;
+
+			A->free_ag(bag);
+		}
+
+		return 1;
+	}
+	else
+		return 0;
+}
+
+
+int smspatial_step(stringPM *A, smsprun *run){
+
+	//again, we follow make_next, but are a little more careful with the binding and uncoupling
+	s_ag *pag,*bag;
+	int changed;
+
+	A->energy += A->estep;
+
+	while(A->nowhead!=NULL){
+
+		pag = A->rand_ag(A->nowhead,-1);
+		A->extract_ag(&A->nowhead,pag);
+		changed = 0;
+
+		//extract any partner:
+		bag = NULL;
+
+		switch(pag->status){
+		case B_UNBOUND:
+			break;
+		case B_ACTIVE:
+			bag = pag->pass;
+			A->extract_ag(&(A->nowhead),bag);
+			break;
+		case B_PASSIVE:
+			bag = pag->exec;
+			A->extract_ag(&(A->nowhead),bag);
+			break;
+		}
+
+		if(!spatial_testdecay(A,run,pag)){
+			if(A->energy>0){
+				switch(pag->status){
+				case B_UNBOUND:
+					//seek binding partner, set binding states.
+					//changed = A->testbind(pag);
+
+					//int x,y;
+					align sw;
+
+					//We can only bind neighbours in the spatial model
+					//find_ag_gridpos(pag,run,&x,&y);
+					run->status[pag->x][pag->y]=G_NEXT;
+
+					if((bag = pick_partner(A,run,pag->x,pag->y))!=NULL){
+
+						//TODO: We need to make sure that bag is in nowhead first!
+						A->extract_ag(&(A->nowhead),bag);
+
+						//Now we've found a potential partner, we can see if it binds:
+						float bprob;
+						bprob = A->get_sw(pag,bag,&sw);
+
+						float rno;
+						rno = rand0to1();
+						if(rno<bprob){//Binding success!
+							//figure out which is the executing string:
+							A->set_exec(pag,bag,&sw);
+							pag->nbind++;
+							bag->nbind++;
+
+							A->energy--;
+
+							A->append_ag(&(A->nexthead),pag);
+							A->append_ag(&(A->nexthead),bag);
+							changed=1;
+						}
+					}
+
+					break;
+				case B_PASSIVE:
+
+
+					//find_ag_gridpos(pag->exec,run,&x,&y);
+
+					changed = spatial_exec_step(A,run,pag->exec,pag);//,x,y);
+
+					break;
+				case B_ACTIVE:
+
+					//find_ag_gridpos(pag,run,&x,&y);
+					changed = spatial_exec_step(A,run,pag,pag->pass);//,x,y);
+					break;
+				default:
+					printf("ERROR: agent with unknown state encountered!\n");
+				}
+			}
+			if(!changed){
+				A->append_ag(&(A->nexthead),pag);
+				if(bag!=NULL)
+					A->append_ag(&(A->nexthead),bag);
+
+			}
+		}
+	}
+
+	A->update();
+	update_grid(run);
+
+	return 0;
+}
+
+
+
+
+int smspatial_init(char *fn, stringPM *A, smsprun **run){
+
+
+	A->load(fn,NULL,0,1);
+
+	*run = init_smprun(300,300);
+
+	//Now we have to place each agent on the grid - use the makenext() model -
+	while(A->nowhead!=NULL){
+		s_ag *pag;
+		pag = A->rand_ag(A->nowhead,-1);
+		A->extract_ag(&(A->nowhead),pag);
+    	int found = 0;
+    	while(!found){
+			int pos = (*run)->gridx * (*run)->gridy * rand0to1();
+
+			int x = pos/(*run)->gridx;
+			int y = pos%(*run)->gridx;
+
+			if((*run)->grid[x][y]==0){
+
+				//TODO: this command should be moved to the smspatial
+		        //((uint8_t *)screen->pixels)[x + (y * sdlPitch)] = 0;
+
+		        //Add the partner in the Moore neighborhood
+		        int ffound=0;
+
+		        while(!ffound){
+					int xx,yy;
+					//randy_Moore(const int X, const int Y, const int Xlim, const int Ylim, int *xout, int *yout){
+					randy_Moore(x,y,(*run)->gridx,(*run)->gridy,&xx,&yy);
+					if((*run)->grid[xx][yy]==0){
+
+						ffound=found=1;
+
+						//Place each agent on the list
+						place_mol(pag,*run,x,y);
+
+						//Move to the 'used' bucket
+						A->append_ag(&(A->nexthead),pag);
+
+						s_ag *bag;
+						bag = A->rand_ag(A->nowhead,-1);
+						if(bag != NULL){
+							A->extract_ag(&(A->nowhead),bag);
+							place_mol(bag,*run,xx,yy);
+							A->append_ag(&(A->nexthead),bag);
+						}
+					}
+		        }
+			}
+    	}
+    }
+
+	A->update();
+
+	return 0;
+}
+
+int smspatial(int argc, char *argv[]) {
+
+	printf("Hello spatial stringmol world\n");
+
+	SMspp		SP;
+	stringPM	A(&SP);
+
+	smsprun *run;
+	run = NULL;
+
+	smspatial_init(argv[2],&A,&run);
+
+	int bt=0,ct=0;
+	ct = A.nagents(A.nowhead,-1);
+	printf("Initialisation done, number of molecules is %d\n",ct);
+
+	int iteration = 0;
+//	while(A.nagents(A.nowhead,-1)){
+	while(iteration < 100000){
+		smspatial_step(&A,run);
+		ct = A.nagents(A.nowhead,-1);
+		bt = ct - A.nagents(A.nowhead,B_UNBOUND);
+#ifdef DODEBUG
+		printf("Nowhead is %d, Nexthead is %d\n",A.nowhead,A.nexthead);
+		s_ag *p;
+		p=A.nowhead;
+		int mno=0;
+		while(p!=NULL){
+			int x,y;
+			find_ag_gridpos(p,run,&x,&y);
+			printf("%d, %d, [%d,%d]  status: %d, bound to %d / %d, prev = %d, next = %d\n",++mno,p,x,y,p->status,p->exec,p->pass,p->prev,p->next);
+			p = p->next;
+		}
+#endif
+		iteration++;
+		if(!(iteration%100))
+				printf("Step %d done, number of molecules is %d, nbound = %d\n",iteration,ct,bt);
+//		if(iteration == 66396)
+//			printf("Pauuuuse\n!");
+		if((!(iteration%10000)) ||     iteration == 66396    ){
+			FILE *fp;char fn[128];
+			sprintf(fn,"splist%d.dat",iteration);
+			fp = fopen(fn,"w");
+			SP.print_spp_list(fp);
+			fclose(fp);
+		}
+	}
+
+	printf("FINISHED smspatial\n");
+	fflush(stdout);
+	return 0;
+}

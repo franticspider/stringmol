@@ -25,7 +25,6 @@
 #include <string.h>
 #include <math.h>
 
-
 //utils
 //extern "C" {
 #include "randutil.h"
@@ -54,8 +53,6 @@
 //tests
 #include "tests.h"
 
-
-
 //DEFINES
 //Calculate the ancestry & epochs inline
 //#define DO_ANCESTRY
@@ -63,8 +60,8 @@
 
 
 //FORWARD FUNCTION DECLARATIONS
-extern const int maxl;//150;// 512;
-extern const int maxl0; //allow room for a terminating 0
+//extern const int maxl;//150;// 512;
+//extern const int maxl0; //allow room for a terminating 0
 
 void printsppct(stringPM *A, int t);
 
@@ -383,7 +380,7 @@ int origlife(int argc, char *argv[]){
 	long rseed = initmyrand(437);//-1);//437);
 	//R.printasint();
 
-	int nsteps = (int) A.nsteps;
+	unsigned int nsteps = (int) A.nsteps;
 	FILE *fsumm,*ftmp;
 	char fitfile[128];
 
@@ -404,7 +401,7 @@ int origlife(int argc, char *argv[]){
 	ftmp = fopen("epochs.dat","w");
 	fclose(ftmp);
 
-	int rerr=1,rlim=20;
+	unsigned int rerr=1,rlim=20;
 	if((fp=fopen(argv[2],"r"))!=NULL){
 		rerr = read_param_int(fp,"NTRIALS",&rlim,1);
 		switch(rerr){
@@ -426,7 +423,7 @@ int origlife(int argc, char *argv[]){
 
 
 	//Read nsteps:
-	int maxnsteps=0;
+	unsigned int maxnsteps=0;
 	if((fp=fopen(argv[2],"r"))!=NULL){
 		rerr = read_param_int(fp,"NSTEPS",&maxnsteps,1);
 		switch(rerr){
@@ -450,14 +447,14 @@ int origlife(int argc, char *argv[]){
 
 
 
-	for(int rep=0;rep<rlim;rep++){
+	for(unsigned int rep=0;rep<rlim;rep++){
 
 		sprintf(fitfile,"rep%03dfitness.dat",rep);
 		ftmp=fopen(fitfile,"w");
 		fclose(ftmp);
-		for(int rr=0;rr<rlim;rr++){
+		for(unsigned int rr=0;rr<rlim;rr++){
 
-			//div=0;
+			div=0;
 			//divct = divit = diven = 0;
 
 			//SP.clear_list();
@@ -574,7 +571,7 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 	long rseed = initmyrand(-1);//437);//-1);//437);
 	//R.printasint();
 
-	int nsteps;// = (int) A.nsteps;
+	unsigned int nsteps;// = (int) A.nsteps;
 
 	//Prime the printout:
 	//FILE *fpo,*fpdiv;
@@ -597,27 +594,7 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 	ftmp = fopen("epochs.dat","w");
 	fclose(ftmp);
 
-	/*
-	int rerr=1,rlim=20;
-	if((fp=fopen(argv[2],"r"))!=NULL){
-		rerr = read_param_int(fp,"NTRIALS",&rlim,1);
-		switch(rerr){
-		case 2:
-			printf("Multiple NTRIALS specified. Check config file\n");
-			getchar();
-			exit(0);
-		case 0:
-			printf("Setting NTRIALS to %d\n",rlim);
-			break;
-		default:
-			printf("NTRIALS not sepcifid;\nSetting NTRIALS to %d\n",rlim);
-			break;
-		}
-		fclose(fp);
-	}
-	printf("NTRIALS = %d\n",rlim);
-	*/
-	int rlim = 1;
+	unsigned int rlim = 1;
 	readordef_param_int(argv[2], "NTRIALS", &rlim, rlim, 1);
 
 
@@ -630,7 +607,7 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 	printf("process number is: %d\n",proc);
 
 	//Read nsteps:
-	int maxnsteps=0;
+	unsigned int maxnsteps=0;
 
 	int nns = readordef_param_int(argv[2], "NSTEPS", &maxnsteps, -1, 1);
 	if(nns==1){
@@ -643,7 +620,7 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 
 
 
-	for(int rr=0;rr<rlim;rr++){
+	for(unsigned int rr=0;rr<rlim;rr++){
 
 		div=0;
 
@@ -655,7 +632,7 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 		if(!arg_load(&A, argc, argv))
 			return 0;
 
-		int dummy;
+		unsigned int dummy;
 		int gg = readordef_param_int(argv[2], "GRANULAR", &dummy, -1, 1);
 		if(gg==1){
 			printf("GRANULAR was not specified. Simulations will use standard operators");
@@ -837,7 +814,7 @@ int comass_AlifeXII(int argc, char *argv[]){
 	long rseed = initmyrand(437);//-1);//437);
 	//R.printasint();
 
-	int nsteps = (int) A.nsteps;
+	unsigned int nsteps = A.nsteps;
 
 	//Prime the printout:
 	//FILE *fpo,*fpdiv;
@@ -860,7 +837,7 @@ int comass_AlifeXII(int argc, char *argv[]){
 	ftmp = fopen("epochs.dat","w");
 	fclose(ftmp);
 
-	int rerr=1,rlim=20;
+	unsigned int rerr=1,rlim=20;
 	if((fp=fopen(argv[2],"r"))!=NULL){
 		rerr = read_param_int(fp,"NTRIALS",&rlim,1);
 		switch(rerr){
@@ -883,7 +860,7 @@ int comass_AlifeXII(int argc, char *argv[]){
 
 
 	//Read nsteps:
-	int maxnsteps=0;
+	unsigned int maxnsteps=0;
 	if((fp=fopen(argv[2],"r"))!=NULL){
 		rerr = read_param_int(fp,"NSTEPS",&maxnsteps,1);
 		switch(rerr){
@@ -908,7 +885,7 @@ int comass_AlifeXII(int argc, char *argv[]){
 	int *maxcode;
 
 
-	for(int rr=0;rr<rlim;rr++){
+	for(unsigned int rr=0;rr<rlim;rr++){
 
 		FILE *mc;
 		sprintf(fn,"maxcodes%03d.txt",rr);
@@ -1157,18 +1134,18 @@ int comass_GA(int argc, char *argv[]){
 	memset(test,0,128*sizeof(char));
 	sprintf(test,"-873302838");
 	long dummy;
-	sscanf(test,"%l",&dummy);
+	sscanf(test,"%ld",&dummy);
 	//printf("Random seed is %d\n",dummy);
 	//printf("Random seed is %lu (unsigned)\n",dummy);
 
 
 	unsigned long seedin =  2846144656u;
 
-	int qnnscoring = 1;
+	unsigned int qnnscoring = 1;
 
 	FILE *fpr;
 	if((fpr=fopen(argv[2],"r"))!=NULL){
-		int stmp;
+		unsigned int stmp;
 		int rerr = read_param_int(fpr,"RANDSEED",&stmp,1);
 		rerr = read_param_int(fpr,"GAQNN",&qnnscoring,1);
 		if(rerr)
@@ -1208,7 +1185,6 @@ int comass_GA(int argc, char *argv[]){
 	fclose(gafp);
 	//1: create a bunch of random jobbies and evaluate them!
 
-	int *maxcode;
 	int lifetime;
 	int **mutnet;
 	mutnet = (int **) malloc(POPN*sizeof(int *));
@@ -1216,7 +1192,7 @@ int comass_GA(int argc, char *argv[]){
 	/*INITIALISE: iterate over each member of the population */
 	for(int rr=0;rr<POPN;rr++){
 
-		FILE *mc;char fn[256],pfn[256];FILE *ftmp;
+		FILE *mc;char fn[256];
 		sprintf(fn,"maxcodes%03d.txt",rr);
 		mc = fopen(fn,"w");
 		fclose(mc);
@@ -1278,7 +1254,8 @@ int comass_GA(int argc, char *argv[]){
 
 
 	for(int gg=POPN; gg<NEVALS+POPN; gg++){
-		FILE *mc;char fn[256],pfn[256];FILE *ftmp;
+		//FILE *mc;char fn[256],pfn[256];FILE *ftmp;
+
 		//sprintf(fn,"maxcodes%03d.txt",gg);
 		//mc = fopen(fn,"w");
 		//fclose(mc);
@@ -1576,7 +1553,7 @@ int energetic_AlifeXII(int argc, char *argv[]){
 	long rseed = initmyrand(437);//-1);//437);
 	//R.printasint();
 
-	int nsteps = (int) A.nsteps;
+	unsigned int nsteps = A.nsteps;
 
 	//Prime the printout:
 	//FILE *fpo,*fpdiv;
@@ -1599,7 +1576,7 @@ int energetic_AlifeXII(int argc, char *argv[]){
 	ftmp = fopen("epochs.dat","w");
 	fclose(ftmp);
 
-	int rerr=1,rlim=20;
+	unsigned int rerr=1,rlim=20;
 	if((fp=fopen(argv[2],"r"))!=NULL){
 		rerr = read_param_int(fp,"NTRIALS",&rlim,1);
 		switch(rerr){
@@ -1622,7 +1599,7 @@ int energetic_AlifeXII(int argc, char *argv[]){
 
 
 	//Read nsteps:
-	int maxnsteps=0;
+	unsigned int maxnsteps=0;
 	if((fp=fopen(argv[2],"r"))!=NULL){
 		rerr = read_param_int(fp,"NSTEPS",&maxnsteps,1);
 		switch(rerr){
@@ -1646,7 +1623,7 @@ int energetic_AlifeXII(int argc, char *argv[]){
 
 
 
-	for(int rr=0;rr<rlim;rr++){
+	for(unsigned int rr=0;rr<rlim;rr++){
 
 		div=0;
 
@@ -1813,30 +1790,19 @@ int SmPm_conpop(int argc, char *argv[]){
 	const int 	MAXCONSTEPS = 10000000;	//Number of runsTODO: This should be many more!
 	int c,c2,r=0;			//counters
 	FILE *fp;
-	//char *signal;
-	int *ea;
 	float *score;
 
-
-	//Structure to maintain the species match scores
-	s_sw *spp_matches;
-	spp_matches = NULL;
-
 	score = (float *) malloc(NCON*sizeof(float));
-
-	//signal=(char *) malloc(128*sizeof(char));
-	//memset(signal,0,128*sizeof(char));
-	//sprintf(signal,"FVTANYFVTANYFVTANYFVTANY");
 
 	//437 divides at 167000
 	FILE *fpr;
 	unsigned long seedin = 0;
 	if((fpr=fopen(argv[2],"r"))!=NULL){
-		int stmp;
+		unsigned int stmp;
 		int rerr = read_param_int(fpr,"RANDSEED",&stmp,1);
 		seedin = stmp;
 
-		int nctmp;
+		unsigned int nctmp;
 		rerr = read_param_int(fpr,"NCONTAINERS",&nctmp,1);
 		if(!rerr){
 			NCON = nctmp;
@@ -1855,25 +1821,14 @@ int SmPm_conpop(int argc, char *argv[]){
 		rseed = longinitmyrand(NULL);
 	}
 
-	printf("rseed = %d, seedin = %d, NCON = %d\n",rseed,seedin,NCON);
+	printf("rseed = %lu, seedin = %lu, NCON = %d\n",rseed,seedin,NCON);
 
 
 	SMspp		*SP[NCON];
 	stringPM	*A[NCON];	//Array of containers;
 
-
-	//long rseed = initmyrand(437);//-1);//437);
-	//R.printasint();
-
-	//int comp2[4];
-
-	int nsteps;
-
 	//Prime the printout:
 	FILE *fpdiv,*fsumm,*ftmp;
-
-	//division values for summary
-	//int divct,divit,diven;
 
 	char	fn[128],pfn[128];
 
@@ -1900,7 +1855,6 @@ int SmPm_conpop(int argc, char *argv[]){
 	ftmp = fopen("epochs.dat","w");
 	fclose(ftmp);
 
-	ea=(int *)malloc(NCON*sizeof(int));
 
 	/** Set up the system */
 	for(c=0;c<NCON;c++){
@@ -1937,16 +1891,8 @@ int SmPm_conpop(int argc, char *argv[]){
 		A[c]->energy=0;
 
 	}
-	//not sure if the following is needed
-	nsteps = (int) A[0]->nsteps;
+
 	r = NCON;
-
-	//to hold the numbers for the gene vs machine ratios.
-	float *gvm;
-	gvm = (float *) malloc(2*sizeof(float));
-
-	float *self;
-	self = self_stats(argv[2]);
 
 	//We're going to run NRUNSindividual containers, but in parallel
 	int gclock=0;
@@ -1959,10 +1905,6 @@ int SmPm_conpop(int argc, char *argv[]){
 			//Restore the 20-each model - we'll do selection on replenishment
 			A[c]->energy += A[c]->estep;
 		}
-		//set_energy(NCON, 20, A, signal,ea,score);
-		//for(c=0;c<NCON;c++){
-		//	A[c]->energy += 10;
-		//}
 
 		if(!(gclock%1000)){
 			sprintf(fn,"conpopdy2.dat");
@@ -2272,30 +2214,19 @@ void SmPm_1on1(int argc,char *argv[]){
 
 void swdist(int argc, char *argv[]){
 
-
-
-	int div;
-
 	SMspp		SP;
 	stringPM	A(&SP);
 	FILE *fp;
-	int indefinite=1;
 
-	long rseed = initmyrand(437);//-1);//437);
-	//R.printasint();
+	long rseed = initmyrand(437);
 
-	int nsteps = (int) A.nsteps;
 	FILE *fsumm,*ftmp;
-	char fitfile[128];
 
-	//division values for summary
-	int divct,divit,diven;
-
-	char	fn[128],pfn[128],randfn[128];
+	char	fn[128];
 
 	sprintf(fn,"%s.spatial.summary.dat",argv[1]);
 	if((fsumm=fopen(fn,"w"))==NULL){
-		printf("Coundlnt open %s\n",fn);
+		printf("Coundln't open %s\n",fn);
 		getchar();
 	}
 	fprintf(fsumm,"Random seed is %ld\n",rseed);
@@ -2305,7 +2236,7 @@ void swdist(int argc, char *argv[]){
 	ftmp = fopen("epochs.dat","w");
 	fclose(ftmp);
 
-	int rerr=1,rlim=20;
+	unsigned int rerr=1,rlim=20;
 	if((fp=fopen(argv[2],"r"))!=NULL){
 		rerr = read_param_int(fp,"NTRIALS",&rlim,1);
 		switch(rerr){
@@ -2327,7 +2258,7 @@ void swdist(int argc, char *argv[]){
 
 
 	//Read nsteps:
-	int maxnsteps=0;
+	unsigned int maxnsteps=0;
 	if((fp=fopen(argv[2],"r"))!=NULL){
 		rerr = read_param_int(fp,"NSTEPS",&maxnsteps,1);
 		switch(rerr){
@@ -2337,10 +2268,9 @@ void swdist(int argc, char *argv[]){
 			exit(0);
 		case 0:
 			printf("Setting NSTEPS to %d\n",rlim);
-			indefinite=0;
 			break;
 		default:
-			printf("NSTEPS not sepcified;\nEach trial will run to extinction\n",maxnsteps);
+			printf("NSTEPS not sepcified;\nEach trial will run to extinction\n");
 			break;
 		}
 		fclose(fp);
@@ -2350,11 +2280,6 @@ void swdist(int argc, char *argv[]){
 	char ofn[512];
 	char line[3000];
 	FILE *fin, *outfile;
-
-	div=0;
-	divct = divit = diven = 0;
-
-	//SP.clear_list();
 
 	A.load(argv[2],NULL,0,1);
 	align sw;
@@ -2374,11 +2299,11 @@ void swdist(int argc, char *argv[]){
 
 		while((fgets(line,A.maxl,fin))!=NULL){
 
-			sscanf(line,"%*s\t%*s\t%*s\t%s\t%s",&s1,&s2);
+			sscanf(line,"%*s\t%*s\t%*s\t%s\t%s",(char *) &s1, (char *) &s2);
 
 			printf("read %s and %s\n",s1,s2);
 
-			float	bprob = SmithWatermanV2(s1,s2,&sw,A.blosum,0);
+			SmithWatermanV2(s1,s2,&sw,A.blosum,0);
 
 
 			int l = strlen(line);
@@ -2386,10 +2311,10 @@ void swdist(int argc, char *argv[]){
 
 
 			printf("sw score is %f\n",sw.score);
-			fprintf(outfile,"%s\t%f\t%d\t%d\n", line, sw.score,strlen(s1),strlen(s2));
+			fprintf(outfile,"%s\t%f\t%d\t%d\n", line, sw.score,(int) strlen(s1), (int) strlen(s2));
 			fflush(outfile);
 
-			fprintf(stdout,"%s\t%f\t%d\t%d\n", line, sw.score,strlen(s1),strlen(s2));
+			fprintf(stdout,"%s\t%f\t%d\t%d\n", line, sw.score,(int) strlen(s1),(int) strlen(s2));
 			fflush(stdout);
 
 		}
@@ -2491,7 +2416,7 @@ int speigmonst(int argc, char *argv[]){
 	long rseed = initmyrand(437);//-1);//437);
 	//R.printasint();
 
-	int nsteps = (int) A.nsteps;
+	unsigned int nsteps = A.nsteps;
 
 	//Prime the printout:
 	//FILE *fpo,*fpdiv;
@@ -2514,7 +2439,7 @@ int speigmonst(int argc, char *argv[]){
 	ftmp = fopen("epochs.dat","w");
 	fclose(ftmp);
 
-	int rerr=1,rlim=20;
+	unsigned int rerr=1,rlim=20;
 	if((fp=fopen(argv[2],"r"))!=NULL){
 		rerr = read_param_int(fp,"NTRIALS",&rlim,1);
 		switch(rerr){
@@ -2537,7 +2462,7 @@ int speigmonst(int argc, char *argv[]){
 
 
 	//Read nsteps:
-	int maxnsteps=0;
+	unsigned int maxnsteps=0;
 	if((fp=fopen(argv[2],"r"))!=NULL){
 		rerr = read_param_int(fp,"NSTEPS",&maxnsteps,1);
 		switch(rerr){
@@ -2564,7 +2489,7 @@ int speigmonst(int argc, char *argv[]){
 
 	char *repstring;
 	repstring = (char*)malloc(A.maxl0 * sizeof(char));
-	for(int rr=0;rr<rlim;rr++){
+	for(unsigned int rr=0;rr<rlim;rr++){
 
 		FILE *mc;
 		sprintf(fn,"maxcodes%03d.txt",rr);
@@ -2791,6 +2716,11 @@ int main(int argc, char *argv[]) {
 			break;
 
 		/*************************************************/
+		case 33:
+			smspatial(argc,argv);
+			break;
+
+		/*************************************************/
 		case 44:
 			comass_GA_boostwinners(argc,argv);
 			break;
@@ -2801,6 +2731,7 @@ int main(int argc, char *argv[]) {
 			break;
 		}
 		printf("Finished!\n");
+		fflush(stdout);
 	}
 	else{
 		printf("\nUSAGE for TestSM\n\nThe first argument after TestSM should be the trial type, followed by the arguments needed to run it\n\n");

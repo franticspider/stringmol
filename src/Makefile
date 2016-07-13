@@ -22,17 +22,16 @@ HEADERS = $(MAIN_DIR)
 
 
 # which compiler to use 
-#C4C = gcc -O0 -Wall
-#CC = g++  -O0 -Wall
 C4C = gcc -O0 -Wall -Wunused
 CC = g++ -O0 -Wall -Wunused
 
-#DBGC4C = $(C4C) -DDEBUG -g
-#DBGCC = $(CC) -DDEBUG -g
+#debug: CXX += -DDEBUG -g
+#debug: CC += -DDEBUG -g
 
-debug: CXX += -DDEBUG -g
-debug: CC += -DDEBUG -g
+#If you want profiling, comment out the above and replace with: 
 
+debug: CXX += -DDEBUG -g -pg
+debug: CC += -DDEBUG -g -pg
 
 
 #############################################################
@@ -45,7 +44,7 @@ debug: CC += -DDEBUG -g
 #Make everything from scratch:
 all: clean release debug 
 
-release: cleano stringmol web_api smspatial
+release: cleano stringmol web_api 
 
 debug: cleano stringmol_dbg web_api_dbg smspatial_dbg
 
@@ -85,24 +84,23 @@ smlib: 		stringmanip.o	alignment.o	instructions.o \
 
 #############################################################
 # spatial stringmol
-smspatial: 	smspatial.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
-			hsort.o	mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
-			stringmanip.o	alignment.o	instructions.o tests.o
-	$(CC) -o smspatial -s -lm -lSDL smspatial.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
-			hsort.o mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
-			stringmanip.o	alignment.o	instructions.o tests.o
+#smspatial: 	smspatial.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
+#			hsort.o	mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
+#			stringmanip.o	alignment.o	instructions.o tests.o
+#	$(CC) -o smspatial -s -lm -lSDL smspatial.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
+#			hsort.o mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
+#			stringmanip.o	alignment.o	instructions.o tests.o
 			
 
 smspatial_dbg: 	smspatial.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
 			hsort.o	mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
 			stringmanip.o	alignment.o	instructions.o tests.o
-	$(CC) -o smspatial_dbg -lm \
-	        -funroll-loops -fomit-frame-pointer -s  \
+	$(CC) -o smspatial_dbg -s -lm 	\
+	        -funroll-loops -fomit-frame-pointer \
 	        smspatial.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
 			hsort.o mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
-			stringmanip.o	alignment.o	instructions.o tests.o \
-			-lSDL
-
+			stringmanip.o	alignment.o	instructions.o tests.o -lSDL 
+		
 ###########################################################
 # stringmol
 stringmol: 	stringmol.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \

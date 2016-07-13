@@ -25,7 +25,7 @@
 		int gaqnn;		//0 or 1: whether to use the QNN measure in comass_GA
 		int randseed;	//if >= 0, random number seed, if -1, use /dev/random as the seed
 		int indefinite;	//if 1, run forever
-		int maxnsteps;	//if 0, run forever(?) if positive, max number of steps to run
+		unsigned int maxnsteps;	//if 0, run forever(?) if positive, max number of steps to run
 	};
 
     void clearfiles( char *argv[]);
@@ -59,5 +59,22 @@
 	/* Print parameters of the trial */
 	void print_params(stringPM *A, int ntrials, int nsteps);
 
+/************************************************************/
 
+
+	enum s_gstatus{G_EMPTY,G_NOW,G_DOING,G_NEXT};
+
+	typedef struct td_smsprun{
+		int 	 gridx;
+		int		 gridy;
+		s_ag *** grid; //2d grid of pointers to agents.
+		enum s_gstatus	 **  status; //current status of cell
+	} smsprun;
+
+
+	/* Spatial Stringmol functions */
+	int randy_Moore(const int X, const int Y, const int Xlim, const int Ylim, int *xout, int *yout);
+	int smspatial(int argc, char *argv[]);
+	int smspatial_init(char *fn, stringPM *A, smsprun **run);
+	int smspatial_step(stringPM *A, smsprun *run);
 #endif /* SETUPSM_H_ */

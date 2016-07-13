@@ -75,17 +75,17 @@ public:
 	//Reporting flags
 	int verbose_bind;
 	int verbose_load;
-	int splprint;		//the number of timesteps before printing out the specieslist
+	unsigned int splprint;		//the number of timesteps before printing out the specieslist
 
 	//Signal string - for getting a signal score:
 	char *signal;
 
 	//Max molecular lengths
-	int maxl;
-	int maxl0;
+	unsigned int maxl;
+	unsigned int maxl0;
 
 	//energy step
-	int estep;
+	unsigned int estep;
 
 	//toggle for granularity
 	int granular_1;

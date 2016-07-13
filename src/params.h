@@ -25,10 +25,12 @@
 #define PARAMS_H_
 
 int read_param_float(FILE *fp, const char *label, float *val, int verbose);
-int read_param_int(FILE *fp,const char *label, int *val, int verbose);
+int read_param_int(FILE *fp,const char *label, unsigned int *val, int verbose);
 char * read_param_string(FILE **pfp,const char *label, int verbose);
 
-int readordef_param_int(char *fn, const char *label, int *val, const int defaultvalue, const int verbose);
+int readordef_param_int(char *fn, const char *label, unsigned int *val, const int defaultvalue, const int verbose);
+
+void report_param_error(int error, int doexit);
 
 #endif /*PARAMS_H_*/
 

@@ -7,7 +7,7 @@ CELLRAD		2500
 AGRAD		10	
 ENERGY		1600	
 NSTEPS		1000
-MUTATE		0.02
+MUTATE		0.002
 
 RANDSEED	1
 %USING	/n/staff/sjh/current/ewSTRING/SMconfigs/instr_set1.mis

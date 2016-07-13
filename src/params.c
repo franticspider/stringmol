@@ -43,8 +43,28 @@ int read_flag(FILE *fp,const char *label, int verbose){
 }
 
 
+void report_param_error(int error, int doexit){
+	switch(error){
+	case 0://Do nothing - no error
+		break;
+	case 1:
+		printf("PARAMETER ERROR - Parameter not found\n");
+		break;
+	case 2:
+		printf("PARAMETER ERROR - Duplicate parameter found\n");
+		break;
+	default:
+		printf("PARAMETER ERROR - unspecified problem\n");
+		break;
+	}
+	if(error && doexit){
+		exit(error);
+	}
+}
 
-int read_param_int(FILE *fp,const char *label, int *val, int verbose){
+
+
+int read_param_int(FILE *fp,const char *label, unsigned int *val, int verbose){
 
 	const int maxl = 128;
 	char line[maxl];
@@ -137,7 +157,7 @@ char * read_param_string(FILE **pfp,const char *label, int verbose){
 }
 
 
-int readordef_param_int(char *fn, const char *label, int *val, const int defaultvalue, const int verbose){
+int readordef_param_int(char *fn, const char *label, unsigned int *val, const int defaultvalue, const int verbose){
 	int rerr=1;
 	int errcode = 3;
 	FILE *fp;

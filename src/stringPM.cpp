@@ -469,7 +469,6 @@ int stringPM::load_agents(char *fn, char *fntab, int test, int verbose){
 	char line[llen];
 	char label[llen];
 	char code;
-	char lab;
 	int i,nag;
 	s_ag *pag;
 	int ntt = 0;
@@ -849,7 +848,7 @@ int stringPM::extract_ag(s_ag **list, s_ag *ag){
 	}
 	else{
 		if(ag->prev==NULL)
-			printf("No previous member of the list!\n");
+			printf("Error in extract_ag: No previous member of the list!\n");
 		ag->prev->next = ag->next;
 		if(ag->next != NULL)
 			ag->next->prev = ag->prev;
@@ -1155,14 +1154,13 @@ int stringPM::aspbind(rules *rset, s_ag *pag){
 		rule = -1;
 	float
 		rno;
-	s_ag *bag,*wbag,*pag2;
+	s_ag *bag,*pag2;
 
 	bag=nowhead;
 
 	while(bag!=NULL){
 		//if Partner
 		if((rule = rset->getrule("lhs",bag->label,pag->label))>-1){
-			wbag = bag;
 			count++;
 		}
 		bag=bag->next;
@@ -1344,15 +1342,7 @@ float stringPM::get_sw(s_ag *a1, s_ag *a2, align *sw){
 
 		bprob = SmithWatermanV2(a1->S,a2->S,&sw2,blosum,0);
 
-
-		int lA = strlen(a1->S);
-		int lB = strlen(a2->S);
-		int L = lA>lB?lA:lB;
-
-		float spp_sim=sw2.score/L;
-
-
-		//SUGGEST: pass in pointer to the species - not its index
+		//TODO: SUGGEST: pass in pointer to the species - not its index
 		store_sw(&swlist,sw,a1->spp->spp,a2->spp->spp);
 	}
 	else{
@@ -1407,13 +1397,13 @@ void stringPM::print_exec(FILE *fp, s_ag *act, s_ag *pas){
 	pas->len = strlen(pas->S);
 
 
-	if(pas->len<=maxl){
+	if(pas->len<=(int) maxl){
 		//printf("Passive string length = %d\n",pas->len);
 	}
 	else
 		printf("Passive string length = %d - TOO LONG\n",pas->len);
 
-	if(act->len<=maxl){
+	if(act->len<=(int) maxl){
 		//printf("Active  string length = %d\n",act->len);
 	}
 	else
@@ -1729,19 +1719,16 @@ int stringPM::hcopy(s_ag *act){
 	int cidx;
 	float rno;
 	int safe = 1;// this gets set to zero if any of the tests fail..
-	int doprint = 0;
-	e_mut mut = M_NONE;
 
 
 	//MUTATION RATES:
 	//THESE ARE HARD-CODED FOR NOW - THEY SHOULD BE DERIVED FROM THE BLOSUM SOMEHOW...
-	//const float indelrate = 0.0005,subrate=0.375;//0.0749/2
-	//const float indelrate = 0.0000306125,subrate=0.01;//0.02
-	//const float indelrate = 0.00006125,subrate=0.05;//0.02
-	//const float indelrate = 0.000125,subrate=0.1;//0.02
-	//const float indelrate = 0.000005,subrate=0.0375;//0.0749/2
-
-	//const float indelrate = 0., 		subrate = 0.;
+	//const float indelrate = 0.0005,		subrate=0.375;//0.0749/2
+	//const float indelrate = 0.0000306125,	subrate=0.01;//0.02
+	//const float indelrate = 0.00006125,	subrate=0.05;//0.02
+	//const float indelrate = 0.000125,		subrate=0.1;//0.02
+	//const float indelrate = 0.000005,		subrate=0.0375;//0.0749/2
+	//const float indelrate = 0., 			subrate = 0.;
 
 	if(!domut){
 		indelrate = subrate =0;
@@ -1751,7 +1738,7 @@ int stringPM::hcopy(s_ag *act){
 	act->pass->len = strlen(act->pass->S);
 
 	int p;
-	if( (p = h_pos(act,'w'))>=maxl){
+	if( (p = h_pos(act,'w'))>=(int) maxl){
 		printf("Write head out of bounds: %d\n",p);
 		//just to make sure no damage is done:
 		if(act->wt)
@@ -1764,7 +1751,7 @@ int stringPM::hcopy(s_ag *act){
 		safe = 0;
 		return -1;
 	}
-	if(h_pos(act,'r')>=maxl){
+	if(h_pos(act,'r')>=(int) maxl){
 		printf("Read head out of bounds\n");
 
 		act->i[act->it]++;
@@ -1791,11 +1778,10 @@ int stringPM::hcopy(s_ag *act){
 	if(safe){
 		rno=rand0to1();
 		if(rno<indelrate){//INDEL
-			doprint=1;
+
 			//should follow the blosum table for this....
 			rno=rand0to1();
 			if(rno<0.5){//insert
-				mut = M_INSERT;
 				//first do a straight copy..
 				*(act->w[act->wt])=*(act->r[act->rt]);
 
@@ -1812,23 +1798,16 @@ int stringPM::hcopy(s_ag *act){
 				}
 			}
 			else{//delete
-
-
-
 				act->i[act->it]++;
-
-				mut = M_DELETE;
-				//simply increment the read head without doing anything else
 			}
 
 			if(granular_1==0){
 				act->r[act->rt]++;
 			}
-			//act->i[act->it]++;
+
 		}
 		else{
 			if(rno<subrate+indelrate){//INCREMENTAL MUTATION
-				doprint=1;
 				cidx = sym_from_adj(*(act->r[act->rt]),blosum);
 				*(act->w[act->wt])=cidx;
 			}
@@ -1959,24 +1938,11 @@ int stringPM::cleave(s_ag *act){
 
 
 
-int stringPM::exec_step(s_ag *act, s_ag *pass){//pset *p,char *s1, swt *T){
+int stringPM::exec_step(s_ag *act, s_ag *pass){
 
-	int finished=0;
 	char *tmp;
 	int dac=0;
 	int safe_append=1;
-
-
-
-	//if(act->idx==1222 || pass->idx==1222){
-	//	print_exec(stdout,act,act->pass);
-	//	fflush(stdout);
-	//}
-
-	//The following is unstable - explosions/catastrophe - possibly because of the nature of the decay??
-	//Now moved energy to calling function
-	//if(eqn_prop(energy)){
-	//if(energy){
 
 	switch(*(act->i[act->it])){//*iptr[it]){
 
@@ -2043,7 +2009,6 @@ int stringPM::exec_step(s_ag *act, s_ag *pass){//pset *p,char *s1, swt *T){
 		if(hcopy(act)<0){
 			unbind_ag(act,'A',1,act->spp,pass->spp);
 			unbind_ag(pass,'P',1,act->spp,pass->spp);
-			finished = 1;
 		}
 		break;
 
@@ -2113,9 +2078,7 @@ int stringPM::exec_step(s_ag *act, s_ag *pass){//pset *p,char *s1, swt *T){
 	 ************/
 	case '%':
 			if((dac = cleave(act))){
-				//unbind_ag(act);
-				//unbind_ag(pass);
-				finished = 1;
+
 				safe_append=0;	//extract_ag(&nowhead,p);
 			}
 			break;
@@ -2132,7 +2095,6 @@ int stringPM::exec_step(s_ag *act, s_ag *pass){//pset *p,char *s1, swt *T){
 			unbind_ag(act,'A',1,act->spp,pass->spp);
 			unbind_ag(pass,'P',1,act->spp,pass->spp);
 
-			finished = 1;
 			break;
 
 	default://Just increment the i-pointer
@@ -2153,9 +2115,8 @@ int stringPM::exec_step(s_ag *act, s_ag *pass){//pset *p,char *s1, swt *T){
 	energy--;
 
 
-
 	return 1;
-	//return finished;
+
 }
 
 
@@ -2196,7 +2157,6 @@ int stringPM::exec_step(s_ag *act, s_ag *pass){//pset *p,char *s1, swt *T){
 //A make_next that doesn't use the "rules" class
 void stringPM::make_next(){
 	s_ag *pag,*bag;
-	s_bind bb;
 	int changed;
 
 	//SUGGEST: write function to count what's around (saves rechecking every time)
@@ -2231,7 +2191,7 @@ void stringPM::make_next(){
 
 		//extract any partner:
 		bag = NULL;
-		bb = pag->status;
+
 		switch(pag->status){
 		case B_UNBOUND:
 			break;
@@ -2247,6 +2207,7 @@ void stringPM::make_next(){
 			break;
 		}
 
+		//TODO: This looks like a debugging step - delete?
 		if(pag->label=='P' && pag->status != B_UNBOUND  ){
 			if(print_agent_idx(stdout,1,pag->idx))
 				fflush(stdout);
@@ -2299,74 +2260,6 @@ void stringPM::make_next(){
 
 			}
 		}
-
-		/*
-		//Infinite loop at low nos - energy ALWAYS available - therefore always changed, therefore no decay!
-		if(!changed){
-			//if(changed)
-			//	printf("Changed!");
-
-			switch(pag->status){
-			case B_UNBOUND:
-				//if(pag->status == B_UNBOUND)
-				changed = testdecay(pag);
-				if(!changed)
-					append_ag(&nexthead,pag);
-				break;
-			case B_PASSIVE:
-				bag = pag->exec;
-				changed = testdecay(pag);
-				if(!changed){
-					append_ag(&nexthead,pag->exec);
-					append_ag(&nexthead,pag);
-				}
-				else{
-					free_ag(bag);
-					//unbind_ag(bag);
-					//append_ag(&nexthead,bag);
-				}
-				break;
-			case B_ACTIVE:
-				bag = pag->pass;
-				changed = testdecay(pag);
-				if(!changed){
-					append_ag(&nexthead,pag->pass);
-					append_ag(&nexthead,pag);
-				}
-				else{
-					free_ag(bag);
-					//unbind_ag(bag);
-					//append_ag(&nexthead,bag);
-				}
-				break;
-			}
-		}
-		*/
-
-		//if(pag->status == B_ACTIVE && pag->idx == 669){
-		//	print_exec(stdout,pag,pag->pas);
-		//}
-
-		/*
-		//For debugging:
-		if(extit==18574){
-			if(pag->status==B_PASSIVE)
-				if(pag->exec->idx==668){
-					print_exec(stdout,pag->exec,pag);
-					print_status(stdout,pag->status);
-				}
-			print_status(stdout,pag->status);
-			printf("ag = %d, ",pag->idx);
-			print_status(stdout,pag->status);
-			printf("\n");
-			print_status(stdout,pag->status);
-			//print_agent_idx(pag->idx);
-			printf(" ");
-			print_agent_idx(stdout,1,1222);
-			printf(" \n");
-			fflush(stdout);
-		}*/
-
 	}
 }
 
@@ -2380,8 +2273,6 @@ int stringPM::speig_hcopy(s_ag *act){
 	int cidx;
 	float rno;
 	int safe = 1;// this gets set to zero if any of the tests fail..
-	int doprint = 0;
-	e_mut mut = M_NONE;
 
 	if(!domut){
 		indelrate = subrate =0;
@@ -2391,7 +2282,7 @@ int stringPM::speig_hcopy(s_ag *act){
 	act->pass->len = strlen(act->pass->S);
 
 	int p;
-	if( (p = h_pos(act,'w'))>=maxl){
+	if( (p = h_pos(act,'w'))>=(int) maxl){
 		printf("Write head out of bounds: %d\n",p);
 		//just to make sure no damage is done:
 		if(act->wt)
@@ -2403,7 +2294,7 @@ int stringPM::speig_hcopy(s_ag *act){
 		safe = 0;
 		return -1;
 	}
-	if(h_pos(act,'r')>=maxl){
+	if(h_pos(act,'r')>=(int) maxl){
 		printf("Read head out of bounds\n");
 		act->i[act->it]++;
 		safe = 0;
@@ -2435,7 +2326,7 @@ int stringPM::speig_hcopy(s_ag *act){
 
 		rno=rand0to1();
 		if(rno<subrate){//INCREMENTAL MUTATION
-			doprint=1;
+
 			cidx = sym_from_adj(*(act->r[act->rt]),blosum);
 			rm = tab_idx(cidx,blosum);
 			if(mass[rm]){
@@ -2515,8 +2406,6 @@ int stringPM::comass_hcopy(s_ag *act){
 	int cidx;
 	float rno;
 	int safe = 1;// this gets set to zero if any of the tests fail..
-	int doprint = 0;
-	e_mut mut = M_NONE;
 
 
 	//MUTATION RATES:
@@ -2539,7 +2428,8 @@ int stringPM::comass_hcopy(s_ag *act){
 	int p;
 
 	//Check positions of the pointers
-	if( (p = h_pos(act,'w'))>=maxl){
+	//TODO: shouldn't be casting maxl to int - but can h_pos ever return negative?
+	if( (p = h_pos(act,'w'))>=(int) maxl){
 		printf("Write head out of bounds: %d\n",p);
 		//just to make sure no damage is done:
 		if(act->wt)
@@ -2551,7 +2441,7 @@ int stringPM::comass_hcopy(s_ag *act){
 		safe = 0;
 		return -1;
 	}
-	if(h_pos(act,'r')>=maxl){
+	if(h_pos(act,'r')>=(int) maxl){
 		printf("Read head out of bounds\n");
 		act->i[act->it]++;
 		safe = 0;
@@ -2564,12 +2454,7 @@ int stringPM::comass_hcopy(s_ag *act){
 		safe = 0;
 		//return -3;
 	}
-	//if(h_pos(act,'w')>=maxl){
-	//	//We are at the end of a copy...
-	//	//...so just increment *R
-	//	act->r[act->rt]++;
-	//	safe = 0;
-	//}
+
 
 	if(safe){
 
@@ -2582,11 +2467,11 @@ int stringPM::comass_hcopy(s_ag *act){
 
 		rno=rand0to1();
 		if(rno<indelrate){//INDEL - we should never be doing this in comass!
-			doprint=1;
+
 			//should follow the blosum table for this....
 			rno=rand0to1();
 			if(rno<0.5){//insert
-				mut = M_INSERT;
+
 				//first do a straight copy..
 				*(act->w[act->wt])=*(act->r[act->rt]);
 				act->w[act->wt]++;
@@ -2607,7 +2492,7 @@ int stringPM::comass_hcopy(s_ag *act){
 			}
 			else{//delete
 				act->i[act->it]++;
-				mut = M_DELETE;
+
 				//simply increment the read head without doing anything else
 			}
 			act->r[act->rt]++;
@@ -2615,7 +2500,7 @@ int stringPM::comass_hcopy(s_ag *act){
 		}
 		else{
 			if(rno<subrate+indelrate){//INCREMENTAL MUTATION - we should never be doing this either
-				doprint=1;
+
 				cidx = sym_from_adj(*(act->r[act->rt]),blosum);
 				rm = tab_idx(cidx,blosum);
 				if(mass[rm]){
@@ -2632,7 +2517,7 @@ int stringPM::comass_hcopy(s_ag *act){
 				act->r[act->rt]++;//possible deletion here...
 			}
 			else{//NO MUTATION (but possible sub via comass effects)
-				//cidx = sym_from_adj(*(act->r[act->rt]),blosum);
+
 				rm = tab_idx(*(act->r[act->rt]),blosum);
 				if(mass[rm]){
 					*(act->w[act->wt])=*(act->r[act->rt]);
@@ -2673,153 +2558,18 @@ int stringPM::comass_hcopy(s_ag *act){
 }
 
 
-/*
-int stringPM::comass_hcopy(s_ag *act){
 
-	//s_ag *pass;
-	//pass = act->pass;
-	int cidx;
-	float rno;
-	int safe = 1;// this gets set to zero if any of the tests fail..
-	int doprint = 0;
-	e_mut mut = M_NONE;
-	int doindel;
-
-
-	//MUTATION RATES:
-	//THESE ARE HARD-CODED FOR NOW - THEY SHOULD BE DERIVED FROM THE BLOSUM SOMEHOW...
-	//const float indelrate = 0.0005,subrate=0.375;//0.0749/2
-	//const float indelrate = 0.0000306125,subrate=0.01;//0.02
-	//const float indelrate = 0.00006125,subrate=0.05;//0.02
-	//const float indelrate = 0.000125,subrate=0.1;//0.02
-	//const float indelrate = 0.000005,subrate=0.0375;//0.0749/2
-
-	//const float indelrate = 0., 		subrate = 0.;
-
-	if(!domut){
-		indelrate = subrate =0;
-	}
-
-	act->len = strlen(act->S);
-	act->pass->len = strlen(act->pass->S);
-
-	int p;
-	if( (p = h_pos(act,'w'))>=maxl){
-		printf("Write head out of bounds: %d\n",p);
-		//just to make sure no damage is done:
-		if(act->wt)
-			act->S[maxl]='\0';
-		else
-			act->pass->S[maxl]='\0';
-
-		act->i[act->it]++;
-		safe = 0;
-		return -1;
-	}
-	if(h_pos(act,'r')>=maxl){
-		printf("Read head out of bounds\n");
-		act->i[act->it]++;
-		safe = 0;
-		return -2;
-	}
-
-
-
-
-	if(*(act->r[act->rt]) == 0){
-		//possibly return a negative value and initiate a b
-		safe = 0;
-		//return -3;
-	}
-
-	if(safe){
-		//we are going to use conservation of mass to drive mutation.
-		int rm = tab_idx(*(act->r[act->rt]),blosum);
-		int wm = -1;
-
-		doindel=0;
-
-		//see if we are overwriting or not:
-		if(*(act->w[act->wt])){
-			wm=tab_idx(*(act->w[act->wt]),blosum);
-		}
-
-		if(!mass[rm]){//if there's no mass left, pick a neighbour
-			cidx = sym_from_adj(*(act->r[act->rt]),blosum);
-			rm = tab_idx(cidx,blosum);
-			if(mass[rm]==0)
-				doindel = 1;
-		}
-		else{
-			cidx = *(act->r[act->rt]);
-		}
-
-		if(doindel){
-			rno=rand0to1();
-			if(rno>0.5){//insert;
-
-				//Then pick a random instruction:
-				cidx = (float) rand0to1() * blosum->N;
-
-				//insert the random instruction
-				*(act->w[act->wt])=blosum->key[cidx];
-
-				act->r[act->rt]++;
-				act->w[act->wt]++;
-			}
-			else{//"delete" by skipping
-				act->r[act->rt]++;
-			}
-		}
-		else{
-			*(act->w[act->wt]) = cidx;
-			mass[rm]--;
-			if(wm>-1)
-				mass[wm]++;
-
-			act->r[act->rt]++;
-			act->w[act->wt]++;
-		}
-	}
-	//update lengths
-	act->len = strlen(act->S);
-	act->pass->len = strlen(act->pass->S);
-	act->i[act->it]++;
-
-#ifdef VERBOSE
-	if(mut)
-	printf("Mutant event %d. new string is:\n%s\n\n",mut,act->wt?act->S:act->pass->S);
-#endif
-	act->biomass++;
-	biomass++;
-	return 0;
-}
-*/
-
-
-int stringPM::comass_exec_step(s_ag *act, s_ag *pass){//pset *p,char *s1, swt *T){
+int stringPM::comass_exec_step(s_ag *act, s_ag *pass){
 
 	int finished=0;
 	char *tmp;
 	int dac=0;
 	int safe_append=1;
 
-
-
-	//if(act->idx==1222 || pass->idx==1222){
-	//	print_exec(stdout,act,act->pass);
-	//	fflush(stdout);
-	//}
-
-	//The following is unstable - explosions/catastrophe - possibly because of the nature of the decay??
-	//Now moved energy to calling function
-	//if(eqn_prop(energy)){
-	//if(energy){
-
-	switch(*(act->i[act->it])){//*iptr[it]){
+	switch(*(act->i[act->it])){
 
 	case '$'://h-search
-		//act->ft = act->it;
+
 		char *cs;
 		if(act->ft)
 			cs = act->S;
@@ -2947,10 +2697,8 @@ int stringPM::comass_exec_step(s_ag *act, s_ag *pass){//pset *p,char *s1, swt *T
 	}
 	energy--;
 
-
-
-	return 1;
-	//return finished;
+	//TODO: propagate this up if needed, or get rid...
+	return finished;
 }
 
 
@@ -2960,16 +2708,19 @@ int stringPM::comass_exec_step(s_ag *act, s_ag *pass){//pset *p,char *s1, swt *T
 int stringPM::load_comass(char *fn, int verbose){
 	//int massval = 2000;
 	FILE *fp;
-	int finderr;
+	int finderr=0;
 	int i;
-	int massval;
+	unsigned int massval;
 
 	mass = (int*) malloc(blosum->N * sizeof(int));
 
 	if((fp=fopen(fn,"r"))!=NULL){
 
-		//todo: do something with the error...
 		finderr=read_param_int(fp,"MASS",&massval,verbose);
+
+		report_param_error(finderr, 1);
+
+
 		fclose(fp);
 		//Load the massvalue into the mass table;
 		for(i=0;i<blosum->N;i++){

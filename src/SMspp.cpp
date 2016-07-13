@@ -23,7 +23,7 @@
 #include "SMspp.h"
 
 
-extern const int  maxl0;
+//extern const int  maxl0;
 
 SMspp::SMspp() {
 	spp_count=1;  // Why is this 1??
