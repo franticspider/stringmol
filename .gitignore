@@ -4,6 +4,9 @@
 # Executable:
 src/stringmol
 src/stringmol_dbg
+src/smspatial
+src/smspatial_dbg
+*.cgi
 
 # gedit backups
 *~

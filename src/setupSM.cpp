@@ -122,7 +122,7 @@ void record_spp(stringPM *A){
 	A->print_spp_count(stdout,0,-1);
 
 	//printf("Printing species list\n");
-	sprintf(fn,"splist%03d.dat",A->r);
+	sprintf(fn,"splist%03d.dat",A->run_number);
 	if((fp = fopen(fn,"w"))!=NULL){
 		A->spl->print_spp_list(fp);
 		fclose(fp);
@@ -152,6 +152,19 @@ float ctspp(stringPM *A, const int spp){
 }
 
 
+void initsppct(stringPM *A){
+	char pfn[128];
+	memset(pfn,0,128*sizeof(char));
+
+	FILE *ftmp;
+
+	sprintf(pfn,"popdy%03d.dat",A->run_number);
+	ftmp = fopen(pfn,"w");
+	fclose(ftmp);
+}
+
+
+
 /* used in comass_AlifeXII, energetic_AlifeXII, origlife,
  * comass_GA, comass_GA_boostwinners, SmPm_AlifeXII, SmPm_conpop and speigmonst
  *
@@ -172,7 +185,7 @@ void printsppct(stringPM *A, int t){
 	memset(done,0,nag*sizeof(int));
 
 	memset(fn,0,128*sizeof(char));
-	sprintf(fn,"popdy%03d.dat",A->r);
+	sprintf(fn,"popdy%03d.dat",A->run_number);
 	fp = fopen(fn,"a");
 
 
@@ -225,10 +238,8 @@ int run_one_comass_trial(const int rr, stringPM *A,  int * params, struct runpar
 	memset(maxcode,0,A->blosum->N*sizeof(int));
 
 
-	A->r=rr;
-	sprintf(pfn,"popdy%03d.dat",A->r);
-	ftmp = fopen(pfn,"w");
-	fclose(ftmp);
+	A->run_number=rr;
+	initsppct(A);
 
 	//todo DELETE if we don't need epochs any more
 	//int lastepoch=A->get_ecosystem(),thisepoch,nepochs=1;
@@ -671,10 +682,7 @@ int run_one_AlifeXII_trial(stringPM *A){
 
 	A->print_agents(stdout,"NOW",0);
 
-	A->r=0;
-	//sprintf(pfn,"popdy%d%02d.dat",proc,A.r);
-	//ftmp = fopen(pfn,"w");
-	//fclose(ftmp);
+	A->run_number=0;
 
 #ifdef DO_ANCESTRY
 	int lastepoch=A.get_ecosystem(),thisepoch,nepochs=1;
@@ -1432,7 +1440,9 @@ int smspatial_init(char *fn, stringPM *A, smsprun **run){
 
 	A->load(fn,NULL,0,1);
 
-	*run = init_smprun(300,300);
+	*run = init_smprun(200,40);
+
+	initsppct(A);
 
 	//Now we have to place each agent on the grid - use the makenext() model -
 	while(A->nowhead!=NULL){
@@ -1443,8 +1453,8 @@ int smspatial_init(char *fn, stringPM *A, smsprun **run){
     	while(!found){
 			int pos = (*run)->gridx * (*run)->gridy * rand0to1();
 
-			int x = pos/(*run)->gridx;
-			int y = pos%(*run)->gridx;
+			int x = pos%(*run)->gridx;
+			int y = pos/(*run)->gridx;
 
 			if((*run)->grid[x][y]==0){
 
@@ -1502,9 +1512,10 @@ int smspatial(int argc, char *argv[]) {
 	ct = A.nagents(A.nowhead,-1);
 	printf("Initialisation done, number of molecules is %d\n",ct);
 
-	int iteration = 0;
+//	int iteration = 0;
+	A.extit=0;
 //	while(A.nagents(A.nowhead,-1)){
-	while(iteration < 100000){
+	while(A.extit < 100000){
 		smspatial_step(&A,run);
 		ct = A.nagents(A.nowhead,-1);
 		bt = ct - A.nagents(A.nowhead,B_UNBOUND);
@@ -1520,17 +1531,50 @@ int smspatial(int argc, char *argv[]) {
 			p = p->next;
 		}
 #endif
-		iteration++;
-		if(!(iteration%100))
-				printf("Step %d done, number of molecules is %d, nbound = %d\n",iteration,ct,bt);
-//		if(iteration == 66396)
-//			printf("Pauuuuse\n!");
-		if((!(iteration%10000)) ||     iteration == 66396    ){
-			FILE *fp;char fn[128];
-			sprintf(fn,"splist%d.dat",iteration);
+		A.extit++;
+
+
+		if(!(A.extit%1000)){
+			printsppct(&A,A.extit);
+		}
+
+
+		if(!(A.extit%100))
+				printf("Step %ld done, number of molecules is %d, nbound = %d\n",A.extit,ct,bt);
+
+		//		if(iteration == 66396)
+		//			printf("Pauuuuse\n!");
+		if(!(A.extit%10000)){
+			FILE *fpp;
+			char fn[128];
+			sprintf(fn,"out1_%05ld.conf",A.extit);
+			fpp = fopen(fn,"w");
+			A.print_conf(fpp);
+			fclose(fpp);
+
+			//Now let's load the file so we can check:
+
+			SMspp		SPB;
+			stringPM	B(&SPB);
+			B.load(fn,NULL,0,1);
+
+			B.print_agents(stdout,"NOW",0);
+
+			sprintf(fn,"outB_%05d.conf",A.extit);
+			fpp = fopen(fn,"w");
+			B.print_conf(fpp);
+			fclose(fpp);
+
+
+			FILE *fp;
+			sprintf(fn,"splist%d.dat",A.extit);
 			fp = fopen(fn,"w");
 			SP.print_spp_list(fp);
 			fclose(fp);
+
+
+			printsppct(&A,A.extit);
+
 		}
 	}
 

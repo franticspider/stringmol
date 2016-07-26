@@ -89,32 +89,61 @@ s_parent * SMspp::make_parents(l_spp * paspp, l_spp * ppspp){
 }
 
 
-l_spp * SMspp::make_spp(s_ag *a, int extit, const int maxl0){
-	l_spp *sp;
+l_spp * SMspp::make_spp_from_string(char *S, int extit, const int maxl0, const int spno){
+
 	int l;
+	l_spp *sp;
 
+	//TODO: check for malloc fails here...
 	sp = (l_spp *) malloc(sizeof(l_spp));
-
 	sp->S=(char *) malloc(maxl0+1*sizeof(char));
+
 	memset(sp->S,0,maxl0*sizeof(char));
-	l = strlen(a->S);
-	strncpy(sp->S,a->S,l);
 
-	//Here we assume that parents of the agent are already set!
-	//sp->pp = make_parents(a->pp->pa,a->pp->pp);
-	//a->pp = sp->pp;
-	sp->pp = a->pp = NULL;
+	//TODO: what if l > maxl0 ??
+	l = strlen(S);
+	strncpy(sp->S,S,l);
 
-	sp->spp=spp_count++;
+	sp->pp = NULL;
+	if(spno>-1){
+		//Todo - check that spno doesn't already exist:
+		l_spp *lsp;
+		for(lsp = species; lsp != NULL; lsp = lsp->next){
+			if(lsp->spp == spno){
+				printf("ERROR: species %d already exists! string is: %s\n",lsp->S);
+				return NULL; //todo handle the error more gracefully!
+			}
+		}
+		sp->spp = spno;
+		spp_count = spp_count>spno?spp_count:(spno+1);
+	}
+	else{
+		sp->spp=spp_count++;
+	}
 	sp->sptype=0;
-
 	//These are from make_lspp in the stringPM class:
 	sp->count=0;
 	sp->next=NULL;
 	sp->tspp=extit;
-
 	sp->biomass=0;
 
+	return sp;
+
+}
+
+
+l_spp * SMspp::make_spp_from_agent(s_ag *a, int extit, const int maxl0){
+
+	int l;
+
+	l_spp *sp;
+
+	sp = make_spp_from_string(a->S,extit,maxl0,-1);
+	//Here we assume that parents of the agent are already set!
+	//sp->pp = make_parents(a->pp->pa,a->pp->pp);
+	//a->pp = sp->pp;
+
+	a->pp = NULL;
 	return sp;
 }
 
@@ -126,20 +155,49 @@ void SMspp::prepend_spp(l_spp *sp){
 
 }
 
-/*gets a spp no. and makes a new one if needed */
-l_spp * SMspp::getspp(s_ag *a, int extit,const int maxl0){//s_spp * paspp, s_spp * ppspp){
+l_spp * SMspp::find_spp(char *S, const int maxl0){
 
 	l_spp *p;
 	//First, check if it's in the list:
 	for(p=species;p!=NULL;p=p->next){
-		if(!strcmp(p->S,a->S))
+		if(!strcmp(p->S,S))
 			return p;
 	}
 
-	//If not, make a new one, append it and return the address of the new.
-	p = make_spp(a,extit,maxl0);
+	return NULL;
 
-	prepend_spp(p);
+}
+
+
+/*gets a spp no. and makes a new one if needed */
+l_spp * SMspp::getspp(s_ag *a, int extit,const int maxl0){//s_spp * paspp, s_spp * ppspp){
+
+	l_spp *p;
+
+	p = find_spp(a->S,maxl0);
+
+	if(p==NULL){
+		//If not found, make a new one, append it and return the address of the new.
+		p = make_spp_from_agent(a,extit,maxl0);
+		prepend_spp(p);
+	}
+
+	return p;
+}
+
+/*gets a spp no. and makes a new one if needed */
+l_spp * SMspp::getspp_from_string(char *S, int extit,const int maxl0, const int spno){//s_spp * paspp, s_spp * ppspp){
+
+	l_spp *p;
+
+	p = find_spp(S,maxl0);
+
+	if(p==NULL){
+		//If not found, make a new one, append it and return the address of the new.
+		p = make_spp_from_string(S,extit,maxl0,spno);
+		prepend_spp(p);
+	}
+
 	return p;
 }
 

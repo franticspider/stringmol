@@ -46,7 +46,7 @@ public:
 	s_sw *swlist;
 
 	long agct;
-	long extit; 	//record of the cell iteration count
+	unsigned int extit; 	//record of the cell iteration count
 
 	long biomass; 	//used as a measure of fitness
 	long bstart;    //time of biomass reset
@@ -62,7 +62,7 @@ public:
 	//Conservation of Mass structures:
 	int *mass; //This can be built and populated after "blosum" has been set...
 
-	int r; //The run number
+	int run_number; //The run number
 	char swt_fn[256];
 
 	//Mutation
@@ -102,12 +102,16 @@ public:
 	char * parse_error(int errno);
 
 	//Loading
+	int load_splist(char *fn,int verbose);
+
 	//int load_agents(char *fn,                int test, int verbose);
 	// VJH version for youShare
 	int load_agents(char *fn, char *fninput, int test, int verbose);
 
 	float load_mut(char *fn, int verbose); //load the mutation rate
 	float load_decay(char *fn, int verbose); //load the decay rate
+
+	int load_reactions(char *fn, char *fntab, int test, int verbose);
 
 	int load_table_matrix(char *fn);
 	//int load(char *fn);
@@ -216,9 +220,10 @@ public:
 	//int 		append_spp(s_spp *sp);
 	int 		append_lspp(l_spp *sp);
 	int 		count_spp();
-	void 	print_spp_count(FILE *fp,int style, int state);
-
+	void 		print_spp_count(FILE *fp,int style, int state);
 	void 		get_spp_count(int state);//Count the number of individuals of each species present in the system
+	//find a species that a molecule belongs to
+	int 		id_spp(l_spp *sp, s_ag *pag, int  aspno, char *spp_string);
 
 	//Network analysis
 	void 		get_spp_network(char *fn);

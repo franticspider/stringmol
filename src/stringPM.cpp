@@ -435,7 +435,190 @@ int stringPM::load_table(char *fn){
 }
 
 
+int stringPM::load_splist(char *fn,int verbose){
 
+	const int llen = maxl0 + 256;
+	FILE *fp;
+	char line[llen];
+	char label[llen];
+	int nspp=0;
+	if((fp=fopen(fn,"r"))!=NULL){
+		while((fgets(line,llen,fp))!=NULL){
+			memset(label,0,llen);
+			sscanf(line,"%s",label);
+			//printf("line = %s",line);
+			if(!strncmp(line,"SPECIES",6)){
+				nspp++;
+			}
+		}
+	}
+
+	int spno;
+
+	if(nspp){//We've got species to create
+		rewind(fp);
+
+		while((fgets(line,llen,fp))!=NULL){
+			memset(label,0,llen);
+			sscanf(line,"%s",label);
+			//printf("line = %s",line);
+			if(!strncmp(line,"SPECIES",6)){
+
+				//Scan the line for sequence and number...
+				memset(label,0,llen);
+				sscanf(line,"%*s %d %s",&spno,label);
+				//TODO: make sure extit is set at this point
+				spl->getspp_from_string(label,extit,maxl0,spno);
+			}
+		}
+		fclose(fp);
+	}
+	else{
+		fclose(fp);
+	}
+	return 0;
+}
+
+
+int stringPM::id_spp(l_spp *sp, s_ag *pag, int  aspno, char *spp_string){
+	if(sp->spp == aspno){
+		if(!strncmp(sp->S,spp_string,strlen(spp_string))){
+			pag->spp = sp;
+		}
+		else{
+			printf("ERROR species list is corrupted - numbers don't match strings\n");
+			exit(0);
+		}
+	}
+	return 0;
+}
+
+
+
+int stringPM::load_reactions(char *fn, char *fntab, int test, int verbose){
+
+
+	const int llen = maxl0 + 256;
+	FILE *fp;
+	char line[llen];
+	char active_spp_string[llen];
+	char passive_spp_string[llen];
+	char active_string[llen];
+	char passive_string[llen];
+	int linecount = 0;
+
+	s_ag *pag,*bag;
+
+	int aspno,pspno,ano,pno;
+	int it,iap,ipp,rt,rap,rpp,wt,wap,wpp,ft,fap,fpp;
+
+	if((fp=fopen(fn,"r"))!=NULL){
+		while((fgets(line,llen,fp))!=NULL){
+			linecount++;
+			memset(active_spp_string,0,llen);
+			memset(active_string,0,llen);
+			memset(passive_string,0,llen);
+			memset(passive_spp_string,0,llen);
+			sscanf(line,"%s",active_spp_string);
+			//printf("line = %s",line);
+			if(!strncmp(line,"REACTION",8)){
+				/* We have a multi-line definition to deal with now... hold tight... */
+
+				/* First line is the species of the active molecule */
+				if((fgets(line,llen,fp))!=NULL){
+					linecount++;
+					sscanf(line,"%*s %d %s",&aspno, active_spp_string);
+					//TODO: check that the species number and sequence are identical
+				}
+				else{
+					printf("ERROR READING REACTION (active species) at line %d\n",linecount+1);
+					return 1;
+				}
+
+				/* Second line is the state of the active molecule */
+				if((fgets(line,llen,fp))!=NULL){
+					linecount++;
+					sscanf(line,"%*s %d %s irwf: %d %d %d %d %d %d %d %d %d %d %d %d",&ano, active_string,
+							&it,&iap,&ipp,&rt,&rap,&rpp,&wt,&wap,&wpp,&ft,&fap,&fpp);
+				}
+				else{
+					printf("ERROR READING REACTION (active state) at line %d\n",linecount+1);
+					return 1;
+				}
+
+				pag = make_ag('X');//TODO: fix this need for ascii codes... we have species numbers now!
+				pag->S =(char *) malloc(maxl0*sizeof(char));
+				memset(pag->S,0,maxl0*sizeof(char));
+				strncpy(pag->S,active_string,strlen(active_string));
+				pag->len = strlen(pag->S);
+
+				/* Third line is the state of the passive molecule */
+				if((fgets(line,llen,fp))!=NULL){
+					linecount++;
+					sscanf(line,"%*s %d %s",&pno, passive_string);
+				}
+				else{
+					printf("ERROR READING REACTION (passive state) at line %d\n",linecount+1);
+					return 1;
+				}
+				bag = make_ag('X');//TODO: fix this need for ascii codes... we have species numbers now!
+				bag->S =(char *) malloc(maxl0*sizeof(char));
+				memset(bag->S,0,maxl0*sizeof(char));
+				strncpy(bag->S,passive_string,strlen(passive_string));
+				bag->len = strlen(bag->S);
+
+
+				/* Fourth line is the species of the passive molecule */
+				if((fgets(line,llen,fp))!=NULL){
+					linecount++;
+					sscanf(line,"%*s %d %s",&pspno, passive_spp_string);
+					//TODO: check that the species number and sequence are identical
+				}
+				else{
+					printf("ERROR READING REACTION (active species) at line %d\n",linecount+1);
+					return 1;
+				}
+
+
+				// set the states - there's a function for this called set_exec, but we can't use that because the states may now
+
+				pag->status = B_ACTIVE;
+				pag->exec = NULL;
+				pag->pass = bag;
+
+				bag->status = B_PASSIVE;
+				bag->exec = pag;
+				bag->pass = NULL;
+
+				//  Now we can set the pointers:
+				pag->it = it;
+				pag->i[0] = &(bag->S[iap]);
+				pag->i[1] = &(pag->S[ipp]);
+				pag->rt = rt;
+				pag->r[0] = &(bag->S[rap]);
+				pag->r[1] = &(pag->S[rpp]);
+				pag->wt = wt;
+				pag->w[0] = &(bag->S[wap]);
+				pag->w[1] = &(pag->S[wpp]);
+				pag->ft = ft;
+				pag->f[0] = &(bag->S[fap]);
+				pag->f[1] = &(pag->S[fpp]);
+
+				//set the species data:
+				l_spp *sp;
+				for(sp = spl->species; sp!=NULL; sp=sp->next){
+					id_spp(sp, pag, aspno,  active_spp_string);
+					id_spp(sp, bag, pspno, passive_spp_string);
+				}
+
+				//Finally, append the reacting molecules to the simulation
+				append_ag(&nowhead,pag);
+				append_ag(&nowhead,bag);
+			}
+		}
+	}
+	return 0;
+}
 
 /**Suggest: load_agents(char *fn, char *fntab, int test, int verbose)
    if fntab == null: load_table(fn)
@@ -445,8 +628,7 @@ int stringPM::load_table(char *fn){
 int stringPM::load_agents(char *fn, char *fntab, int test, int verbose){
 
 
-	//testprop();
-
+	//Load the maximum permitted length of the molecules (or the default)
 	int dmxl = maxl;
 	int err = readordef_param_int(fn,"MAXLEN", &maxl, dmxl, 0);
 	if(err>1){
@@ -455,7 +637,16 @@ int stringPM::load_agents(char *fn, char *fntab, int test, int verbose){
 	}
 	maxl0 = maxl+1;
 
+	extit = 0;
+	err = readordef_param_int(fn,"EXTIT", &extit, 0, 0);
+	if(err>1){
+		printf("ERROR %d on loading external iteration value (EXTIT)\n",err);
+		exit(0);
+	}
 
+
+
+	//TODO: Not sure that this has ever been used - but it might be useful
 	err = readordef_param_int(fn,"SPLPRINT", &splprint, splprint, 0);
 	if(err>1){
 		printf("ERROR %d on loading specieslist print frequency\n",err);
@@ -505,6 +696,14 @@ int stringPM::load_agents(char *fn, char *fntab, int test, int verbose){
 
 	ntt = 0;
 
+	/* READ THE SPECIES LISTS (IF ANY)*
+	 * Important to do this first, so that if there any agents that aren't on the list, it isn't cocked up
+	 * Important also to maintaint the species numbering - will save a *lot* of hassle later!
+	 */
+	int spp_err = load_splist(fn,verbose);
+
+	/* READ THE AGENTS IN NOW */
+	//TODO: this is the actual agent-loading part of the function... rename / refactor needed....
 	if((fp=fopen(fn,"r"))!=NULL){
 		while((fgets(line,llen,fp))!=NULL){
 			memset(label,0,llen);
@@ -515,30 +714,18 @@ int stringPM::load_agents(char *fn, char *fntab, int test, int verbose){
 			}
 		}
 
-		//Now set up the tracking arrays:
-		//aat = (int *) mymalloc(ntt,sizeof(int));
-		//aac = (int *) mymalloc(ntt,sizeof(int));
-		//adc = (int *) mymalloc(ntt,sizeof(int));
-		//aro = (int *) mymalloc(ntt,sizeof(int));
-		//memset(adc,0,ntt*sizeof(int));
-		//memset(aro,0,ntt*sizeof(int));
 		rewind(fp);
-		//int a=0;
 
 		while((fgets(line,llen,fp))!=NULL){
 
-
 			memset(label,0,llen);
 			sscanf(line,"%s",label);
-			//printf("line = %s",line);
 			if(!strncmp(line,"AGENT",5)){
-
-
 
 				memset(label,0,llen);
 				sscanf(line,"%*s %s %d %c",label,&nag,&code);
 
-				if(test){
+				if(test){//todo -is this still necessary?
 					nag=1;
 				}
 
@@ -565,10 +752,6 @@ int stringPM::load_agents(char *fn, char *fntab, int test, int verbose){
 					pag->pp = spl->make_parents(NULL,NULL);
 
 					if(!i){
-						//Record the species
-						//s = spl->make_spp(pag);
-						//s->tspp=0;
-						//spl->prepend_spp(s); //append_lspp(s);
 
 						//int stringPM::update_lineage(s_ag *p, char sptype, int add, l_spp *paspp, l_spp * ppspp)
 						update_lineage(pag,'I',1,NULL,NULL,0);
@@ -578,9 +761,7 @@ int stringPM::load_agents(char *fn, char *fntab, int test, int verbose){
 					}
 
 					//Record that the replicase copies itself
-					pag->spp=s;
-					//pag->paspp=pag->ppspp=1;
-
+					pag->spp=s; //TODO: is this true for non-replicase agents..?
 
 					//printf("agent %d, %c, %0.3f %0.3f\n",i,pag->label,pag->x,pag->y);
 					if(nowhead == NULL){
@@ -590,11 +771,12 @@ int stringPM::load_agents(char *fn, char *fntab, int test, int verbose){
 						append_ag(&nowhead,pag);
 					}
 				}
-
-
 			}
 		}
+
 		//close
+		load_reactions(fn,fntab,test,verbose);
+
 		fclose(fp);
 		return 1;
 	}
@@ -602,6 +784,8 @@ int stringPM::load_agents(char *fn, char *fntab, int test, int verbose){
 		printf("Unable to open file %s\n",fn);
 		return 0;
 	}
+
+
 }
 
 
@@ -865,21 +1049,6 @@ int stringPM::hasdied(){
 		return 1;
 	else
 		return 0;
-
-	/*
-	int i;
-
-	int sum=0;
-	//NOTE: This is hard coded!
-	for(i=0;i<ntt;i++)
-		if(aat[i]=='P')
-			sum += aac[i];
-
-	if(!sum)
-		return 1;
-
-	return 0;
-	*/
 }
 
 
@@ -1303,15 +1472,6 @@ float stringPM::get_bprob(align *sw){
 		float s = sw->score<l-1.124? sw->score : l-1.124;
 		bprob = s/(l-1.124);
 	}
-
-	//Here is the new bind prob:
-
-	//float sless1 = sw->score -1.;
-	//if(sless1<0){
-	//	printf("Negative score encountered!\n");
-	//	sless1=0;
-	//}
-	//bprob = pow(sless1/l,1/l);
 
 	return bprob;
 }
@@ -3560,31 +3720,6 @@ int stringPM::update_lineage(s_ag *p, char sptype, int add, l_spp *paspp, l_spp 
 	int found=0;
 	int novel=0;
 
-	//Step 1: sort out if it is a new species:
-	/* It'd be nice to do this, but we don't know what the species IS yet!
-	while(sp!=NULL&&!found){
-
-		if(p->spp->spp == sp->spp){//We've found a matching species index.
-			if(add){
-
-				if(!strcmp(sp->S,p->S)){//we've found a match on the string
-					//sp->count++;
-					break;
-				}
-				else{//Need a second check to see if the string matches anything else
-					for(sp2=spl->species;sp2!=NULL;sp2=sp2->next){
-						if(!strcmp(sp2->S,p->S)){//we've found a match on the string
-							sp->count++;
-							novel=1;
-						}
-						break;
-					}
-				}
-			}
-		}
-	}
-	*/
-
 	while(sp!=NULL&&!found){
 		if(!strcmp(sp->S,p->S)){//we've found a match on the string
 			found=sp->spp;
@@ -3609,7 +3744,7 @@ int stringPM::update_lineage(s_ag *p, char sptype, int add, l_spp *paspp, l_spp 
 
 	if(add){//Only do this if we are adding to the list (not just checking reaction-space
 		if(!found){
-			sp = spl->make_spp(p,extit,maxl0);
+			sp = spl->make_spp_from_agent(p,extit,maxl0);
 			if(signal!=NULL){
 				sp->sig_sc = sigalign(sp->S);
 			}
@@ -4465,18 +4600,20 @@ int stringPM::share_agents(s_ag **hp){
 void print_agent_cfg(FILE *fp, s_ag *pa){
 
 	if(pa->status == B_ACTIVE){
-		fprintf(fp,"############### ,%d,%s\n",pa->spp->spp,pa->spp->S);
-		fprintf(fp,"REACTION_ACTIVE ,%d,%s,irwf:",pa->spp->spp,pa->S);
+		fprintf(fp,"###############  %d %s\n",pa->spp->spp,pa->spp->S);
+		fprintf(fp,"REACTION_ACTIVE  %d %s irwf: ",pa->spp->spp,pa->S);
 		//IRWF
-		fprintf(fp,",%d,%d,%d",pa->it , (int) (pa->i[0]-&(pa->pass->S[0])) , (int) (pa->i[1]-&(pa->S[1])) );
-		fprintf(fp,",%d,%d,%d",pa->rt , (int) (pa->r[0]-&(pa->pass->S[0])) , (int) (pa->r[1]-&(pa->S[1])) );
-		fprintf(fp,",%d,%d,%d",pa->wt , (int) (pa->w[0]-&(pa->pass->S[0])) , (int) (pa->w[1]-&(pa->S[1])) );
-		fprintf(fp,",%d,%d,%d",pa->ft , (int) (pa->f[0]-&(pa->pass->S[0])) , (int) (pa->f[1]-&(pa->S[1])) );
+		fprintf(fp,"%d %d %d ",pa->it , (int) (pa->i[0]-&(pa->pass->S[0])) , (int) (pa->i[1]-&(pa->S[0])) );
+		fprintf(fp,"%d %d %d ",pa->rt , (int) (pa->r[0]-&(pa->pass->S[0])) , (int) (pa->r[1]-&(pa->S[0])) );
+		fprintf(fp,"%d %d %d ",pa->wt , (int) (pa->w[0]-&(pa->pass->S[0])) , (int) (pa->w[1]-&(pa->S[0])) );
+		fprintf(fp,"%d %d %d ",pa->ft , (int) (pa->f[0]-&(pa->pass->S[0])) , (int) (pa->f[1]-&(pa->S[0])) );
 		fprintf(fp,"\n");
+		fflush(fp);
+		fflush(fp);//doing it twice so we can set a breakpoint after flushing
 	}
 	else{
-		fprintf(fp,"REACTION_PASSIVE,%d,%s\n",pa->spp->spp,pa->S);
-		fprintf(fp,"############### ,%d,%s\n\n",pa->spp->spp,pa->spp->S);
+		fprintf(fp,"REACTION_PASSIVE %d %s\n",pa->spp->spp,pa->S);
+		fprintf(fp,"###############  %d %s\n\n",pa->spp->spp,pa->spp->S);
 	}
 
 }
@@ -4490,7 +4627,7 @@ int stringPM::print_conf(FILE *fp){
 
 
 
-/* TODO: record RANDSEED and NCONTAINERS values */
+/* TODO: record RANDSEED and NCONTAINERS and EXTIT values */
 
 
 /*
@@ -4502,10 +4639,10 @@ int stringPM::print_conf(FILE *fp){
 	USING	/n/staff/sjh/current/ewSTRING/SMconfigs/instr_set1.mis
 */
 	fprintf(fp,"%%%%%%AUTOMATICALLY GENERATED Stringmol CONFIG FILE\n");
-	fprintf(fp,"%%%%%%Generated at time: %ld\n\n",extit);
+	fprintf(fp,"%%%%%%Generated at time:\nEXTIT  		%ld\n\n",extit);
 	fprintf(fp,"%%%%%%CELL PARAMETERS\n");
 	fprintf(fp,"CELLRAD		%d\n",(int) cellrad);
-	fprintf(fp,"AGRAD		%d\n",(int) agrad);
+	fprintf(fp,"AGRAD       %d\n",(int) agrad);
 	fprintf(fp,"ENERGY		%d\n",(int) energy);
 	fprintf(fp,"NSTEPS		%d\n",(int) nsteps);//1200000000\n");
 
@@ -4517,7 +4654,10 @@ int stringPM::print_conf(FILE *fp){
 	 * 		1: original rates - these rates are hard-coded, and set if there is no MUTATE parameter
 	 * 		2: mutation rate - happens if a MUTATE value is set
 	 * 		3: no mutation - happens with the line MUTATE 0
+	 *
 	 * 	There is also a parameter called 'domut' which can be set to zero at anytime to turn mutation off.
+	 *
+	 * 	There is no facility to set separate indel and substitution rates at present
 	 *
 	 */
 
@@ -4546,9 +4686,120 @@ int stringPM::print_conf(FILE *fp){
 			fprintf(fp,"USING	%s\n\n",swt_fn);
 		}
 		else{
-			printf("Warning! no SWT substitution matrix specified\n");
+			printf("\n%%%%%% Warning! no SWT substitution matrix specified\n");
 		}
 	}
+
+/* First write the extant species and total species numbers, so we can recreate the whole run easily */
+	fprintf(fp,"%%%%%% SPECIES DATA %%%%%%\n");
+	fprintf(fp,"%%%%%% Species seen so far %%%%%%\n");
+	fprintf(fp,"TOTSPPCT    %ld\n",spl->spp_count);
+
+	//Now count the species extant at this time.
+	int *extant;
+	extant = (int *) malloc(spl->spp_count*sizeof(int));
+	memset(extant,0,spl->spp_count*sizeof(int));
+	l_spp **lextant;
+	lextant = (l_spp **) malloc(spl->spp_count*sizeof(l_spp *));
+	l_spp *psp;
+	int ss=0;
+	for(psp=spl->species;psp != NULL; psp = psp->next){
+		extant[ss]=0;
+		lextant[ss++]=psp;
+	}
+
+	s_ag *pag;
+
+	int extct=0;
+	for(pag = nowhead; pag != NULL; pag = pag->next){
+		//TODO: we can't rely on pag->spp->spp for this - we'll have to generate an index...
+		if(!extant[pag->spp->spp]){
+			for(ss=0;ss<spl->spp_count;ss++){
+				if(lextant[ss]==pag->spp){
+					extant[pag->spp->spp]=1;
+					extct++;
+					fprintf(fp,"SPECIES     %d %s\n",pag->spp->spp,pag->spp->S);
+				}
+			}
+		}
+	}
+	fprintf(fp,"%%%%%% extant_spp  %d\n\n\n\n",extct);
+
+
+/* Now go through NOWHEAD and do each thing at a time*/
+
+/* Unbound first (keeps things tidy) */
+	pag = nowhead;
+	while(pag != NULL){
+
+		s_ag *bag;
+		int count;
+		switch(pag->status){
+		case B_UNBOUND:
+			count = 1;
+
+			extract_ag(&nowhead,pag);
+			append_ag(&(nexthead),pag);
+			//count any unbounds with the same sppno
+			for(bag=pag->next;bag!=NULL;bag=bag->next){
+				if(bag->spp->spp == pag->spp->spp){
+					count++;
+					extract_ag(&nowhead,bag);
+					append_ag(&(nexthead),bag);
+				}
+			}
+			//Write this as a traditional agent...
+			fprintf(fp,"AGENT  %s %d Q\n",pag->S,count);
+			pag = nowhead;
+			break;
+		case B_PASSIVE:
+		case B_ACTIVE:
+		default:
+			pag = pag->next;
+			break;
+		}
+	}
+
+
+/* Now the reactions: */
+
+	fprintf(fp,"\n\n\n%%%%%%reactions  %d%%%%%%\n\n",extct);
+	pag = nowhead;
+	int nreactions = 0;
+	while(pag != NULL){
+
+		s_ag *bag;
+		switch(pag->status){
+		case B_ACTIVE:
+			extract_ag(&nowhead,pag);
+
+			bag = pag->pass;
+			extract_ag(&nowhead,bag);
+
+			fprintf(fp,"%%%%%% REACTION %d\nREACTION\n",++nreactions);
+			print_agent_cfg(fp, pag);
+			print_agent_cfg(fp,bag);
+
+			append_ag(&(nexthead),pag);
+			append_ag(&(nexthead),bag);
+			pag = nowhead;
+			break;
+		default:
+		case B_PASSIVE:
+		case B_UNBOUND:
+			pag = pag->next;
+			break;
+		}
+	}
+
+	if(nowhead!=NULL){
+		printf("ERROR - there shouldn't be any agents left in nowhead\n");
+		fflush(stdout);
+	}
+
+
+/*
+
 
 	s_ag *spp,*pa;
 	int spc,count;
@@ -4584,13 +4835,13 @@ int stringPM::print_conf(FILE *fp){
 			}
 		}
 
-		/*
-			% Basic seed replicase should look something like:
-			AGENT OOGEOLHHHRLUEUOBBBRBXUUUDYGRHBLROORE$BLUBO^B>C$=?>$$BLUBO%}OYHOB 150 Q
-		*/
+
+		//% Basic seed replicase should look something like:
+		//AGENT OOGEOLHHHRLUEUOBBBRBXUUUDYGRHBLROORE$BLUBO^B>C$=?>$$BLUBO%}OYHOB 150 Q
+
 		//Write to file
 		if(!finished){
-			fprintf(fp,"%%%%%% SPECIES %d\n",spp->spp->spp);
+			fprintf(fp,"\%\%\%\%\%\% UNBOUND SPECIES %d\n",spp->spp->spp);
 			fprintf(fp,"AGENT\t%s\t%d\tQ\n\n",spp->spp->S,count);
 		}
 
@@ -4601,16 +4852,13 @@ int stringPM::print_conf(FILE *fp){
 	int nreactions = 0;
 	for(i=0,pa=nowhead;i<nag;i++,pa=pa->next){
 		if(pa->status == B_ACTIVE){
-			fprintf(fp,"%%%%%% REACTION %d\nREACTION\n",++nreactions);
+			fprintf(fp,"\%\%\%\%\%\% REACTION %d\nREACTION\n",++nreactions);
 			print_agent_cfg(fp, pa);
 			print_agent_cfg(fp,pa->pass);
 		}
 	}
-
-
-
 	free(done);
-
+*/
 	return 0;
 
 }

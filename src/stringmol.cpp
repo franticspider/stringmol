@@ -480,8 +480,8 @@ int origlife(int argc, char *argv[]){
 			//A.print_agents(stdout,"NOW",0);
 			SP.print_spp_list(stdout);
 
-			A.r=rr;
-			sprintf(pfn,"rep%03dpopdy%03d.dat",rep,A.r);
+			A.run_number=rr;
+			sprintf(pfn,"rep%03dpopdy%03d.dat",rep,A.run_number);
 			ftmp = fopen(pfn,"w");
 			fclose(ftmp);
 
@@ -502,7 +502,7 @@ int origlife(int argc, char *argv[]){
 					A.extit=i;//dummy line for breakpoint
 
 					//printf("Printing species list\n");
-					sprintf(fn,"rep%03dsplist%03d.dat",rep,A.r);
+					sprintf(fn,"rep%03dsplist%03d.dat",rep,A.run_number);
 					if((fp = fopen(fn,"w"))!=NULL){
 						SP.print_spp_list(fp);
 						fclose(fp);
@@ -649,8 +649,8 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 
 		A.print_agents(stdout,"NOW",0);
 
-		A.r=rr;
-		sprintf(pfn,"popdy%d%02d.dat",proc,A.r);
+		A.run_number=rr;
+		sprintf(pfn,"popdy%d%02d.dat",proc,A.run_number);
 		ftmp = fopen(pfn,"w");
 		fclose(ftmp);
 
@@ -712,7 +712,7 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 
 
 				//printf("Printing species list\n");
-				sprintf(fn,"splist%d%02d.dat",proc,A.r);
+				sprintf(fn,"splist%d%02d.dat",proc,A.run_number);
 				if((fp = fopen(fn,"w"))!=NULL){
 					SP.print_spp_list(fp);
 					fclose(fp);
@@ -768,7 +768,7 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 
 
 		//printf("Printing species list\n");
-		sprintf(fn,"splist%d%02d.dat",proc,A.r);
+		sprintf(fn,"splist%d%02d.dat",proc,A.run_number);
 		if((fp = fopen(fn,"w"))!=NULL){
 			SP.print_spp_list(fp);
 			fclose(fp);
@@ -900,8 +900,8 @@ int comass_AlifeXII(int argc, char *argv[]){
 		A.load_comass(argv[2],1);
 		A.print_agents(stdout,"NOW",0);
 
-		A.r=rr;
-		sprintf(pfn,"popdy%03d.dat",A.r);
+		A.run_number=rr;
+		sprintf(pfn,"popdy%03d.dat",A.run_number);
 		ftmp = fopen(pfn,"w");
 		fclose(ftmp);
 
@@ -926,7 +926,7 @@ int comass_AlifeXII(int argc, char *argv[]){
 				A.extit=i;//dummy line for breakpoint
 
 				//printf("Printing species list\n");
-				sprintf(fn,"splist%03d.dat",A.r);
+				sprintf(fn,"splist%03d.dat",A.run_number);
 				if((fp = fopen(fn,"w"))!=NULL){
 					SP.print_spp_list(fp);
 					fclose(fp);
@@ -1637,8 +1637,8 @@ int energetic_AlifeXII(int argc, char *argv[]){
 
 		A.print_agents(stdout,"NOW",0);
 
-		A.r=rr;
-		sprintf(pfn,"popdy%03d.dat",A.r);
+		A.run_number=rr;
+		sprintf(pfn,"popdy%03d.dat",A.run_number);
 		ftmp = fopen(pfn,"w");
 		fclose(ftmp);
 
@@ -1665,7 +1665,7 @@ int energetic_AlifeXII(int argc, char *argv[]){
 				A.extit=i;//dummy line for breakpoint
 
 				//printf("Printing species list\n");
-				sprintf(fn,"splist%03d.dat",A.r);
+				sprintf(fn,"splist%03d.dat",A.run_number);
 				if((fp = fopen(fn,"w"))!=NULL){
 					SP.print_spp_list(fp);
 					fclose(fp);
@@ -1887,7 +1887,7 @@ int SmPm_conpop(int argc, char *argv[]){
 
 		//A[c]->set_epochs();
 		A[c]->extit=0;
-		A[c]->r=c;
+		A[c]->run_number=c;
 		A[c]->energy=0;
 
 	}
@@ -2066,7 +2066,7 @@ int SmPm_conpop(int argc, char *argv[]){
 				A[c]->share_agents(&(A[c2]->nowhead));
 				A[c2]->energy /=2;
 				A[c]->energy=A[c2]->energy;
-				A[c]->r = r++;
+				A[c]->run_number = r++;
 
 				//clear the species list
 				A[c]->spl->clear_list();
@@ -2088,12 +2088,12 @@ int SmPm_conpop(int argc, char *argv[]){
 
 
 				//////////////////////
-				printf("Moved half of container %d (run %d) to container %d (run %d)\n",c2,A[c2]->r,c,A[c]->r);
+				printf("Moved half of container %d (run %d) to container %d (run %d)\n",c2,A[c2]->run_number,c,A[c]->run_number);
 
 
 				//sprintf(fn,"popdy%03d.dat",A[c]->r);
 				fpdiv = fopen("splitstory.dat","a");
-				fprintf(fpdiv,"%d: Run %d started in container %d from run %d in container %d\n",gclock,A[c]->r,c,A[c2]->r,c2);
+				fprintf(fpdiv,"%d: Run %d started in container %d from run %d in container %d\n",gclock,A[c]->run_number,c,A[c2]->run_number,c2);
 				fclose(fpdiv);
 
 
@@ -2112,7 +2112,7 @@ int SmPm_conpop(int argc, char *argv[]){
 
 			//Print the ancestry of this cell:
 			FILE *afp;
-			sprintf(fn,"ancestry%03d_%07d.dot",A[c]->r,gclock);
+			sprintf(fn,"ancestry%03d_%07d.dot",A[c]->run_number,gclock);
 			afp = fopen(fn,"w");
 			A[c]->print_ancestry_dot(afp,gclock,10000);
 		}
@@ -2511,8 +2511,8 @@ int speigmonst(int argc, char *argv[]){
 		A.energy=20;
 		A.print_agents(stdout,"NOW",0);
 
-		A.r=rr;
-		sprintf(pfn,"popdy%03d.dat",A.r);
+		A.run_number=rr;
+		sprintf(pfn,"popdy%03d.dat",A.run_number);
 		ftmp = fopen(pfn,"w");
 		fclose(ftmp);
 
@@ -2542,7 +2542,7 @@ int speigmonst(int argc, char *argv[]){
 				A.extit=i;//dummy line for breakpoint
 
 				//printf("Printing species list\n");
-				sprintf(fn,"splist%03d.dat",A.r);
+				sprintf(fn,"splist%03d.dat",A.run_number);
 				if((fp = fopen(fn,"w"))!=NULL){
 					SP.print_spp_list(fp);
 					fclose(fp);
@@ -2748,6 +2748,7 @@ int main(int argc, char *argv[]) {
 		printf("Comass ALXII     (8)\n");
 		printf("speigmonst       (9)\n");
 		printf("Check setup       10          1: .conf;  (2: .mtx)\n");
+		printf("Spatial Stringmol(33)         1: .conf;  (2: .mtx)\n");
 		printf("Comass GA boost   44          1: .conf;   2: boost.dat\n\n\n");
 		printf("Test All          99          1: .conf;  (2: .mtx)\n\n\n");
 	}

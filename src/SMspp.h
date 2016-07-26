@@ -117,9 +117,14 @@ public:
 	SMspp();
 	virtual ~SMspp();
 
-	l_spp * make_spp(s_ag *a, int extit, const int maxl0);
+
+	l_spp * make_spp_from_string(char *S, int extit, const int maxl0, const int spno);
+	l_spp * make_spp_from_agent( s_ag *a, int extit, const int maxl0);
 	void 	prepend_spp(l_spp *p);
-	l_spp * getspp(s_ag *a, int extit,const int maxl0);//, s_spp * paspp, s_spp * ppspp);
+	l_spp * find_spp(char *S, const int maxl0);
+	l_spp * getspp(            s_ag *a, int extit,const int maxl0);//, s_spp * paspp, s_spp * ppspp);
+	l_spp * getspp_from_string(char *S, int extit,const int maxl0, const int spno);
+
 	//s_spp * getspp(s_ag *a);
 	void free_spp(l_spp *sp);
 

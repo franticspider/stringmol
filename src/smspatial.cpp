@@ -155,7 +155,7 @@ int oldmain(int argc, char *argv[]) {
 	    printf("Waited %d seconds\n",i+1);
 	}
 
-
+	return 0;
 }
 
 
@@ -177,19 +177,18 @@ int main(int argc, char *argv[]) {
 	ct = A.nagents(A.nowhead,-1);
 	printf("Initialisation done, number of molecules is %d\n",ct);
 
-	int x,y,iteration = 0;
-
-
 	/* Set up SDL if we're using it */
 #ifdef USE_SDL
 
 
 	int **grid;
 	grid = (int **)malloc(run->gridx*sizeof(int *));
-	for(int i=0;i<x;i++){
+	for(int i=0;i<run->gridx;i++){
 		grid[i] = (int *) malloc(run->gridy*sizeof(int));
 		memset(grid[i],0,run->gridy*sizeof(int));
 	}
+
+	printf("grid allocated\n");fflush(stdout);
 
 	SDL_Surface *screen;
 	SDL_Event sdlEvent;
@@ -199,17 +198,22 @@ int main(int argc, char *argv[]) {
 	}
 	atexit(SDL_Quit);
 	SDL_WM_SetCaption("Spatial Stringmol","nanopond");
-	screen = SDL_SetVideoMode(run->gridx,run->gridy,8,SDL_SWSURFACE);
+	screen = SDL_SetVideoMode(run->gridy,run->gridx,8,SDL_SWSURFACE);
 	if (!screen) {
 	fprintf(stderr, "*** Unable to create SDL window: %s ***\n", SDL_GetError());
 	exit(1);
 	}
 	const uintptr_t sdlPitch = screen->pitch;
+
+
+	printf("SDL window allocated, pitch is %d \n",screen->pitch);fflush(stdout);
+
+
 #endif /* USE_SDL */
 
 
 //	while(A.nagents(A.nowhead,-1)){
-	while(iteration < 10000){
+	while(A.extit < 1000000){
 		smspatial_step(&A,run);
 		ct = A.nagents(A.nowhead,-1);
 		bt = ct - A.nagents(A.nowhead,B_UNBOUND);
@@ -226,21 +230,46 @@ int main(int argc, char *argv[]) {
 		}
 #endif
 
-//		if(iteration == 66396)
+//		if(A.extit == 66396)
 //			printf("Pauuuuse\n!");
-		iteration++;
-		if(!(iteration%100))
-				printf("Step %d done, number of molecules is %d, nbound = %d\n",iteration,ct,bt);
-		if((!(iteration%10000)) ||     iteration == 66396    ){
-			printf("Step %d done, number of molecules is %d, nbound = %d\n",iteration,ct,bt);
+		A.extit++;
+		if(!(A.extit%100))
+				printf("Step %d done, number of molecules is %d, nbound = %d\n",(int) A.extit,ct,bt);
+		if((!(A.extit%10000)) ||     A.extit == 66396    ){
+			printf("Step %d done, number of molecules is %d, nbound = %d\n",(int) A.extit,ct,bt);
 			FILE *fp;char fn[128];
-			sprintf(fn,"splist%d.dat",iteration);
+			sprintf(fn,"splist%d.dat",A.extit);
 			fp = fopen(fn,"w");
 			SP.print_spp_list(fp);
 			fclose(fp);
+
+
+			printsppct(&A,A.extit);
+
+			printf("Step %ld done, number of molecules is %d, nbound = %d\n",A.extit,ct,bt);
+
+			FILE *fpp;
+			sprintf(fn,"out1_%05ld.conf",A.extit);
+			fpp = fopen(fn,"w");
+			A.print_conf(fpp);
+			fclose(fpp);
+
+			//Now let's reload the file so we can check:
+
+			SMspp		SPB;
+			stringPM	B(&SPB);
+			B.load(fn,NULL,0,1);
+			B.print_agents(stdout,"NOW",0);
+			sprintf(fn,"outB_%05d.conf",A.extit);
+			fpp = fopen(fn,"w");
+			B.print_conf(fpp);
+			fclose(fpp);
+
 		}
 
 
+		printf("completed iteration %u of simulation\n",A.extit);fflush(stdout);
+		printf("grid dimenstions are %d,%d\n",run->gridx,run->gridy);fflush(stdout);
 
 		int x,y,val;
 		for(x=0;x<run->gridx;++x){
@@ -275,8 +304,12 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
+		printf("sdl grid updated\n",A.extit);fflush(stdout);
 
-        SDL_UpdateRect(screen,0,0,300,300);
+        SDL_UpdateRect(screen,0,0,0,0);//run->gridx,run->gridy);
+
+
+		printf("sdl rect updated\n",A.extit);fflush(stdout);
 
 	}
 
