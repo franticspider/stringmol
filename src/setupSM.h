@@ -62,19 +62,10 @@
 /************************************************************/
 
 
-	enum s_gstatus{G_EMPTY,G_NOW,G_DOING,G_NEXT};
-
-	typedef struct td_smsprun{
-		int 	 gridx;
-		int		 gridy;
-		s_ag *** grid; //2d grid of pointers to agents.
-		enum s_gstatus	 **  status; //current status of cell
-	} smsprun;
-
 
 	/* Spatial Stringmol functions */
 	int randy_Moore(const int X, const int Y, const int Xlim, const int Ylim, int *xout, int *yout);
 	int smspatial(int argc, char *argv[]);
-	int smspatial_init(char *fn, stringPM *A, smsprun **run);
+	int smspatial_init(char *fn, stringPM *A, smsprun **run, int runno);
 	int smspatial_step(stringPM *A, smsprun *run);
 #endif /* SETUPSM_H_ */

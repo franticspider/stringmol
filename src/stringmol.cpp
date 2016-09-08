@@ -2716,7 +2716,7 @@ int main(int argc, char *argv[]) {
 			break;
 
 		/*************************************************/
-		case 33:
+		case 33://Spatial stringmol experiments, summer 2016
 			smspatial(argc,argv);
 			break;
 

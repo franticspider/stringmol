@@ -152,7 +152,7 @@ float ctspp(stringPM *A, const int spp){
 }
 
 
-void initsppct(stringPM *A){
+void initpopdyfile(stringPM *A){
 	char pfn[128];
 	memset(pfn,0,128*sizeof(char));
 
@@ -239,7 +239,7 @@ int run_one_comass_trial(const int rr, stringPM *A,  int * params, struct runpar
 
 
 	A->run_number=rr;
-	initsppct(A);
+	initpopdyfile(A);
 
 	//todo DELETE if we don't need epochs any more
 	//int lastepoch=A->get_ecosystem(),thisepoch,nepochs=1;
@@ -792,31 +792,6 @@ int randy_Moore(const int X, const int Y, const int Xlim, const int Ylim, int *x
 
 
 
-smsprun * init_smprun(const int gridx, const int gridy){
-
-	smsprun *run;
-	run = (smsprun *) malloc(sizeof(smsprun));
-
-	//TODO: make grid size changeable via config...
-	run->gridx=gridx;
-	run->gridy=gridy;
-
-	run->grid=(s_ag ***) malloc(run->gridx*sizeof(s_ag **));
-	run->status=(s_gstatus **) malloc(run->gridx*sizeof(s_gstatus *));
-
-	for(int i=0;i<run->gridx;i++){
-		run->grid[i] = (s_ag **) malloc(run->gridy*sizeof(s_ag *));
-		run->status[i] = (s_gstatus *) malloc(run->gridy*sizeof(s_gstatus));
-
-		for(int j=0;j<run->gridy;j++){
-			run->grid[i][j]=NULL;
-			run->status[i][j]=G_EMPTY;
-		}
-	}
-
-	return run;
-}
-
 void obsolete_find_ag_gridpos(s_ag *pag,smsprun *run, int *x, int *y){
 	for(int i=0;i<run->gridx;i++){
 		for(int j=0;j<run->gridy;j++){
@@ -1330,13 +1305,74 @@ int spatial_testdecay(stringPM *A, smsprun *run, s_ag *pag){
 }
 
 
+
+/* Another attempt to do randseed properly
+ *
+ */
+void init_randseed(char *fn){
+
+	unsigned long seedin =  2846144656u;
+
+	FILE *fpr;
+	if((fpr=fopen(fn,"r"))!=NULL){
+		unsigned int stmp;
+		int rerr = readordef_param_int(fn,"RANDSEED", &stmp, seedin, 0);//read_param_int(fpr,"RANDSEED",&stmp,1);
+		if(rerr){
+			printf("Error %d reading RANDSEED\n",rerr);
+			exit(0);
+		}
+		seedin = stmp;
+		fclose(fpr);
+	}
+
+	unsigned long rseed = longinitmyrand(&seedin);
+
+	FILE *frs;
+	if((frs=fopen("randseed.txt","w"))==NULL){
+		printf("Coundln't open randseed.txt\n");
+		getchar();
+	}
+	fprintf(frs,"(unsigned) random seed is %lu (%lu was seedin)  \n",rseed,seedin);
+	fflush(frs);
+	fclose(frs);
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 int smspatial_step(stringPM *A, smsprun *run){
 
 	//again, we follow make_next, but are a little more careful with the binding and uncoupling
 	s_ag *pag,*bag;
 	int changed;
 
-	A->energy += A->estep;
+	//A->energy += A->estep;
+
+	//Set the energy to the max possible number of molecules...
+	//printf("Before update, energy is %d\n",A->energy);
+	A->energy = run->gridx * run->gridy;
+	//printf("After update, energy is %d\n",A->energy);
+
 
 	while(A->nowhead!=NULL){
 
@@ -1429,20 +1465,42 @@ int smspatial_step(stringPM *A, smsprun *run){
 	A->update();
 	update_grid(run);
 
+
+
+	//#ifdef DEBUG
+	for(int x=0;x<run->gridx;x++){
+		for(int y=0;y<run->gridy;y++){
+			if(run->grid[x][y]!=NULL){
+				if(!(A->ag_in_list(A->nowhead,run->grid[x][y]))){
+					printf("Agent species %d not in nowhead at %d, %d\n", run->grid[x][y]->spp->spp, x, y);
+				}
+			}
+		}
+	}
+
+
+
+	//printf("After step, energy is %d\n",A->energy);
+
 	return 0;
 }
 
 
 
 
-int smspatial_init(char *fn, stringPM *A, smsprun **run){
+int smspatial_init(char *fn, stringPM *A, smsprun **run, int runno){
 
 
+	init_randseed(fn);
 	A->load(fn,NULL,0,1);
 
-	*run = init_smprun(200,40);
+	A->run_number = runno;
 
-	initsppct(A);
+	//TODO: It's a little perverse getting this run object out, but we have to decide whether the grid is 'core' stringmol...
+	*run = A->grid;
+
+	//Initialize the popdy file...
+	initpopdyfile(A);
 
 	//Now we have to place each agent on the grid - use the makenext() model -
 	while(A->nowhead!=NULL){
@@ -1450,6 +1508,21 @@ int smspatial_init(char *fn, stringPM *A, smsprun **run){
 		pag = A->rand_ag(A->nowhead,-1);
 		A->extract_ag(&(A->nowhead),pag);
     	int found = 0;
+
+    	//Check to see if a position has been set for each molecule..
+    	if( pag->x > -1 ){
+    		if( pag->y > -1){
+				place_mol(pag,*run,pag->x,pag->y);
+				A->append_ag(&(A->nexthead),pag);
+				found = 1;
+    		}
+    		else{
+    			printf("Bad xy position for this agent (%d,%d) \n",pag->x,pag->y);
+    			exit(0);
+    		}
+
+    	}
+
     	while(!found){
 			int pos = (*run)->gridx * (*run)->gridy * rand0to1();
 
@@ -1493,6 +1566,18 @@ int smspatial_init(char *fn, stringPM *A, smsprun **run){
 
 	A->update();
 
+	//#ifdef DEBUG
+	for(int x=0;x<(*run)->gridx;x++){
+		for(int y=0;y<(*run)->gridy;y++){
+			if((*run)->grid[x][y]!=NULL){
+				if(!(A->ag_in_list(A->nowhead,(*run)->grid[x][y]))){
+					printf("Agent species %d not in nowhead at %d, %d\n", (*run)->grid[x][y]->spp->spp, x, y);
+				}
+			}
+		}
+	}
+	//#endif
+
 	return 0;
 }
 
@@ -1506,14 +1591,26 @@ int smspatial(int argc, char *argv[]) {
 	smsprun *run;
 	run = NULL;
 
-	smspatial_init(argv[2],&A,&run);
+	smspatial_init(argv[2],&A,&run,1);
 
 	int bt=0,ct=0;
 	ct = A.nagents(A.nowhead,-1);
 	printf("Initialisation done, number of molecules is %d\n",ct);
-
 //	int iteration = 0;
 	A.extit=0;
+
+	if(1){
+		FILE *fpp;
+		char fn[128];
+		sprintf(fn,"out1_%05ld.conf",A.extit);
+		fpp = fopen(fn,"w");
+		A.print_conf(fpp);
+		fclose(fpp);
+	}
+
+
+
+
 //	while(A.nagents(A.nowhead,-1)){
 	while(A.extit < 100000){
 		smspatial_step(&A,run);
@@ -1544,7 +1641,7 @@ int smspatial(int argc, char *argv[]) {
 
 		//		if(iteration == 66396)
 		//			printf("Pauuuuse\n!");
-		if(!(A.extit%10000)){
+		if(!(A.extit%1000) || A.extit==1){
 			FILE *fpp;
 			char fn[128];
 			sprintf(fn,"out1_%05ld.conf",A.extit);

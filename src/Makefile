@@ -94,12 +94,12 @@ smlib: 		stringmanip.o	alignment.o	instructions.o \
 
 smspatial_dbg: 	smspatial.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
 			hsort.o	mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
-			stringmanip.o	alignment.o	instructions.o tests.o
+			stringmanip.o	alignment.o	instructions.o tests.o lodepng.o
 	$(CC) -o smspatial_dbg -s -lm 	\
 	        -funroll-loops -fomit-frame-pointer \
 	        smspatial.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
 			hsort.o mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
-			stringmanip.o	alignment.o	instructions.o tests.o -lSDL 
+			stringmanip.o	alignment.o	instructions.o tests.o lodepng.o -lSDL 
 		
 ###########################################################
 # stringmol
@@ -149,6 +149,12 @@ step_dbg: 	webapi_step_dbg.o webapi_util.o stringPM.o agents_base.o rules.o SMsp
 			stringmanip.o	alignment.o	instructions.o tests.o			
 		
 
+###################
+### PNG library ###
+###################
+
+lodepng.o: lodepng.cpp lodepng.h
+	$(CC) -c lodepng.cpp
 
 	
 #############################################################
@@ -176,6 +182,7 @@ mt19937-2.o: 	mt19937-2.c mt19937-2.h
 
 microbial_ga.o: microbial_ga.c microbial_ga.h
 	$(C4C) -c microbial_ga.c
+
 
 #########################
 ### Stringmol library ###
@@ -246,7 +253,7 @@ stringmol.o:  	stringmol.cpp \
 smspatial.o:  	smspatial.cpp \
 			randutil.h	alignment.h \
 			rules.h agents_base.h SMspp.h stringPM.h signalSM.h \
-			tests.h
+			tests.h lodepng.h
 	$(CC) -c smspatial.cpp 	
 
 #########################

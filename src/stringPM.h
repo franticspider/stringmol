@@ -23,6 +23,15 @@
 
 enum e_mut{M_NONE,M_INCREMENT,M_DECREMENT,M_INSERT,M_DELETE};
 
+/* Cellular Automata parameters */
+enum s_gstatus{G_EMPTY,G_NOW,G_DOING,G_NEXT};
+
+typedef struct td_smsprun{
+	int 	 gridx;
+	int		 gridy;
+	s_ag *** grid; //2d grid of pointers to agents.
+	enum s_gstatus	 **  status; //current status of cell
+} smsprun;
 
 
 
@@ -47,6 +56,8 @@ public:
 
 	long agct;
 	unsigned int extit; 	//record of the cell iteration count
+
+	unsigned int randseed;
 
 	long biomass; 	//used as a measure of fitness
 	long bstart;    //time of biomass reset
@@ -131,11 +142,12 @@ public:
 	void divide();
 
 	//list stuff
-	int append_ag(s_ag **list, s_ag *ag);
-	int extract_ag(s_ag **list, s_ag *ag);
-	int nagents(s_ag *head, int state);
-	s_ag * rand_ag(s_ag *head, int state);
-	int free_ag(s_ag *pag);
+	int 	append_ag(s_ag **list, s_ag *ag);
+	int 	extract_ag(s_ag **list, s_ag *ag);
+	int 	nagents(s_ag *head, int state);
+	s_ag * 	rand_ag(s_ag *head, int state);
+	int 	free_ag(s_ag *pag);
+	bool 	ag_in_list(s_ag *list, s_ag *tag);
 
 	//First version works fine, but no species analysis...
 	//void 	unbind_ag(s_ag * pag,char sptype);
@@ -166,6 +178,12 @@ public:
 	//Distance calcs
 	float close_dist(s_ag *a1, s_ag *a2);
 	void move_ag(s_ag *a1);
+
+	//Cellular Automaton stuff
+
+	smsprun *grid;
+	smsprun * init_smprun(const int gridx, const int gridy);
+	void free_grid();
 
 	//String & alignment stuff
 
@@ -241,6 +259,7 @@ public:
 
 	//Output a config file at any point in the trial:
 	int 		print_conf(FILE *fp);
+	void 		print_agent_cfg(FILE *fp, s_ag *pa);
 
 };
 

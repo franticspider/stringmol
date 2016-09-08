@@ -83,6 +83,8 @@ stringPM::stringPM(SMspp * pSP){
 
 	dodecay=1;
 
+	grid = NULL;
+
 	swlist=NULL;
 
 	blosum = NULL;
@@ -222,6 +224,7 @@ float stringPM::load_mut(char *fn, int verbose){
 				domut=1;
 			if(verbose)printf("MUTATE setting: subrate = %f, indelrate = %f\n",subrate,indelrate);
 			return 0;
+			break;
 		case 1:
 			printf("No mutation rate found in config file\nUsing ALifeXII values instead\n");
 			indelrate = 0.0000000306125;
@@ -260,12 +263,12 @@ float stringPM::load_decay(char *fn, int verbose){
 			if(verbose)printf("DECAY rate setting = %f\n",decayrate);
 			return 0;
 		case 1:
-			printf("No mutation rate found in config file\nUsing ALifeXII values instead\n");
+			printf("No decay rate found in config file\nUsing ALifeXII values instead\n");
 			decayrate = 1.0/pow(65,2);
 			return 0;
 			break;
 		default: //Some other error
-			printf("Error %d in loading mutation scheme\n",finderr);
+			printf("Error %d in loading decay scheme\n",finderr);
 			return 1;
 			break;
 
@@ -510,7 +513,7 @@ int stringPM::load_reactions(char *fn, char *fntab, int test, int verbose){
 	s_ag *pag,*bag;
 
 	int aspno,pspno,ano,pno;
-	int it,iap,ipp,rt,rap,rpp,wt,wap,wpp,ft,fap,fpp;
+	int it,iap,ipp,rt,rap,rpp,wt,wap,wpp,ft,fap,fpp, gx, gy;
 
 	if((fp=fopen(fn,"r"))!=NULL){
 		while((fgets(line,llen,fp))!=NULL){
@@ -538,8 +541,10 @@ int stringPM::load_reactions(char *fn, char *fntab, int test, int verbose){
 				/* Second line is the state of the active molecule */
 				if((fgets(line,llen,fp))!=NULL){
 					linecount++;
-					sscanf(line,"%*s %d %s irwf: %d %d %d %d %d %d %d %d %d %d %d %d",&ano, active_string,
-							&it,&iap,&ipp,&rt,&rap,&rpp,&wt,&wap,&wpp,&ft,&fap,&fpp);
+					gx = gy = -1;
+					sscanf(line,"%*s %d %s irwf: %d %d %d %d %d %d %d %d %d %d %d %d grid: %d %d",&ano, active_string,
+							&it,&iap,&ipp,&rt,&rap,&rpp,&wt,&wap,&wpp,&ft,&fap,&fpp,
+							&gx,&gy);
 				}
 				else{
 					printf("ERROR READING REACTION (active state) at line %d\n",linecount+1);
@@ -552,10 +557,16 @@ int stringPM::load_reactions(char *fn, char *fntab, int test, int verbose){
 				strncpy(pag->S,active_string,strlen(active_string));
 				pag->len = strlen(pag->S);
 
+				if(grid){
+					pag->x = gx;
+					pag->y = gy;
+				}
+
 				/* Third line is the state of the passive molecule */
 				if((fgets(line,llen,fp))!=NULL){
 					linecount++;
-					sscanf(line,"%*s %d %s",&pno, passive_string);
+					gx = gy = -1;
+					sscanf(line,"%*s %d %s grid: %d %d",&pno, passive_string, &gx, &gy);
 				}
 				else{
 					printf("ERROR READING REACTION (passive state) at line %d\n",linecount+1);
@@ -567,6 +578,10 @@ int stringPM::load_reactions(char *fn, char *fntab, int test, int verbose){
 				strncpy(bag->S,passive_string,strlen(passive_string));
 				bag->len = strlen(bag->S);
 
+				if(grid){
+					bag->x = gx;
+					bag->y = gy;
+				}
 
 				/* Fourth line is the species of the passive molecule */
 				if((fgets(line,llen,fp))!=NULL){
@@ -619,6 +634,35 @@ int stringPM::load_reactions(char *fn, char *fntab, int test, int verbose){
 	}
 	return 0;
 }
+
+
+
+
+smsprun * stringPM::init_smprun(const int gridx, const int gridy){
+
+	grid = (smsprun *) malloc(sizeof(smsprun));
+
+	//TODO: make grid size changeable via config...
+	grid->gridx=gridx;
+	grid->gridy=gridy;
+
+	grid->grid=(s_ag ***) malloc(grid->gridx*sizeof(s_ag **));
+	grid->status=(s_gstatus **) malloc(grid->gridx*sizeof(s_gstatus *));
+
+	for(int i=0;i<grid->gridx;i++){
+		grid->grid[i] = (s_ag **) malloc(grid->gridy*sizeof(s_ag *));
+		grid->status[i] = (s_gstatus *) malloc(grid->gridy*sizeof(s_gstatus));
+
+		for(int j=0;j<grid->gridy;j++){
+			grid->grid[i][j]=NULL;
+			grid->status[i][j]=G_EMPTY;
+		}
+	}
+
+	return grid;
+}
+
+
 
 /**Suggest: load_agents(char *fn, char *fntab, int test, int verbose)
    if fntab == null: load_table(fn)
@@ -694,6 +738,33 @@ int stringPM::load_agents(char *fn, char *fntab, int test, int verbose){
 		printf("ERROR %d on loading decay rate\n",decay_err);
 	}
 
+
+	/*Load any grid info (if needed)
+	 */
+
+	int gdefault = 0;
+	unsigned int gridx,gridy;
+	err = readordef_param_int(fn,"GRIDX", &gridx, gdefault, 0);
+	if(err>1){
+		printf("ERROR %d on loading gridx (GRIDX)\n",err);
+		exit(0);
+	}
+	else{
+		if(gridx>0){//Then we've got a grid definition and we need a y
+			err = readordef_param_int(fn,"GRIDY", &gridy, gdefault, 0);
+			if(err>1){
+				printf("ERROR %d on loading gridy (GRIDY)\n",err);
+				exit(0);
+			}
+			if(gridy==0){
+				printf("ERROR: GRIDX is %d, but GRIDY is 0\n",gridx);
+				exit(0);
+			}
+			init_smprun(gridx,gridy);
+		}
+	}
+
+
 	ntt = 0;
 
 	/* READ THE SPECIES LISTS (IF ANY)*
@@ -716,6 +787,8 @@ int stringPM::load_agents(char *fn, char *fntab, int test, int verbose){
 
 		rewind(fp);
 
+		bool getgridinfo;
+
 		while((fgets(line,llen,fp))!=NULL){
 
 			memset(label,0,llen);
@@ -729,11 +802,13 @@ int stringPM::load_agents(char *fn, char *fntab, int test, int verbose){
 					nag=1;
 				}
 
+				getgridinfo = true;
+
 				//make the agents
 				for(i=0;i<nag;i++){
 					l_spp *s;
 
-					//TODO: Should be passing 'code' into this, not 'lab'..
+
 					pag = make_ag(code);//,1);
 
 					pag->S =(char *) malloc(maxl0*sizeof(char));
@@ -746,6 +821,22 @@ int stringPM::load_agents(char *fn, char *fntab, int test, int verbose){
 
 					strncpy(pag->S,label,strlen(label));
 					pag->len = strlen(pag->S);
+
+					/*Load the coordinates on the grid for this agent
+					 * THESE ENTRIES MUST BE IMMEDIATELY AFTER THE AGENT
+					 *
+					 *
+					 * */
+					if(grid && getgridinfo){
+						if((fgets(line,llen,fp))!=NULL){//sscanf(line,"%s",label);
+							if(!strncmp(line,"GRIDPOS",7)){
+								sscanf(line,"%*s %d %d ",&(pag->x),&(pag->y));
+							}
+							else{
+								getgridinfo = false;
+							}
+						}
+					}
 
 
 					//No parents for these initial agents!
@@ -1021,6 +1112,19 @@ int stringPM::append_ag(s_ag **list, s_ag *ag){
 }
 
 
+bool stringPM::ag_in_list(s_ag *list, s_ag *tag){
+
+	s_ag *pag;
+
+	for(pag=list;pag!=NULL;pag=pag->next){
+		if(tag == pag){
+			return true;
+		}
+	}
+
+	return false;
+}
+
 
 int stringPM::extract_ag(s_ag **list, s_ag *ag){
 
@@ -1191,6 +1295,8 @@ s_ag * stringPM::make_ag(int alab){
 		ag->status = B_UNBOUND;
 		ag->idx = agct++;ag->nbind=0;ag->ect=0;
 		ag->biomass=0;
+		ag->x=-1;
+		ag->y=-1;
 		return ag;
 	}
 	else{
@@ -3585,6 +3691,24 @@ void stringPM::free_swt(swt *pSWT, int verbose){
 
 }
 
+
+void stringPM::free_grid(){
+
+	if(grid !=NULL){
+
+		for(int i=0;i<grid->gridx;i++){
+			free(grid->status[i]);
+			free(grid->grid[i]);
+		}
+		free(grid->status);
+		free(grid->grid);
+		free(grid);
+		grid = NULL;
+	}
+}
+
+
+
 /** Have to specifically ask for verbose output now... */
 void stringPM::clearout(int verbose){
 
@@ -3611,21 +3735,7 @@ void stringPM::clearout(int verbose){
 		agp=agp2;
 	}
 
-	/*
-	//TODO: put this in SMspp->clearout();
-	l_spp *sp,*sp2;
-	sp = spl->species;
-	while(sp!=NULL){
-		sp2=sp->next;
-		free_lspp(sp);
-		sp=sp2;
-	}
-	spl->species = NULL;
-	spp_count=1;
-	*/
-
-	//TODO: we don't need to do this, it happens anyway
-	//agents_base::clearout();
+	free_grid();
 
 	free_swlist(&swlist);
 
@@ -4597,7 +4707,7 @@ int stringPM::share_agents(s_ag **hp){
 */
 
 
-void print_agent_cfg(FILE *fp, s_ag *pa){
+void stringPM::print_agent_cfg(FILE *fp, s_ag *pa){
 
 	if(pa->status == B_ACTIVE){
 		fprintf(fp,"###############  %d %s\n",pa->spp->spp,pa->spp->S);
@@ -4606,13 +4716,24 @@ void print_agent_cfg(FILE *fp, s_ag *pa){
 		fprintf(fp,"%d %d %d ",pa->it , (int) (pa->i[0]-&(pa->pass->S[0])) , (int) (pa->i[1]-&(pa->S[0])) );
 		fprintf(fp,"%d %d %d ",pa->rt , (int) (pa->r[0]-&(pa->pass->S[0])) , (int) (pa->r[1]-&(pa->S[0])) );
 		fprintf(fp,"%d %d %d ",pa->wt , (int) (pa->w[0]-&(pa->pass->S[0])) , (int) (pa->w[1]-&(pa->S[0])) );
-		fprintf(fp,"%d %d %d ",pa->ft , (int) (pa->f[0]-&(pa->pass->S[0])) , (int) (pa->f[1]-&(pa->S[0])) );
+		fprintf(fp,"%d %d %d" ,pa->ft , (int) (pa->f[0]-&(pa->pass->S[0])) , (int) (pa->f[1]-&(pa->S[0])) );
+
+		if(grid){
+			fprintf(fp," grid: %d %d ",pa->x,pa->y);
+		}
+
 		fprintf(fp,"\n");
 		fflush(fp);
 		fflush(fp);//doing it twice so we can set a breakpoint after flushing
 	}
 	else{
-		fprintf(fp,"REACTION_PASSIVE %d %s\n",pa->spp->spp,pa->S);
+		fprintf(fp,"REACTION_PASSIVE %d %s",pa->spp->spp,pa->S);
+		if(grid){
+			fprintf(fp, " grid: %d %d",pa->x, pa->y);
+		}
+
+		fprintf(fp, "\n");
+
 		fprintf(fp,"###############  %d %s\n\n",pa->spp->spp,pa->spp->S);
 	}
 
@@ -4646,7 +4767,7 @@ int stringPM::print_conf(FILE *fp){
 	fprintf(fp,"ENERGY		%d\n",(int) energy);
 	fprintf(fp,"NSTEPS		%d\n",(int) nsteps);//1200000000\n");
 
-	/*TODO: Mutation rate is complicated. In the original paper, there were two rates:
+	/* Mutation rate is complicated. In the original paper, there were two rates:
 	 * 		Indelrate: The rate of insertion and deletion
 	 * 		Subrate: The rate of substitution.
 	 * 	Later papers set these to be equal, read in by the MUTATE option. This means there are three possible
@@ -4655,7 +4776,7 @@ int stringPM::print_conf(FILE *fp){
 	 * 		2: mutation rate - happens if a MUTATE value is set
 	 * 		3: no mutation - happens with the line MUTATE 0
 	 *
-	 * 	There is also a parameter called 'domut' which can be set to zero at anytime to turn mutation off.
+	 * 	There is also a parameter in the code called 'domut' which can be set to zero at anytime to turn mutation off.
 	 *
 	 * 	There is no facility to set separate indel and substitution rates at present
 	 *
@@ -4686,9 +4807,19 @@ int stringPM::print_conf(FILE *fp){
 			fprintf(fp,"USING	%s\n\n",swt_fn);
 		}
 		else{
-			printf("\n%%%%%% Warning! no SWT substitution matrix specified\n");
+			fprintf(fp,"\n%%%%%% Warning! no SWT substitution matrix specified\n");
 		}
 	}
+
+
+
+	fprintf(fp,"%%%%%%RANDOM NUMBER SEED:\nRANDSEED  		%ld\n\n\n",randseed);
+	fprintf(fp,"%%%%%%GRID PARAMETERS\n");
+	fprintf(fp,"GRIDX		%d\n",(int) grid->gridx);
+	fprintf(fp,"GRIDY       %d\n\n\n",(int) grid->gridy);
+
+
+
 
 /* First write the extant species and total species numbers, so we can recreate the whole run easily */
 	fprintf(fp,"%%%%%% SPECIES DATA %%%%%%\n");
@@ -4726,9 +4857,9 @@ int stringPM::print_conf(FILE *fp){
 	fprintf(fp,"%%%%%% extant_spp  %d\n\n\n\n",extct);
 
 
-/* Now go through NOWHEAD and do each thing at a time*/
+	/* Now go through NOWHEAD and do each thing at a time*/
+	/* Unbound first (keeps things tidy) */
 
-/* Unbound first (keeps things tidy) */
 	pag = nowhead;
 	while(pag != NULL){
 
@@ -4736,20 +4867,36 @@ int stringPM::print_conf(FILE *fp){
 		int count;
 		switch(pag->status){
 		case B_UNBOUND:
-			count = 1;
+			count = 0;
 
-			extract_ag(&nowhead,pag);
-			append_ag(&(nexthead),pag);
 			//count any unbounds with the same sppno
-			for(bag=pag->next;bag!=NULL;bag=bag->next){
-				if(bag->spp->spp == pag->spp->spp){
+			for(bag=pag;bag!=NULL;bag=bag->next){
+				if(bag->spp->spp == pag->spp->spp && bag->status == B_UNBOUND){
 					count++;
+				}
+			}
+			//Write this as a traditional agent...
+			fprintf(fp,"AGENT  %s %d Q\n",pag->S,count);fflush(fp);
+
+			//record the grid position if any
+			if(grid){
+				for(bag=pag;bag!=NULL;bag=bag->next){
+					if(bag->spp->spp == pag->spp->spp && bag->status == B_UNBOUND){
+						fprintf(fp,"GRIDPOS  %d %d\n",bag->x,bag->y);fflush(fp);
+					}
+				}
+			}
+
+			s_ag *cag;
+			//move these to nexthead
+			for(bag=pag;bag!=NULL;bag=cag){
+				cag = bag->next; //TODO: there has to be a better way to do this..?
+				if(bag->spp->spp == pag->spp->spp && bag->status == B_UNBOUND){
 					extract_ag(&nowhead,bag);
 					append_ag(&(nexthead),bag);
 				}
 			}
-			//Write this as a traditional agent...
-			fprintf(fp,"AGENT  %s %d Q\n",pag->S,count);
+
 			pag = nowhead;
 			break;
 		case B_PASSIVE:
@@ -4763,7 +4910,7 @@ int stringPM::print_conf(FILE *fp){
 
 /* Now the reactions: */
 
-	fprintf(fp,"\n\n\n%%%%%%reactions  %d%%%%%%\n\n",extct);
+	fprintf(fp,"\n\n\n%%%%%% REACTIONS  %%%%%%\n\n");
 	pag = nowhead;
 	int nreactions = 0;
 	while(pag != NULL){
@@ -4778,7 +4925,7 @@ int stringPM::print_conf(FILE *fp){
 
 			fprintf(fp,"%%%%%% REACTION %d\nREACTION\n",++nreactions);
 			print_agent_cfg(fp, pag);
-			print_agent_cfg(fp,bag);
+			print_agent_cfg(fp, bag);
 
 			append_ag(&(nexthead),pag);
 			append_ag(&(nexthead),bag);

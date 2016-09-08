@@ -41,17 +41,32 @@
 #include "hsort.h"
 //}
 
-//stringmol
+// Stringmol
 #include "alignment.h"
 
-
-//metabolism
+// Metabolism
 #include "rules.h"
 #include "agents_base.h"
 #include "SMspp.h"
 #include "stringPM.h"
 #include "setupSM.h"
 
+// Writing PNGs
+#include "lodepng.h"
+#include <iostream>
+
+
+//Example 1
+//Encode from raw pixels to disk with a single function call
+//The image argument has width * height RGBA pixels or width * height * 4 bytes
+void encodeOneStep(const char* filename, std::vector<unsigned char>& image, unsigned width, unsigned height)
+{
+	//Encode the image
+	unsigned error = lodepng::encode(filename, image, width, height);
+
+	//if there's an error, display it
+	if(error) std::cout << "encoder error " << error << ": "<< lodepng_error_text(error) << std::endl;
+}
 
 
 
@@ -171,7 +186,7 @@ int main(int argc, char *argv[]) {
 	smsprun *run;
 	run = NULL;
 
-	smspatial_init(argv[2],&A,&run);
+	smspatial_init(argv[2],&A,&run,1);
 
 	int bt=0,ct=0;
 	ct = A.nagents(A.nowhead,-1);
@@ -213,7 +228,8 @@ int main(int argc, char *argv[]) {
 
 
 //	while(A.nagents(A.nowhead,-1)){
-	while(A.extit < 1000000){
+	while(A.extit < 1000000){// && A.nagents(A.nowhead,-1)>0){
+
 		smspatial_step(&A,run);
 		ct = A.nagents(A.nowhead,-1);
 		bt = ct - A.nagents(A.nowhead,B_UNBOUND);
@@ -233,9 +249,9 @@ int main(int argc, char *argv[]) {
 //		if(A.extit == 66396)
 //			printf("Pauuuuse\n!");
 		A.extit++;
-		if(!(A.extit%100))
-				printf("Step %d done, number of molecules is %d, nbound = %d\n",(int) A.extit,ct,bt);
-		if((!(A.extit%10000)) ||     A.extit == 66396    ){
+		//if(!(A.extit%100))
+		//		printf("Step %d done, number of molecules is %d, nbound = %d\n",(int) A.extit,ct,bt);
+		if((!(A.extit%100))  ){// ||     A.extit == 66396    ){
 			printf("Step %d done, number of molecules is %d, nbound = %d\n",(int) A.extit,ct,bt);
 			FILE *fp;char fn[128];
 			sprintf(fn,"splist%d.dat",A.extit);
@@ -246,7 +262,7 @@ int main(int argc, char *argv[]) {
 
 			printsppct(&A,A.extit);
 
-			printf("Step %ld done, number of molecules is %d, nbound = %d\n",A.extit,ct,bt);
+			//printf("Step %ld done, number of molecules is %d, nbound = %d\n",A.extit,ct,bt);
 
 			FILE *fpp;
 			sprintf(fn,"out1_%05ld.conf",A.extit);
@@ -255,7 +271,7 @@ int main(int argc, char *argv[]) {
 			fclose(fpp);
 
 			//Now let's reload the file so we can check:
-
+			/*
 			SMspp		SPB;
 			stringPM	B(&SPB);
 			B.load(fn,NULL,0,1);
@@ -264,12 +280,18 @@ int main(int argc, char *argv[]) {
 			fpp = fopen(fn,"w");
 			B.print_conf(fpp);
 			fclose(fpp);
-
+			*/
 		}
 
+		//if(!(A.extit%10)){
+		//	printf("completed iteration %u of simulation\n",A.extit);fflush(stdout);
+		//	//printf("grid dimenstions are %d,%d\n",run->gridx,run->gridy);fflush(stdout);
+		//}
 
-		printf("completed iteration %u of simulation\n",A.extit);fflush(stdout);
-		printf("grid dimenstions are %d,%d\n",run->gridx,run->gridy);fflush(stdout);
+		//Create the PNG
+		std::vector<unsigned char> image;
+		image.resize(run->gridx * run->gridy * 4);
+
 
 		int x,y,val;
 		for(x=0;x<run->gridx;++x){
@@ -279,6 +301,8 @@ int main(int argc, char *argv[]) {
 					val=0;
 					break;
 				default:
+					val=run->grid[x][y]->spp->spp * 50;
+					/*
 					switch(run->grid[x][y]->status){
 					case B_UNBOUND:
 						val = 100;
@@ -291,25 +315,50 @@ int main(int argc, char *argv[]) {
 						break;
 					default:
 						val = 50;
-					}
+					}*/
 				}
 
 				((uint8_t *)screen->pixels)[y + (x * sdlPitch)] = val;//getColor(grid[x][y]);
+
+				if(!(A.extit%10)){
+				/*Get the rgb values for writing to PNG*/
+				uint8_t r ;
+				uint8_t g ;
+				uint8_t b ;
+				SDL_GetRGB(((uint8_t *)screen->pixels)[y + (x * sdlPitch)], screen->format ,  &r, &g, &b );
+				//printf("R is %d G is %d B is %d\n",r,g,b);
+			    image[4 * run->gridx * y + 4 * x + 0] = r;//255 * !(x & y);
+			    image[4 * run->gridx * y + 4 * x + 1] = g;//x ^ y;
+			    image[4 * run->gridx * y + 4 * x + 2] = b;//x | y;
+			    image[4 * run->gridx * y + 4 * x + 3] = 255;
+				}
 			}
 		}
+
+
+		if(!(A.extit%10)){
+			char filename[128];
+			sprintf(filename,"frame%07d.png",A.extit);
+			encodeOneStep(filename, image, run->gridx, run->gridy);
+		}
+
+
+
 		while (SDL_PollEvent(&sdlEvent)) {
 			if (sdlEvent.type == SDL_QUIT) {
 				fprintf(stderr,"[QUIT] Quit signal received!\n");
+
+				//TODO: Write the final splist and popdy files here!
+
 				exit(0);
 			}
 		}
 
-		printf("sdl grid updated\n",A.extit);fflush(stdout);
+		//printf("sdl grid updated\n",A.extit);fflush(stdout);
 
         SDL_UpdateRect(screen,0,0,0,0);//run->gridx,run->gridy);
 
-
-		printf("sdl rect updated\n",A.extit);fflush(stdout);
+		//printf("sdl rect updated\n",A.extit);fflush(stdout);
 
 	}
 

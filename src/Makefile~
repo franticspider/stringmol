@@ -22,17 +22,16 @@ HEADERS = $(MAIN_DIR)
 
 
 # which compiler to use 
-#C4C = gcc -O0 -Wall
-#CC = g++  -O0 -Wall
-C4C = gcc -O0 -Wall 
-CC = g++ -O0 -Wall 
+C4C = gcc -O0 -Wall -Wunused
+CC = g++ -O0 -Wall -Wunused
 
-#DBGC4C = $(C4C) -DDEBUG -g
-#DBGCC = $(CC) -DDEBUG -g
+#debug: CXX += -DDEBUG -g
+#debug: CC += -DDEBUG -g
 
-debug: CXX += -DDEBUG -g
-debug: CC += -DDEBUG -g
+#If you want profiling, comment out the above and replace with: 
 
+debug: CXX += -DDEBUG -g -pg
+debug: CC += -DDEBUG -g -pg
 
 
 #############################################################
@@ -43,11 +42,11 @@ debug: CC += -DDEBUG -g
 # 	We have to run a `cleano' before all/debug because otherwise there'll be .o files that may have been built with a different config
 
 #Make everything from scratch:
-all: clean release debug
+all: clean release debug 
 
-release: cleano stringmol web_api
+release: cleano stringmol web_api 
 
-debug: cleano stringmol_dbg web_api_dbg
+debug: cleano stringmol_dbg web_api_dbg smspatial_dbg
 
 web_api: bind step
 
@@ -60,7 +59,11 @@ clean:
 	rm -f *.o
 	rm -f stringmol
 	rm -f stringmol_dbg
+	rm -f smspatial
+	rm -f smspatial_dbg
 	rm -f webapi_*.cgi
+
+#just remove the object files:
 cleano:
 	rm -f *.o
 
@@ -79,7 +82,27 @@ smlib: 		stringmanip.o	alignment.o	instructions.o \
 			SMspp.o	rules.o agents_base.o stringPM.o \
 			signalSM.o
 
+#############################################################
+# spatial stringmol
+#smspatial: 	smspatial.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
+#			hsort.o	mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
+#			stringmanip.o	alignment.o	instructions.o tests.o
+#	$(CC) -o smspatial -s -lm -lSDL smspatial.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
+#			hsort.o mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
+#			stringmanip.o	alignment.o	instructions.o tests.o
+			
 
+smspatial_dbg: 	smspatial.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
+			hsort.o	mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
+			stringmanip.o	alignment.o	instructions.o tests.o lodepng.o
+	$(CC) -o smspatial_dbg -s -lm 	\
+	        -funroll-loops -fomit-frame-pointer \
+	        smspatial.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
+			hsort.o mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
+			stringmanip.o	alignment.o	instructions.o tests.o lodepng.o -lSDL 
+		
+###########################################################
+# stringmol
 stringmol: 	stringmol.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
 			hsort.o	mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
 			stringmanip.o	alignment.o	instructions.o tests.o
@@ -106,7 +129,7 @@ bind: 	webapi_bind.o webapi_util.o stringPM.o agents_base.o rules.o SMspp.o sign
 bind_dbg: 	webapi_bind_dbg.o webapi_util.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
 			hsort.o	mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
 			stringmanip.o	alignment.o	instructions.o tests.o
-	$(CC) -o webapi_bind_dbg.cgi -lm webapi_bind.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
+	$(CC) -o webapi_bind_dbg.cgi -lm webapi_bind.o webapi_util.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
 			hsort.o mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
 			stringmanip.o	alignment.o	instructions.o tests.o			
 			
@@ -121,11 +144,17 @@ step: 	webapi_step.o webapi_util.o stringPM.o agents_base.o rules.o SMspp.o sign
 step_dbg: 	webapi_step_dbg.o webapi_util.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
 			hsort.o	mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
 			stringmanip.o	alignment.o	instructions.o tests.o
-	$(CC) -o webapi_step_dbg.cgi -lm webapi_step.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
+	$(CC) -o webapi_step_dbg.cgi -lm webapi_step.o webapi_util.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
 			hsort.o mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
 			stringmanip.o	alignment.o	instructions.o tests.o			
 		
 
+###################
+### PNG library ###
+###################
+
+lodepng.o: lodepng.cpp lodepng.h
+	$(CC) -c lodepng.cpp
 
 	
 #############################################################
@@ -153,6 +182,7 @@ mt19937-2.o: 	mt19937-2.c mt19937-2.h
 
 microbial_ga.o: microbial_ga.c microbial_ga.h
 	$(C4C) -c microbial_ga.c
+
 
 #########################
 ### Stringmol library ###
@@ -217,6 +247,14 @@ stringmol.o:  	stringmol.cpp \
 			rules.h agents_base.h SMspp.h stringPM.h signalSM.h \
 			tests.h
 	$(CC) -c stringmol.cpp 	
+			
+
+
+smspatial.o:  	smspatial.cpp \
+			randutil.h	alignment.h \
+			rules.h agents_base.h SMspp.h stringPM.h signalSM.h \
+			tests.h lodepng.h
+	$(CC) -c smspatial.cpp 	
 
 #########################
 ### web_api executables ###
