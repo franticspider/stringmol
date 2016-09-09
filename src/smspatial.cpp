@@ -55,6 +55,13 @@
 #include "lodepng.h"
 #include <iostream>
 
+typedef enum td_pic{
+	pic_spp,
+	pic_len,
+	pic_bound
+}pictype;
+
+
 
 //Example 1
 //Encode from raw pixels to disk with a single function call
@@ -293,6 +300,7 @@ int main(int argc, char *argv[]) {
 		image.resize(run->gridx * run->gridy * 4);
 
 
+	    pictype tp = pic_len;
 		int x,y,val;
 		for(x=0;x<run->gridx;++x){
 			for (y=0;y<run->gridy;++y) {
@@ -301,7 +309,14 @@ int main(int argc, char *argv[]) {
 					val=0;
 					break;
 				default:
-					val=run->grid[x][y]->spp->spp * 50;
+					switch(tp){
+					case pic_spp:
+						val=run->grid[x][y]->spp->spp * 50;
+						break;
+					case pic_len:
+						val=strlen(run->grid[x][y]->spp->S) * 50;
+						break;
+					}
 					/*
 					switch(run->grid[x][y]->status){
 					case B_UNBOUND:
