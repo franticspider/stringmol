@@ -1,0 +1,6 @@
+{
+  "name": "Stringmol",
+  "tagline": "Automata Chemistry",
+  "body": "\r\n### Welcome to the Stringmol github pages\r\n\r\nStringmol is an automata chemistry, developed at the University of York from 2009. It is the subject of several academic papers in the Artificial Life research domain. These github pages contain the source code and config files for Stringmol, which can be compiled and run on most Linux OSs. ",
+  "note": "Don't delete this file! It's used internally to help with page regeneration."
+}
