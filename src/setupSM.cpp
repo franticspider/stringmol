@@ -1679,3 +1679,21 @@ int smspatial(int argc, char *argv[]) {
 	fflush(stdout);
 	return 0;
 }
+
+
+int smspatial_ancestry(int argc, char *argv[]){
+
+	int spno = atoi(argv[2]);
+	int timestep = atoi(argv[3]);
+
+	/*Open the splist file and find the entries for the species*/
+
+
+
+	return 0;
+}
+
+
+
+
+

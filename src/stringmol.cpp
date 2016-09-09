@@ -2706,7 +2706,7 @@ int main(int argc, char *argv[]) {
 			break;
 
 		/*************************************************/
-		case 9:
+		case 9://UNFINISHED: stringmol emulation of Speigelmen's Monster
 			speigmonst(argc,argv);
 			break;
 
@@ -2721,7 +2721,12 @@ int main(int argc, char *argv[]) {
 			break;
 
 		/*************************************************/
-		case 44:
+		case 34://Analyse spatial stringmol experiments - generate ancestry
+			smspatial_ancestry(argc,argv);
+
+
+		/*************************************************/
+		case 44://For final experiment in the comass experiment, spring 2015
 			comass_GA_boostwinners(argc,argv);
 			break;
 

@@ -68,4 +68,7 @@
 	int smspatial(int argc, char *argv[]);
 	int smspatial_init(char *fn, stringPM *A, smsprun **run, int runno);
 	int smspatial_step(stringPM *A, smsprun *run);
+
+	int smspatial_ancestry(int argc, char *argv[]);
+
 #endif /* SETUPSM_H_ */
