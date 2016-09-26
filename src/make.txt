@@ -1,0 +1,1751 @@
+# GNU Make 3.81
+# Copyright (C) 2006  Free Software Foundation, Inc.
+# This is free software; see the source for copying conditions.
+# There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.
+
+# This program built for x86_64-pc-linux-gnu
+make: Nothing to be done for `DEBUG_DIR'.
+
+# Make data base, printed on Mon Sep 26 10:45:56 2016
+
+# Variables
+
+# environment
+SELINUX_INIT = YES
+# automatic
+?F = $(notdir $?)
+# automatic
+<D = $(patsubst %/,%,$(dir $<))
+# environment
+DESKTOP_SESSION = Lubuntu
+# environment
+UPSTART_INSTANCE = 
+# default
+CWEAVE = cweave
+# automatic
+?D = $(patsubst %/,%,$(dir $?))
+# automatic
+@D = $(patsubst %/,%,$(dir $@))
+# environment
+XAUTHORITY = /home/sjh/.Xauthority
+# environment
+GDMSESSION = Lubuntu
+# default
+MAKE_VERSION := 3.81
+# makefile
+CURDIR := /home/sjh/git/stringmol/src
+# makefile
+SHELL = /bin/sh
+# default
+RM = rm -f
+# environment
+GDM_LANG = en_GB
+# environment
+_ = /usr/bin/make
+# default
+PREPROCESS.F = $(FC) $(FFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -F
+# environment
+XDG_CONFIG_DIRS = /etc/xdg/lubuntu:/etc/xdg/xdg-Lubuntu:/usr/share/upstart/xdg:/etc/xdg
+# default
+OUTPUT_OPTION = -o $@
+# default
+COMPILE.cpp = $(COMPILE.cc)
+# makefile (from `Makefile', line 1)
+MAKEFILE_LIST :=  Makefile
+# automatic
+@F = $(notdir $@)
+# environment
+IM_CONFIG_PHASE = 1
+# environment
+SESSIONTYPE = lxsession
+# environment
+MANDATORY_PATH = /usr/share/gconf/Lubuntu.mandatory.path
+# environment
+XDG_DATA_DIRS = /etc/xdg/lubuntu:/usr/local/share:/usr/share:/usr/share/gdm:/var/lib/menu-xdg:/usr/share/Lubuntu:/usr/local/share/:/usr/share/
+# environment
+DBUS_SESSION_BUS_ADDRESS = unix:abstract=/tmp/dbus-CdQSWzTGGD
+# makefile (from `Makefile', line 8)
+CC = g++ -O0 -Wall -Wunused
+# default
+CHECKOUT,v = +$(if $(wildcard $@),,$(CO) $(COFLAGS) $< $@)
+# environment
+LESSOPEN = | /usr/bin/lesspipe %s
+# default
+CPP = $(CC) -E
+# default
+LINK.cc = $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(LDFLAGS) $(TARGET_ARCH)
+# environment
+XDG_SESSION_PATH = /org/freedesktop/DisplayManager/Session0
+# default
+LEX = lex
+# environment
+PATH = /home/sjh/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/home/sjh/bin:/usr/local/java/jdk1.8.0_25/bin
+# default
+LD = ld
+# default
+TEXI2DVI = texi2dvi
+# environment
+_LXSESSION_PID = 1729
+# environment
+GPG_AGENT_INFO = /run/user/1000/keyring-sxV2UO/gpg:0:1
+# default
+YACC = yacc
+# environment
+UPSTART_JOB = lxsession
+# default
+COMPILE.mod = $(M2C) $(M2FLAGS) $(MODFLAGS) $(TARGET_ARCH)
+# environment
+XDG_RUNTIME_DIR = /run/user/1000
+# default
+ARFLAGS = rv
+# environment
+TEXTDOMAIN = im-config
+# default
+LINK.r = $(FC) $(FFLAGS) $(RFLAGS) $(LDFLAGS) $(TARGET_ARCH)
+# default
+LINT = lint
+# default
+COMPILE.f = $(FC) $(FFLAGS) $(TARGET_ARCH) -c
+# environment
+INSTANCE = 
+# default
+LINT.c = $(LINT) $(LINTFLAGS) $(CPPFLAGS) $(TARGET_ARCH)
+# default
+LINK.p = $(PC) $(PFLAGS) $(CPPFLAGS) $(LDFLAGS) $(TARGET_ARCH)
+# default
+YACC.y = $(YACC) $(YFLAGS)
+# default
+AR = ar
+# environment
+XDG_MENU_PREFIX = lxde-
+# default
+.FEATURES := target-specific order-only second-expansion else-if archives jobserver check-symlink
+# default
+TANGLE = tangle
+# environment
+SESSION = Lubuntu
+# environment
+XDG_GREETER_DATA_DIR = /var/lib/lightdm-data/sjh
+# environment
+LS_COLORS = rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arj=01;31:*.taz=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.dz=01;31:*.gz=01;31:*.lz=01;31:*.xz=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.jpg=01;35:*.jpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.axv=01;35:*.anx=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.axa=00;36:*.oga=00;36:*.spx=00;36:*.xspf=00;36:
+# environment
+JOB = dbus
+# environment
+SSH_AUTH_SOCK = /run/user/1000/keyring-sxV2UO/ssh
+# default
+GET = get
+# automatic
+%F = $(notdir $%)
+# environment
+DISPLAY = :0
+# default
+COMPILE.F = $(FC) $(FFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
+# default
+CTANGLE = ctangle
+# default
+.LIBPATTERNS = lib%.so lib%.a
+# default
+LINK.C = $(LINK.cc)
+# environment
+PWD = /home/sjh/git/stringmol/src
+# environment
+define COMP_WORDBREAKS
+ 	
+"'><;|&(:
+endef
+# default
+LINK.S = $(CC) $(ASFLAGS) $(CPPFLAGS) $(LDFLAGS) $(TARGET_MACH)
+# environment
+XDG_SEAT = seat0
+# default
+PREPROCESS.r = $(FC) $(FFLAGS) $(RFLAGS) $(TARGET_ARCH) -F
+# default
+LINK.c = $(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(TARGET_ARCH)
+# default
+LINK.s = $(CC) $(ASFLAGS) $(LDFLAGS) $(TARGET_MACH)
+# environment
+HOME = /home/sjh
+# environment
+LESSCLOSE = /usr/bin/lesspipe %s %s
+# environment
+LOGNAME = sjh
+# makefile (from `Makefile', line 7)
+C4C = gcc -O0 -Wall -Wunused
+# default
+CO = co
+# automatic
+^D = $(patsubst %/,%,$(dir $^))
+# environment
+XDG_VTNR = 7
+# default
+MAKE = $(MAKE_COMMAND)
+# environment
+SHLVL = 1
+# default
+AS = as
+# default
+PREPROCESS.S = $(CC) -E $(CPPFLAGS)
+# environment
+JAVA_HOME = /usr/local/java/jdk1.8.0_25
+# default
+COMPILE.p = $(PC) $(PFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
+# environment
+XDG_SESSION_ID = c1
+# environment
+USER = sjh
+# default
+FC = f77
+# makefile
+.DEFAULT_GOAL := DEBUG_DIR
+# environment
+XDG_CURRENT_DESKTOP = LXDE
+# environment
+CLASSPATH = .:/usr/local/lib/antlr-4.5-complete.jar:
+# environment
+UPSTART_EVENTS = started xsession
+# automatic
+%D = $(patsubst %/,%,$(dir $%))
+# environment
+GNOME_KEYRING_PID = 1698
+# environment
+SAL_USE_VCLPLUGIN = gtk
+# default
+WEAVE = weave
+# default
+MAKE_COMMAND := make
+# default
+LINK.cpp = $(LINK.cc)
+# default
+F77 = $(FC)
+# environment
+OLDPWD = /home/sjh/git/stringmol
+# default
+.VARIABLES := 
+# default
+PC = pc
+# automatic
+*F = $(notdir $*)
+# environment
+LANGUAGE = en_GB:en
+# environment
+XDG_SEAT_PATH = /org/freedesktop/DisplayManager/Seat0
+# default
+COMPILE.def = $(M2C) $(M2FLAGS) $(DEFFLAGS) $(TARGET_ARCH)
+# environment
+GNOME_KEYRING_CONTROL = /run/user/1000/keyring-sxV2UO
+# makefile
+MAKEFLAGS = p
+# environment
+MFLAGS = -p
+# automatic
+*D = $(patsubst %/,%,$(dir $*))
+# default
+LEX.l = $(LEX) $(LFLAGS) -t
+# automatic
++D = $(patsubst %/,%,$(dir $+))
+# default
+COMPILE.r = $(FC) $(FFLAGS) $(RFLAGS) $(TARGET_ARCH) -c
+# automatic
++F = $(notdir $+)
+# default
+M2C = m2c
+# environment
+DEFAULTS_PATH = /usr/share/gconf/Lubuntu.default.path
+# environment
+TEXTDOMAINDIR = /usr/share/locale/
+# default
+MAKEFILES := 
+# environment
+UPSTART_SESSION = unix:abstract=/com/ubuntu/upstart-session/1000/1620
+# default
+COMPILE.cc = $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
+# automatic
+<F = $(notdir $<)
+# default
+CXX = g++
+# environment
+XDG_CONFIG_HOME = /home/sjh/.config
+# default
+COFLAGS = 
+# default
+COMPILE.C = $(COMPILE.cc)
+# automatic
+^F = $(notdir $^)
+# default
+COMPILE.S = $(CC) $(ASFLAGS) $(CPPFLAGS) $(TARGET_MACH) -c
+# default
+LINK.F = $(FC) $(FFLAGS) $(CPPFLAGS) $(LDFLAGS) $(TARGET_ARCH)
+# default
+SUFFIXES := .out .a .ln .o .c .cc .C .cpp .p .f .F .r .y .l .s .S .mod .sym .def .h .info .dvi .tex .texinfo .texi .txinfo .w .ch .web .sh .elc .el
+# default
+COMPILE.c = $(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
+# default
+COMPILE.s = $(AS) $(ASFLAGS) $(TARGET_MACH)
+# default
+.INCLUDE_DIRS = /usr/include /usr/local/include /usr/include
+# environment
+MAKELEVEL := 0
+# default
+MAKEINFO = makeinfo
+# default
+LINK.f = $(FC) $(FFLAGS) $(LDFLAGS) $(TARGET_ARCH)
+# default
+TEX = tex
+# environment
+LANG = en_GB.UTF-8
+# environment
+TERM = xterm
+# default
+F77FLAGS = $(FFLAGS)
+# default
+LINK.o = $(CC) $(LDFLAGS) $(TARGET_ARCH)
+# variable set hash-table stats:
+# Load=143/1024=14%, Rehash=0, Collisions=19/173=11%
+
+# Pattern-specific Variable Values
+
+# No pattern-specific variable values.
+
+# Directories
+
+# SCCS: could not be stat'd.
+# . (device 2054, inode 1578803): 89 files, 34 impossibilities.
+# ../SCCS: could not be stat'd.
+# ../RCS: could not be stat'd.
+# .. (device 2054, inode 1578547): 21 files, 17 impossibilities.
+# RCS: could not be stat'd.
+
+# 110 files, 51 impossibilities in 6 directories.
+
+# Implicit Rules
+
+%.out:
+
+%.a:
+
+%.ln:
+
+%.o:
+
+%: %.o
+# commands to execute (built-in):
+	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+%.c:
+
+%: %.c
+# commands to execute (built-in):
+	$(LINK.c) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+%.ln: %.c
+# commands to execute (built-in):
+	$(LINT.c) -C$* $<
+
+%.o: %.c
+# commands to execute (built-in):
+	$(COMPILE.c) $(OUTPUT_OPTION) $<
+
+%.cc:
+
+%: %.cc
+# commands to execute (built-in):
+	$(LINK.cc) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+%.o: %.cc
+# commands to execute (built-in):
+	$(COMPILE.cc) $(OUTPUT_OPTION) $<
+
+%.C:
+
+%: %.C
+# commands to execute (built-in):
+	$(LINK.C) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+%.o: %.C
+# commands to execute (built-in):
+	$(COMPILE.C) $(OUTPUT_OPTION) $<
+
+%.cpp:
+
+%: %.cpp
+# commands to execute (built-in):
+	$(LINK.cpp) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+%.o: %.cpp
+# commands to execute (built-in):
+	$(COMPILE.cpp) $(OUTPUT_OPTION) $<
+
+%.p:
+
+%: %.p
+# commands to execute (built-in):
+	$(LINK.p) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+%.o: %.p
+# commands to execute (built-in):
+	$(COMPILE.p) $(OUTPUT_OPTION) $<
+
+%.f:
+
+%: %.f
+# commands to execute (built-in):
+	$(LINK.f) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+%.o: %.f
+# commands to execute (built-in):
+	$(COMPILE.f) $(OUTPUT_OPTION) $<
+
+%.F:
+
+%: %.F
+# commands to execute (built-in):
+	$(LINK.F) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+%.o: %.F
+# commands to execute (built-in):
+	$(COMPILE.F) $(OUTPUT_OPTION) $<
+
+%.f: %.F
+# commands to execute (built-in):
+	$(PREPROCESS.F) $(OUTPUT_OPTION) $<
+
+%.r:
+
+%: %.r
+# commands to execute (built-in):
+	$(LINK.r) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+%.o: %.r
+# commands to execute (built-in):
+	$(COMPILE.r) $(OUTPUT_OPTION) $<
+
+%.f: %.r
+# commands to execute (built-in):
+	$(PREPROCESS.r) $(OUTPUT_OPTION) $<
+
+%.y:
+
+%.ln: %.y
+# commands to execute (built-in):
+	$(YACC.y) $< 
+	$(LINT.c) -C$* y.tab.c 
+	$(RM) y.tab.c
+
+%.c: %.y
+# commands to execute (built-in):
+	$(YACC.y) $< 
+	mv -f y.tab.c $@
+
+%.l:
+
+%.ln: %.l
+# commands to execute (built-in):
+	@$(RM) $*.c
+	$(LEX.l) $< > $*.c
+	$(LINT.c) -i $*.c -o $@
+	$(RM) $*.c
+
+%.c: %.l
+# commands to execute (built-in):
+	@$(RM) $@ 
+	$(LEX.l) $< > $@
+
+%.r: %.l
+# commands to execute (built-in):
+	$(LEX.l) $< > $@ 
+	mv -f lex.yy.r $@
+
+%.s:
+
+%: %.s
+# commands to execute (built-in):
+	$(LINK.s) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+%.o: %.s
+# commands to execute (built-in):
+	$(COMPILE.s) -o $@ $<
+
+%.S:
+
+%: %.S
+# commands to execute (built-in):
+	$(LINK.S) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+%.o: %.S
+# commands to execute (built-in):
+	$(COMPILE.S) -o $@ $<
+
+%.s: %.S
+# commands to execute (built-in):
+	$(PREPROCESS.S) $< > $@
+
+%.mod:
+
+%: %.mod
+# commands to execute (built-in):
+	$(COMPILE.mod) -o $@ -e $@ $^
+
+%.o: %.mod
+# commands to execute (built-in):
+	$(COMPILE.mod) -o $@ $<
+
+%.sym:
+
+%.def:
+
+%.sym: %.def
+# commands to execute (built-in):
+	$(COMPILE.def) -o $@ $<
+
+%.h:
+
+%.info:
+
+%.dvi:
+
+%.tex:
+
+%.dvi: %.tex
+# commands to execute (built-in):
+	$(TEX) $<
+
+%.texinfo:
+
+%.info: %.texinfo
+# commands to execute (built-in):
+	$(MAKEINFO) $(MAKEINFO_FLAGS) $< -o $@
+
+%.dvi: %.texinfo
+# commands to execute (built-in):
+	$(TEXI2DVI) $(TEXI2DVI_FLAGS) $<
+
+%.texi:
+
+%.info: %.texi
+# commands to execute (built-in):
+	$(MAKEINFO) $(MAKEINFO_FLAGS) $< -o $@
+
+%.dvi: %.texi
+# commands to execute (built-in):
+	$(TEXI2DVI) $(TEXI2DVI_FLAGS) $<
+
+%.txinfo:
+
+%.info: %.txinfo
+# commands to execute (built-in):
+	$(MAKEINFO) $(MAKEINFO_FLAGS) $< -o $@
+
+%.dvi: %.txinfo
+# commands to execute (built-in):
+	$(TEXI2DVI) $(TEXI2DVI_FLAGS) $<
+
+%.w:
+
+%.c: %.w
+# commands to execute (built-in):
+	$(CTANGLE) $< - $@
+
+%.tex: %.w
+# commands to execute (built-in):
+	$(CWEAVE) $< - $@
+
+%.ch:
+
+%.web:
+
+%.p: %.web
+# commands to execute (built-in):
+	$(TANGLE) $<
+
+%.tex: %.web
+# commands to execute (built-in):
+	$(WEAVE) $<
+
+%.sh:
+
+%: %.sh
+# commands to execute (built-in):
+	cat $< >$@ 
+	chmod a+x $@
+
+%.elc:
+
+%.el:
+
+(%): %
+# commands to execute (built-in):
+	$(AR) $(ARFLAGS) $@ $<
+
+%.out: %
+# commands to execute (built-in):
+	@rm -f $@ 
+	cp $< $@
+
+%.c: %.w %.ch
+# commands to execute (built-in):
+	$(CTANGLE) $^ $@
+
+%.tex: %.w %.ch
+# commands to execute (built-in):
+	$(CWEAVE) $^ $@
+
+%:: %,v
+# commands to execute (built-in):
+	$(CHECKOUT,v)
+
+%:: RCS/%,v
+# commands to execute (built-in):
+	$(CHECKOUT,v)
+
+%:: RCS/%
+# commands to execute (built-in):
+	$(CHECKOUT,v)
+
+%:: s.%
+# commands to execute (built-in):
+	$(GET) $(GFLAGS) $(SCCS_OUTPUT_OPTION) $<
+
+%:: SCCS/s.%
+# commands to execute (built-in):
+	$(GET) $(GFLAGS) $(SCCS_OUTPUT_OPTION) $<
+
+# 86 implicit rules, 5 (5.8%) terminal.
+
+# Files
+
+randutil.o: randutil.c randutil.h mt19937-2.h
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 159):
+	$(C4C) -c randutil.c
+	
+
+smspatial.o: smspatial.cpp randutil.h alignment.h rules.h agents_base.h SMspp.h stringPM.h signalSM.h tests.h lodepng.h
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 251):
+	$(CC) -c smspatial.cpp 	
+	
+
+# Not a target:
+.web.p:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(TANGLE) $<
+
+RELEASE_DIR: ../release
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+mt19937-2.o: mt19937-2.c mt19937-2.h
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 162):
+	$(C4C) -c mt19937-2.c
+	
+
+# Not a target:
+../debug:
+# Implicit rule search has been done.
+# Last modified 2016-09-26 10:00:04.401973349
+# File has been updated.
+# Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+stringPM.h:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+memoryutil.h:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+.l.r:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(LEX.l) $< > $@ 
+	mv -f lex.yy.r $@
+
+# Not a target:
+.dvi:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+stringmol.o: stringmol.cpp randutil.h alignment.h rules.h agents_base.h SMspp.h stringPM.h signalSM.h tests.h lodepng.h
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 243):
+	$(CC) -c stringmol.cpp 	
+	
+
+# Not a target:
+.F.o:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(COMPILE.F) $(OUTPUT_OPTION) $<
+
+instructions.o: instructions.cpp instructions.h memoryutil.h randutil.h alignment.h stringmanip.h
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 200):
+	$(CC) -c instructions.cpp
+	
+
+all: clean release debug
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+.y.ln:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(YACC.y) $< 
+	$(LINT.c) -C$* y.tab.c 
+	$(RM) y.tab.c
+
+# Not a target:
+.o:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+# Not a target:
+agents_base.cpp:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+.y:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+.def.sym:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(COMPILE.def) -o $@ $<
+
+# Not a target:
+params.c:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+smspatial_dbg: smspatial.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o hsort.o mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o stringmanip.o alignment.o instructions.o tests.o lodepng.o
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 84):
+	$(CC) -o smspatial_dbg -s -lm 	\
+	-funroll-loops -fomit-frame-pointer \
+	smspatial.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
+	hsort.o mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
+	stringmanip.o	alignment.o	instructions.o tests.o lodepng.o -lSDL 
+	
+
+hsort.o: hsort.c hsort.h
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 144):
+	$(C4C) -c hsort.c
+	
+
+# Not a target:
+.p.o:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(COMPILE.p) $(OUTPUT_OPTION) $<
+
+# Not a target:
+.p:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(LINK.p) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+# Not a target:
+.txinfo.dvi:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(TEXI2DVI) $(TEXI2DVI_FLAGS) $<
+
+# Not a target:
+webapi_bind.cpp:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+.a:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+.l.ln:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	@$(RM) $*.c
+	$(LEX.l) $< > $*.c
+	$(LINT.c) -i $*.c -o $@
+	$(RM) $*.c
+
+# Not a target:
+.w.c:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(CTANGLE) $< - $@
+
+# Not a target:
+.texi.dvi:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(TEXI2DVI) $(TEXI2DVI_FLAGS) $<
+
+SMspp.o: SMspp.cpp SMspp.h
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 203):
+	$(CC) -c SMspp.cpp
+	
+
+stringPM.o: stringPM.cpp stringPM.h memoryutil.h randutil.h alignment.h stringmanip.h instructions.h rules.h agents_base.h SMspp.h
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 215):
+	$(CC) -c stringPM.cpp
+	
+
+# Not a target:
+.sh:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	cat $< >$@ 
+	chmod a+x $@
+
+# Not a target:
+randutil.h:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+stringmol_dbg: stringmol.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o hsort.o mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o stringmanip.o alignment.o instructions.o tests.o lodepng.o
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 103):
+	$(CC) -o stringmol_dbg -lm stringmol.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
+	hsort.o mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
+	stringmanip.o	alignment.o	instructions.o tests.o lodepng.o			
+	
+
+# Not a target:
+.cc:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(LINK.cc) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+# Not a target:
+.cc.o:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(COMPILE.cc) $(OUTPUT_OPTION) $<
+
+# Not a target:
+.def:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+.SUFFIXES: .out .a .ln .o .c .cc .C .cpp .p .f .F .r .y .l .s .S .mod .sym .def .h .info .dvi .tex .texinfo .texi .txinfo .w .ch .web .sh .elc .el
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+mathutil.c:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+params.h:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+.c.o:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(COMPILE.c) $(OUTPUT_OPTION) $<
+
+# Not a target:
+Makefile:
+# Implicit rule search has been done.
+# Last modified 2016-09-26 10:44:23.727366448
+# File has been updated.
+# Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+signalSM.h:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+.r.o:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(COMPILE.r) $(OUTPUT_OPTION) $<
+
+# Not a target:
+.r:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(LINK.r) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+webapi_util.o: webapi_util.cpp webapi_util.h stringPM.h randutil.h params.h hsort.h alignment.h signalSM.h setupSM.h rules.h agents_base.h SMspp.h
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 222):
+	$(CC) -c webapi_util.cpp
+	
+
+debug: cleano stringmol_dbg web_api_dbg smspatial_dbg
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# makefile (from `Makefile', line 19)
+# CXX += -DDEBUG -g -pg
+# makefile (from `Makefile', line 20)
+# CC += -DDEBUG -g -pg
+# variable set hash-table stats:
+# Load=2/32=6%, Rehash=0, Collisions=0/4=0%
+
+# Not a target:
+lodepng.h:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+lodepng.o: lodepng.cpp lodepng.h
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 178):
+	$(CC) -c lodepng.cpp
+	
+
+# Not a target:
+rules.h:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+setupSM.cpp:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+webapi_step.cpp:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+randutil.c:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+alignment.o: alignment.cpp alignment.h randutil.h
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 197):
+	$(CC) -c alignment.cpp
+	
+
+# Not a target:
+.info:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+.elc:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+.l.c:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	@$(RM) $@ 
+	$(LEX.l) $< > $@
+
+# Not a target:
+mt19937-2.c:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+lodepng.cpp:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+setupSM.h:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+tests.o: tests.cpp tests.h
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 188):
+	$(CC) -c tests.cpp
+	
+
+# Not a target:
+rules.cpp:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+mathutil.h:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+.out:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+stringmanip.o: stringmanip.cpp stringmanip.h
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 194):
+	$(CC) -c stringmanip.cpp
+	
+
+# Not a target:
+.C:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(LINK.C) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+# Not a target:
+.r.f:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(PREPROCESS.r) $(OUTPUT_OPTION) $<
+
+# Not a target:
+.S:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(LINK.S) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+# Not a target:
+.texinfo.info:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(MAKEINFO) $(MAKEINFO_FLAGS) $< -o $@
+
+# Not a target:
+.c:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(LINK.c) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+# Not a target:
+.w.tex:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(CWEAVE) $< - $@
+
+# Not a target:
+stringmol.cpp:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+.c.ln:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(LINT.c) -C$* $<
+
+# Not a target:
+.s.o:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(COMPILE.s) -o $@ $<
+
+# Not a target:
+.s:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(LINK.s) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+# Not a target:
+hsort.c:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+agents_base.h:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+web_api: bind step
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+SMspp.cpp:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+smlib: stringmanip.o alignment.o instructions.o SMspp.o rules.o agents_base.o stringPM.o signalSM.o
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 79):
+	
+
+# Not a target:
+mt19937-2.h:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+microbial_ga.o: microbial_ga.c microbial_ga.h
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 153):
+	$(C4C) -c microbial_ga.c
+	
+
+sjhutils: microbial_ga.o mt19937-2.o mathutil.o memoryutil.o params.o randutil.o hsort.o
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+.texinfo.dvi:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(TEXI2DVI) $(TEXI2DVI_FLAGS) $<
+
+# Not a target:
+.el:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+.texinfo:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+memoryutil.o: memoryutil.c memoryutil.h
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 150):
+	$(C4C) -c memoryutil.c
+	
+
+# Not a target:
+.y.c:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(YACC.y) $< 
+	mv -f y.tab.c $@
+
+# Not a target:
+.web.tex:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(WEAVE) $<
+
+stringmol: stringmol.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o hsort.o mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o stringmanip.o alignment.o instructions.o tests.o lodepng.o
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 95):
+	$(CC) -o stringmol -lm stringmol.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
+	hsort.o mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
+	stringmanip.o	alignment.o	instructions.o tests.o lodepng.o
+	
+
+# Not a target:
+.texi.info:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(MAKEINFO) $(MAKEINFO_FLAGS) $< -o $@
+
+# Not a target:
+smspatial.cpp:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+release: cleano stringmol web_api
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+.DEFAULT:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+webapi_bind.o: webapi_bind.cpp webapi_util.h randutil.h alignment.h rules.h agents_base.h SMspp.h stringPM.h signalSM.h tests.h webapi_util.h
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 261):
+	$(CC) -c webapi_bind.cpp 
+	
+
+# Not a target:
+.h:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+web_api_dbg: bind_dbg step_dbg
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+hsort.h:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+step: webapi_step.o webapi_util.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o hsort.o mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o stringmanip.o alignment.o instructions.o tests.o lodepng.o
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 125):
+	$(CC) -o webapi_step.cgi -lm webapi_step.o webapi_util.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
+	hsort.o mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
+	stringmanip.o	alignment.o	instructions.o tests.o	 lodepng.o		
+	
+
+# Not a target:
+.tex.dvi:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(TEX) $<
+
+# Not a target:
+instructions.cpp:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+.cpp.o:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(COMPILE.cpp) $(OUTPUT_OPTION) $<
+
+# Not a target:
+.cpp:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(LINK.cpp) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+clean:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 45):
+	rm -f *.o
+	rm -f stringmol
+	rm -f stringmol_dbg
+	rm -f smspatial
+	rm -f smspatial_dbg
+	rm -f webapi_*.cgi
+	
+
+cleano:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 54):
+	rm -f *.o
+	
+
+# Not a target:
+.C.o:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(COMPILE.C) $(OUTPUT_OPTION) $<
+
+# Not a target:
+.ln:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+.texi:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+.txinfo:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+.tex:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+tests.h:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+webapi_bind_dbg.o: webapi_bind.cpp randutil.h alignment.h rules.h agents_base.h SMspp.h stringPM.h signalSM.h tests.h
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 279):
+	$(CC) -c webapi_bind.cpp 		
+	
+
+# Not a target:
+.txinfo.info:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(MAKEINFO) $(MAKEINFO_FLAGS) $< -o $@
+
+# Not a target:
+../release:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+step_dbg: webapi_step_dbg.o webapi_util.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o hsort.o mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o stringmanip.o alignment.o instructions.o tests.o lodepng.o
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 133):
+	$(CC) -o webapi_step_dbg.cgi -lm webapi_step.o webapi_util.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
+	hsort.o mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
+	stringmanip.o	alignment.o	instructions.o tests.o	 lodepng.o		
+	
+
+# Not a target:
+.ch:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+webapi_step.o: webapi_step.cpp webapi_util.h randutil.h alignment.h rules.h agents_base.h SMspp.h stringPM.h signalSM.h tests.h webapi_util.h
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 267):
+	$(CC) -c webapi_step.cpp 		
+	
+
+# Not a target:
+tests.cpp:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+instructions.h:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+stringPM.cpp:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+params.o: params.c params.h
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 156):
+	$(C4C) -c params.c
+	
+
+signalSM.o: signalSM.cpp signalSM.h
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 191):
+	$(CC) -c signalSM.cpp
+	
+
+# Not a target:
+webapi_util.h:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+signalSM.cpp:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+bind: webapi_bind.o webapi_util.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o hsort.o mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o stringmanip.o alignment.o instructions.o tests.o lodepng.o
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 110):
+	$(CC) -o webapi_bind.cgi -lm webapi_bind.o webapi_util.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
+	hsort.o mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
+	stringmanip.o	alignment.o	instructions.o tests.o lodepng.o			
+	
+
+# Not a target:
+microbial_ga.h:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+.S.s:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(PREPROCESS.S) $< > $@
+
+# Not a target:
+.mod:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(COMPILE.mod) -o $@ -e $@ $^
+
+rules.o: rules.cpp rules.h memoryutil.h
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 206):
+	$(CC) -c rules.cpp
+	
+
+# Not a target:
+.mod.o:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(COMPILE.mod) -o $@ $<
+
+# Not a target:
+.F.f:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(PREPROCESS.F) $(OUTPUT_OPTION) $<
+
+# Not a target:
+alignment.h:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+.w:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+webapi_util.cpp:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+.S.o:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(COMPILE.S) -o $@ $<
+
+# Not a target:
+microbial_ga.c:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+setupSM.o: setupSM.cpp randutil.h alignment.h rules.h agents_base.h SMspp.h stringPM.h signalSM.h lodepng.h
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 235):
+	$(CC) -c setupSM.cpp 	
+	
+
+webapi_step_dbg.o: webapi_step.cpp randutil.h alignment.h rules.h agents_base.h SMspp.h stringPM.h signalSM.h tests.h
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 287):
+	$(CC) -c webapi_step.cpp 
+	
+
+# Not a target:
+memoryutil.c:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+mathutil.o: mathutil.c mathutil.h
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 147):
+	$(C4C) -c mathutil.c
+	
+
+# Not a target:
+stringmanip.h:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+alignment.cpp:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+.l:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+DEBUG_DIR: ../debug
+# Implicit rule search has been done.
+# File does not exist.
+# File has been updated.
+# Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+.F:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(LINK.F) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+bind_dbg: webapi_bind_dbg.o webapi_util.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o hsort.o mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o stringmanip.o alignment.o instructions.o tests.o lodepng.o
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 118):
+	$(CC) -o webapi_bind_dbg.cgi -lm webapi_bind.o webapi_util.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
+	hsort.o mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
+	stringmanip.o	alignment.o	instructions.o tests.o  lodepng.o			
+	
+
+# Not a target:
+.web:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+.sym:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+.f:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(LINK.f) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+# Not a target:
+.f.o:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (built-in):
+	$(COMPILE.f) $(OUTPUT_OPTION) $<
+
+# Not a target:
+SMspp.h:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+# Not a target:
+stringmanip.cpp:
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+
+agents_base.o: agents_base.cpp agents_base.h memoryutil.h randutil.h params.h rules.h
+# Implicit rule search has not been done.
+# Modification time never checked.
+# File has not been updated.
+# commands to execute (from `Makefile', line 209):
+	$(CC) -c agents_base.cpp
+	
+
+# files hash-table stats:
+# Load=154/1024=15%, Rehash=0, Collisions=466/1911=24%
+# VPATH Search Paths
+
+# No `vpath' search paths.
+
+# No general (`VPATH' variable) search path.
+
+# # of strings in strcache: 1
+# # of strcache buffers: 1
+# strcache size: total = 4096 / max = 4096 / min = 4096 / avg = 4096
+# strcache free: total = 4087 / max = 4087 / min = 4087 / avg = 4087
+
+# Finished Make data base on Mon Sep 26 10:45:56 2016
+
