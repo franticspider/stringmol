@@ -69,6 +69,10 @@
 	int smspatial_init(char *fn, stringPM *A, smsprun **run, int runno);
 	int smspatial_step(stringPM *A, smsprun *run);
 
+	/* diagnostics for spatial stringmol */
 	int smspatial_ancestry(int argc, char *argv[]);
+	int smspatial_lengthpicsfromlogs(int argc, char *argv[]);
+
+	void encodeOneStep(const char* filename, std::vector<unsigned char>& image, unsigned width, unsigned height);
 
 #endif /* SETUPSM_H_ */

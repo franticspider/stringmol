@@ -44,6 +44,10 @@
 //signal
 #include "signalSM.h"
 
+//TODO: Sort out this dependency nightmare!
+// Writing PNGs
+#include "lodepng.h"
+#include <iostream>
 //setup
 #include "setupSM.h"
 
@@ -2723,6 +2727,12 @@ int main(int argc, char *argv[]) {
 		/*************************************************/
 		case 34://Analyse spatial stringmol experiments - generate ancestry
 			smspatial_ancestry(argc,argv);
+			break;
+
+		/*************************************************/
+		case 35://Analyse spatial stringmol experiments - generate length images
+			smspatial_lengthpicsfromlogs(argc,argv);
+			break;
 
 
 		/*************************************************/

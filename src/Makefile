@@ -105,48 +105,48 @@ smspatial_dbg: 	smspatial.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o 
 # stringmol
 stringmol: 	stringmol.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
 			hsort.o	mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
-			stringmanip.o	alignment.o	instructions.o tests.o
+			stringmanip.o	alignment.o	instructions.o tests.o lodepng.o
 	$(CC) -o stringmol -lm stringmol.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
 			hsort.o mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
-			stringmanip.o	alignment.o	instructions.o tests.o
+			stringmanip.o	alignment.o	instructions.o tests.o lodepng.o
 			
 
 stringmol_dbg: 	stringmol.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
 			hsort.o	mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
-			stringmanip.o	alignment.o	instructions.o tests.o
+			stringmanip.o	alignment.o	instructions.o tests.o lodepng.o
 	$(CC) -o stringmol_dbg -lm stringmol.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
 			hsort.o mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
-			stringmanip.o	alignment.o	instructions.o tests.o			
+			stringmanip.o	alignment.o	instructions.o tests.o lodepng.o			
 			
 bind: 	webapi_bind.o webapi_util.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
 			hsort.o	mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
-			stringmanip.o	alignment.o	instructions.o tests.o
+			stringmanip.o	alignment.o	instructions.o tests.o lodepng.o
 	$(CC) -o webapi_bind.cgi -lm webapi_bind.o webapi_util.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
 			hsort.o mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
-			stringmanip.o	alignment.o	instructions.o tests.o			
+			stringmanip.o	alignment.o	instructions.o tests.o lodepng.o			
 		
 
 bind_dbg: 	webapi_bind_dbg.o webapi_util.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
 			hsort.o	mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
-			stringmanip.o	alignment.o	instructions.o tests.o
+			stringmanip.o	alignment.o	instructions.o tests.o  lodepng.o
 	$(CC) -o webapi_bind_dbg.cgi -lm webapi_bind.o webapi_util.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
 			hsort.o mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
-			stringmanip.o	alignment.o	instructions.o tests.o			
+			stringmanip.o	alignment.o	instructions.o tests.o  lodepng.o			
 			
 step: 	webapi_step.o webapi_util.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
 			hsort.o	mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
-			stringmanip.o	alignment.o	instructions.o tests.o
+			stringmanip.o	alignment.o	instructions.o tests.o  lodepng.o
 	$(CC) -o webapi_step.cgi -lm webapi_step.o webapi_util.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
 			hsort.o mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
-			stringmanip.o	alignment.o	instructions.o tests.o			
+			stringmanip.o	alignment.o	instructions.o tests.o	 lodepng.o		
 		
 
 step_dbg: 	webapi_step_dbg.o webapi_util.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
 			hsort.o	mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
-			stringmanip.o	alignment.o	instructions.o tests.o
+			stringmanip.o	alignment.o	instructions.o tests.o  lodepng.o
 	$(CC) -o webapi_step_dbg.cgi -lm webapi_step.o webapi_util.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
 			hsort.o mathutil.o memoryutil.o params.o randutil.o mt19937-2.o microbial_ga.o \
-			stringmanip.o	alignment.o	instructions.o tests.o			
+			stringmanip.o	alignment.o	instructions.o tests.o	 lodepng.o		
 		
 
 ###################
@@ -237,7 +237,7 @@ webapi_util.o:	webapi_util.cpp webapi_util.h stringPM.h \
 
 setupSM.o:	setupSM.cpp \
 		randutil.h	alignment.h \
-		rules.h agents_base.h SMspp.h stringPM.h signalSM.h
+		rules.h agents_base.h SMspp.h stringPM.h signalSM.h lodepng.h
 	$(CC) -c setupSM.cpp 	
 			
 
@@ -245,7 +245,7 @@ setupSM.o:	setupSM.cpp \
 stringmol.o:  	stringmol.cpp \
 			randutil.h	alignment.h \
 			rules.h agents_base.h SMspp.h stringPM.h signalSM.h \
-			tests.h
+			tests.h lodepng.h
 	$(CC) -c stringmol.cpp 	
 			
 

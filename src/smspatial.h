@@ -12,5 +12,6 @@
 
 int smspatial(int argc, char *argv[]);
 
+void pics_from_config(int s, int f, int step);
 
 #endif /* SMSPATIAL_H_ */

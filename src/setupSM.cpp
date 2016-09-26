@@ -42,6 +42,11 @@
 #include "SMspp.h"
 #include "stringPM.h"
 
+// Writing PNGs
+#include "lodepng.h"
+#include <iostream>
+
+
 #include "setupSM.h"
 
 /* Used in comass_ga and comass_ga_boostwinners
@@ -1681,10 +1686,276 @@ int smspatial(int argc, char *argv[]) {
 }
 
 
+
+//Example 1
+//Encode from raw pixels to disk with a single function call
+//The image argument has width * height RGBA pixels or width * height * 4 bytes
+void encodeOneStep(const char* filename, std::vector<unsigned char>& image, unsigned width, unsigned height)
+{
+	//Encode the image
+	unsigned error = lodepng::encode(filename, image, width, height);
+
+	//if there's an error, display it
+	if(error) std::cout << "encoder error " << error << ": "<< lodepng_error_text(error) << std::endl;
+}
+
+
+
+
+int smspatial_lengthpicsfromlogs(int argc, char *argv[]){
+
+	/*This colormap was generated using the following R script:
+	 *
+			require(colorRamps)
+			x <- matlab.like(70)
+			y <- col2rgb(x)
+			dim <- 70
+			message(sprintf("int colours[%d][3] = {",dim))
+			for(i in 0:dim) message(sprintf("{ %d, %d, %d },",y[1,i],y[2,i],y[3,i]))
+			message("};")
+	 *
+	 */
+
+
+	int colours[70][3] = {
+	{ 0, 0, 167 },
+	{ 0, 10, 177 },
+	{ 0, 20, 186 },
+	{ 0, 29, 196 },
+	{ 0, 39, 206 },
+	{ 0, 49, 216 },
+	{ 0, 59, 226 },
+	{ 0, 69, 235 },
+	{ 0, 78, 245 },
+	{ 0, 88, 255 },
+	{ 0, 98, 255 },
+	{ 0, 108, 255 },
+	{ 0, 118, 255 },
+	{ 0, 128, 255 },
+	{ 0, 137, 255 },
+	{ 0, 147, 255 },
+	{ 0, 157, 255 },
+	{ 0, 167, 255 },
+	{ 10, 177, 255 },
+	{ 20, 186, 255 },
+	{ 29, 196, 255 },
+	{ 39, 206, 255 },
+	{ 49, 216, 255 },
+	{ 59, 226, 255 },
+	{ 69, 235, 255 },
+	{ 78, 245, 255 },
+	{ 88, 255, 255 },
+	{ 98, 255, 245 },
+	{ 108, 255, 235 },
+	{ 118, 255, 226 },
+	{ 128, 255, 216 },
+	{ 137, 255, 206 },
+	{ 147, 255, 196 },
+	{ 157, 255, 186 },
+	{ 167, 255, 177 },
+	{ 177, 255, 167 },
+	{ 186, 255, 157 },
+	{ 196, 255, 147 },
+	{ 206, 255, 137 },
+	{ 216, 255, 128 },
+	{ 226, 255, 118 },
+	{ 235, 255, 108 },
+	{ 245, 255, 98 },
+	{ 255, 255, 88 },
+	{ 255, 245, 78 },
+	{ 255, 235, 69 },
+	{ 255, 226, 59 },
+	{ 255, 216, 49 },
+	{ 255, 206, 39 },
+	{ 255, 196, 29 },
+	{ 255, 186, 20 },
+	{ 255, 177, 10 },
+	{ 255, 167, 0 },
+	{ 255, 157, 0 },
+	{ 255, 147, 0 },
+	{ 255, 137, 0 },
+	{ 255, 128, 0 },
+	{ 255, 118, 0 },
+	{ 255, 108, 0 },
+	{ 255, 98, 0 },
+	{ 255, 88, 0 },
+	{ 245, 78, 0 },
+	{ 235, 69, 0 },
+	{ 226, 59, 0 },
+	{ 216, 49, 0 },
+	{ 206, 39, 0 },
+	{ 196, 29, 0 },
+	{ 186, 20, 0 },
+	{ 177, 10, 0 },
+	{ 167, 0, 0 },
+	};
+
+	////generates pics from a config file via SDL
+	//void pics_from_config(int s, int f, int step){
+
+	int s = atoi(argv[2]);
+	int f = atoi(argv[3]);
+	int step = atoi(argv[4]);
+
+
+	char fn[256];
+
+	SMspp		SP;
+	stringPM	A(&SP);
+
+	smsprun *run;
+
+	smspatial_init("out1_00100.conf",&A,&run,1);
+
+
+	for(int i=s;i<=f;i+=step){
+
+		memset(fn,0,256*sizeof(char));
+
+		sprintf(fn,"out1_%05d.conf",i);
+
+
+		if((smspatial_init(fn,&A,&run,1))==0){
+
+			//Should be able to dump the grid image now...
+
+			//Create the PNG
+			std::vector<unsigned char> image;
+			image.resize(run->gridx * run->gridy * 4);
+
+			int x,y,val;
+
+			if(i==s){
+				for(x=0;x<run->gridx;++x){
+					for (y=0;y<run->gridy;++y) {
+
+						if(y>69){
+							image[4 * run->gridx * y + 4 * x + 0] = 255;//255 * !(x & y);
+							image[4 * run->gridx * y + 4 * x + 1] = 255;//x ^ y;
+							image[4 * run->gridx * y + 4 * x + 2] = 255;//x | y;
+							image[4 * run->gridx * y + 4 * x + 3] = 255;
+
+						}
+						else{
+
+							image[4 * run->gridx * y + 4 * x + 0] = colours[y][0];//255 * !(x & y);
+							image[4 * run->gridx * y + 4 * x + 1] = colours[y][1];//x ^ y;
+							image[4 * run->gridx * y + 4 * x + 2] = colours[y][2];//x | y;
+							image[4 * run->gridx * y + 4 * x + 3] = 255;
+
+						}
+
+					}
+				}
+
+				char filename[128];
+				sprintf(filename,"lenkey.png");
+				encodeOneStep(filename, image, run->gridx, run->gridy);
+			}
+
+
+			for(x=0;x<run->gridx;++x){
+				for (y=0;y<run->gridy;++y) {
+
+
+					if(run->grid[x][y] == NULL){
+
+						image[4 * run->gridx * y + 4 * x + 0] = 0;//255 * !(x & y);
+						image[4 * run->gridx * y + 4 * x + 1] = 0;//x ^ y;
+						image[4 * run->gridx * y + 4 * x + 2] = 0;//x | y;
+						image[4 * run->gridx * y + 4 * x + 3] = 255;
+
+
+
+					}
+					else{
+
+						int len = strlen(run->grid[x][y]->spp->S);
+
+						if(len>69){
+							image[4 * run->gridx * y + 4 * x + 0] = 255;//255 * !(x & y);
+							image[4 * run->gridx * y + 4 * x + 1] = 255;//x ^ y;
+							image[4 * run->gridx * y + 4 * x + 2] = 255;//x | y;
+							image[4 * run->gridx * y + 4 * x + 3] = 255;
+
+						}
+						else{
+
+							image[4 * run->gridx * y + 4 * x + 0] = colours[len][0];//255 * !(x & y);
+							image[4 * run->gridx * y + 4 * x + 1] = colours[len][1];//x ^ y;
+							image[4 * run->gridx * y + 4 * x + 2] = colours[len][2];//x | y;
+							image[4 * run->gridx * y + 4 * x + 3] = 255;
+
+						}
+					}
+				}
+			}
+
+
+			char filename[128];
+			sprintf(filename,"lenframe%07d.png",A.extit);
+			encodeOneStep(filename, image, run->gridx, run->gridy);
+
+			A.clearout();
+			SP.clear_list();
+
+
+		}
+		else{
+			printf("File %s not found, exiting\n",fn);
+			exit(34);
+		}
+	}
+
+
+	return 0;
+}
+
+
+
 int smspatial_ancestry(int argc, char *argv[]){
 
 	int spno = atoi(argv[2]);
 	int timestep = atoi(argv[3]);
+	const int llen = 3000;
+
+	char fn[128],line[llen];
+	FILE *fp;
+
+
+	int found_luca=0;
+
+	int s1,a1,p1;
+
+	while(!found_luca){
+		sprintf(fn,"splist%d.dat",timestep);
+		if((fp=fopen(fn,"r"))!=NULL){
+
+			printf("Successfully opened file %s\nNow looking for species %d\n", fn, spno);
+			while((fgets(line,llen,fp)) != NULL){
+
+				//56189,-1,-1,1,EK$OYHOJLRWEK$BLUBO^>C$=?>D$BLUB}B$=?$$$BLBLUB}OYYHKOBLBLUB}OYYHKO
+				sscanf(line,"%d,%d,%d",&s1,&a1,&p1);
+
+				if(s1 == spno){
+					if(a1==-1 && p1==-1){
+						printf("Ancestors are from earlier run, decrementing timestep\n");
+						timestep -= 100;
+						fclose(fp);
+						break;
+					}
+					else{
+						printf("Ancestors found! Active is %d, Passive is %d\n",a1,p1);
+						break;
+					}
+				}
+			}
+
+			//find the species
+		}
+	}
+
+
 
 	/*Open the splist file and find the entries for the species*/
 

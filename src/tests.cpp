@@ -38,6 +38,12 @@
 #include "alignment.h"
 #include "SMspp.h"
 #include "stringPM.h"
+
+
+// Writing PNGs
+#include "lodepng.h"
+#include <iostream>
+
 #include "setupSM.h"
 
 #include "tests.h"

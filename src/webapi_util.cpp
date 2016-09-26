@@ -46,6 +46,9 @@
 #include "signalSM.h"
 
 //setup
+// Writing PNGs
+#include "lodepng.h"
+#include <iostream>
 #include "setupSM.h"
 
 #include "webapi_util.h"

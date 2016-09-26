@@ -49,11 +49,11 @@
 #include "agents_base.h"
 #include "SMspp.h"
 #include "stringPM.h"
-#include "setupSM.h"
 
 // Writing PNGs
 #include "lodepng.h"
 #include <iostream>
+#include "setupSM.h"
 
 typedef enum td_pic{
 	pic_spp,
@@ -63,17 +63,184 @@ typedef enum td_pic{
 
 
 
-//Example 1
-//Encode from raw pixels to disk with a single function call
-//The image argument has width * height RGBA pixels or width * height * 4 bytes
-void encodeOneStep(const char* filename, std::vector<unsigned char>& image, unsigned width, unsigned height)
-{
-	//Encode the image
-	unsigned error = lodepng::encode(filename, image, width, height);
 
-	//if there's an error, display it
-	if(error) std::cout << "encoder error " << error << ": "<< lodepng_error_text(error) << std::endl;
+
+
+//generates pics from a config file via SDL
+void pics_from_config(int s, int f, int step){
+
+	FILE *fp;
+
+	char fn[256];
+
+	SMspp		SP;
+	stringPM	A(&SP);
+
+	smsprun *run;
+
+	smspatial_init("out1_00100.conf",&A,&run,1);
+
+
+	printf("setting up SDL\n");fflush(stdout);
+
+	/* Set up SDL if we're using it */
+#ifdef USE_SDL
+
+	int **grid;
+	grid = (int **)malloc(run->gridx*sizeof(int *));
+	for(int i=0;i<run->gridx;i++){
+		grid[i] = (int *) malloc(run->gridy*sizeof(int));
+		memset(grid[i],0,run->gridy*sizeof(int));
+	}
+
+	printf("grid allocated\n");fflush(stdout);
+
+	SDL_Surface *screen;
+	SDL_Event sdlEvent;
+	if (SDL_Init(SDL_INIT_VIDEO) < 0 ) {
+	fprintf(stderr,"*** Unable to init SDL: %s ***\n",SDL_GetError());
+	exit(1);
+	}
+	atexit(SDL_Quit);
+	SDL_WM_SetCaption("Spatial Stringmol","nanopond");
+	screen = SDL_SetVideoMode(run->gridy,run->gridx,8,SDL_SWSURFACE);
+	if (!screen) {
+	fprintf(stderr, "*** Unable to create SDL window: %s ***\n", SDL_GetError());
+	exit(1);
+	}
+	const uintptr_t sdlPitch = screen->pitch;
+
+
+	printf("SDL window allocated, pitch is %d \n",screen->pitch);fflush(stdout);
+
+
+#endif /* USE_SDL */
+
+	for(int i=s;i<=f;i+=step){
+
+		memset(fn,0,256*sizeof(char));
+
+		sprintf(fn,"out1_%05d.conf",i);
+
+
+		if((smspatial_init(fn,&A,&run,1))==0){
+
+			//Should be able to dump the grid image now...
+
+			//Create the PNG
+			std::vector<unsigned char> image;
+			image.resize(run->gridx * run->gridy * 4);
+
+
+		    pictype tp = pic_len;
+			int x,y,val;
+
+			if(i==s){
+				/* Make a key pic */
+				uint8_t r ;
+				uint8_t g ;
+				uint8_t b ;
+				for (y=0;y<run->gridy;++y) {
+
+					val=(y/10) * 50;
+
+					for(x=0;x<run->gridx;++x){
+						((uint8_t *)screen->pixels)[y + (x * sdlPitch)] = val;//getColor(grid[x][y]);
+						SDL_GetRGB(((uint8_t *)screen->pixels)[y + (x * sdlPitch)], screen->format ,  &r, &g, &b );
+						//printf("R is %d G is %d B is %d\n",r,g,b);
+					    image[4 * run->gridx * y + 4 * x + 0] = r;//255 * !(x & y);
+					    image[4 * run->gridx * y + 4 * x + 1] = g;//x ^ y;
+					    image[4 * run->gridx * y + 4 * x + 2] = b;//x | y;
+					    image[4 * run->gridx * y + 4 * x + 3] = 255;
+					}
+				}
+
+				char filename[128];
+				sprintf(filename,"lenkey.png");
+				encodeOneStep(filename, image, run->gridx, run->gridy);
+			}
+
+
+
+
+
+			for(x=0;x<run->gridx;++x){
+				for (y=0;y<run->gridy;++y) {
+					switch(run->status[x][y]){
+					case G_EMPTY:
+						val=0;
+						break;
+					default:
+						switch(tp){
+						case pic_spp:
+							val=run->grid[x][y]->spp->spp * 50;
+							break;
+						case pic_len:
+							val=(strlen(run->grid[x][y]->spp->S)/10) * 50;
+							break;
+						}
+						/*
+						switch(run->grid[x][y]->status){
+						case B_UNBOUND:
+							val = 100;
+							break;
+						case B_PASSIVE:
+							val = 150;
+							break;
+						case B_ACTIVE:
+							val = 200;
+							break;
+						default:
+							val = 50;
+						}*/
+					}
+
+					((uint8_t *)screen->pixels)[y + (x * sdlPitch)] = val;//getColor(grid[x][y]);
+
+					if(!(A.extit%10)){
+					/*Get the rgb values for writing to PNG*/
+					uint8_t r ;
+					uint8_t g ;
+					uint8_t b ;
+					SDL_GetRGB(((uint8_t *)screen->pixels)[y + (x * sdlPitch)], screen->format ,  &r, &g, &b );
+					//printf("R is %d G is %d B is %d\n",r,g,b);
+				    image[4 * run->gridx * y + 4 * x + 0] = r;//255 * !(x & y);
+				    image[4 * run->gridx * y + 4 * x + 1] = g;//x ^ y;
+				    image[4 * run->gridx * y + 4 * x + 2] = b;//x | y;
+				    image[4 * run->gridx * y + 4 * x + 3] = 255;
+					}
+				}
+			}
+
+
+			char filename[128];
+			sprintf(filename,"lenframe%07d.png",A.extit);
+			encodeOneStep(filename, image, run->gridx, run->gridy);
+
+			while (SDL_PollEvent(&sdlEvent)) {
+				if (sdlEvent.type == SDL_QUIT) {
+					fprintf(stderr,"[QUIT] Quit signal received!\n");
+					exit(0);
+				}
+			}
+
+			SDL_UpdateRect(screen,0,0,0,0);//run->gridx,run->gridy);
+
+			A.clearout();
+			SP.clear_list();
+
+
+		}
+		else{
+			printf("File %s not found, exiting\n",fn);
+			exit(34);
+		}
+	}
+
+
 }
+
+
 
 
 
@@ -187,6 +354,19 @@ int main(int argc, char *argv[]) {
 
 	printf("Hello spatial stringmol world\n");
 
+	int rtype = atoi(argv[1]);
+
+	if(rtype == 35){
+
+		printf("rtype = 35: generating len pics\n");
+		pics_from_config(720200,1000000,100);
+		return rtype;
+	}
+
+
+
+
+
 	SMspp		SP;
 	stringPM	A(&SP);
 
@@ -201,7 +381,6 @@ int main(int argc, char *argv[]) {
 
 	/* Set up SDL if we're using it */
 #ifdef USE_SDL
-
 
 	int **grid;
 	grid = (int **)malloc(run->gridx*sizeof(int *));
