@@ -356,17 +356,6 @@ int main(int argc, char *argv[]) {
 
 	int rtype = atoi(argv[1]);
 
-	if(rtype == 35){
-
-		printf("rtype = 35: generating len pics\n");
-		pics_from_config(720200,1000000,100);
-		return rtype;
-	}
-
-
-
-
-
 	SMspp		SP;
 	stringPM	A(&SP);
 
@@ -394,22 +383,18 @@ int main(int argc, char *argv[]) {
 	SDL_Surface *screen;
 	SDL_Event sdlEvent;
 	if (SDL_Init(SDL_INIT_VIDEO) < 0 ) {
-	fprintf(stderr,"*** Unable to init SDL: %s ***\n",SDL_GetError());
-	exit(1);
+		fprintf(stderr,"*** Unable to init SDL: %s ***\n",SDL_GetError());
+		exit(1);
 	}
 	atexit(SDL_Quit);
 	SDL_WM_SetCaption("Spatial Stringmol","nanopond");
 	screen = SDL_SetVideoMode(run->gridy,run->gridx,8,SDL_SWSURFACE);
 	if (!screen) {
-	fprintf(stderr, "*** Unable to create SDL window: %s ***\n", SDL_GetError());
-	exit(1);
+		fprintf(stderr, "*** Unable to create SDL window: %s ***\n", SDL_GetError());
+		exit(1);
 	}
 	const uintptr_t sdlPitch = screen->pitch;
-
-
 	printf("SDL window allocated, pitch is %d \n",screen->pitch);fflush(stdout);
-
-
 #endif /* USE_SDL */
 
 
@@ -444,7 +429,6 @@ int main(int argc, char *argv[]) {
 			fp = fopen(fn,"w");
 			SP.print_spp_list(fp);
 			fclose(fp);
-
 
 			printsppct(&A,A.extit);
 

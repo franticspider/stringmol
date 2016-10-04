@@ -157,15 +157,25 @@ float ctspp(stringPM *A, const int spp){
 }
 
 
-void initpopdyfile(stringPM *A){
+void initpopdyfile(stringPM *A, bool overwrite = false){
 	char pfn[128];
 	memset(pfn,0,128*sizeof(char));
 
 	FILE *ftmp;
 
 	sprintf(pfn,"popdy%03d.dat",A->run_number);
+
+	if(!overwrite){
+		get_unused_fn(pfn);
+	}
+
+	//Make sure this file is empty...
 	ftmp = fopen(pfn,"w");
 	fclose(ftmp);
+
+	//Record the file name so we can ope
+	strcpy(A->popdyfn,pfn);
+
 }
 
 
@@ -189,11 +199,15 @@ void printsppct(stringPM *A, int t){
 	done = (int *) malloc(nag*sizeof(int));
 	memset(done,0,nag*sizeof(int));
 
-	memset(fn,0,128*sizeof(char));
-	sprintf(fn,"popdy%03d.dat",A->run_number);
-	fp = fopen(fn,"a");
+	//memset(fn,0,128*sizeof(char));
+	//sprintf(fn,"popdy%03d.dat",A->run_number);
+
+	//Now we need to get new file names - so popdy001.dat isn't overwritten, but becomes popdy001.1.dat in the subsequent run;
 
 
+	//get_unused_fn(fn);
+	//TODO: need to check that this isn't going to cause problems with callers other than smspatial...!
+	fp = fopen(A->popdyfn,"a");
 
 	do{
 		i = 0;
@@ -233,7 +247,6 @@ void printsppct(stringPM *A, int t){
 
 int run_one_comass_trial(const int rr, stringPM *A,  int * params, struct runparams *R){
 
-	char pfn[256];FILE *ftmp;
 
 	int *maxcode;
 
@@ -807,7 +820,7 @@ void obsolete_find_ag_gridpos(s_ag *pag,smsprun *run, int *x, int *y){
 			}
 		}
 	}
-	printf("Unable to find agent %d\n",pag);
+	printf("Unable to find agent %S\n",pag->S);
 }
 
 
@@ -926,6 +939,7 @@ s_ag * place_neighbor(stringPM *A, smsprun *run,s_ag *c,int x,int y){
 	else{
 		return NULL;
 	}
+	return NULL;
 	/*TODO: Need to decide whether to replace or not
 	else{
 		int noccupied = 8-nvacant;
@@ -1311,36 +1325,117 @@ int spatial_testdecay(stringPM *A, smsprun *run, s_ag *pag){
 
 
 
+
+void get_unused_fn(char *fn){
+
+	int found = 1;
+	FILE * fpr;
+	char *point_pos, *tmp_pos;
+	char tmp[128];
+	char ofn[128];
+	int ncopies=1;
+
+
+	int ppos;
+	strcpy(ofn,fn);
+
+	point_pos = strchr(fn,'.');
+
+	while(found){
+
+		if((fpr=fopen(ofn,"r"))!=NULL){
+			fclose(fpr);
+
+			//Keep track of the original filename
+			printf("Found a file called %s, incrementing counter...\n",ofn);
+			/* STRATEGY: add a number at the file extension point
+			 * until we find a file that hasn't been used yet...
+			 */
+
+
+			if(point_pos==NULL){
+				printf("Can't extend the filename %s, exiting\n");
+				fflush(stdout);
+				exit(37);
+			}
+			else{
+				if(strlen(ofn)>127){
+					printf("potential buffer overrun for filename %s, exiting\n");
+					fflush(stdout);
+					exit(38);
+				}
+
+				ppos = point_pos-fn;
+
+				/*Build a new filename based on the original (ignoring the digits from intermediate attempts) */
+
+				strncpy(tmp,fn,ppos);
+
+				tmp_pos = &(tmp[ppos]);
+
+				sprintf(tmp_pos,".%d%s",ncopies++,point_pos);
+
+				strcpy(ofn,tmp);
+
+			}
+		}
+		else{
+			found = 0;
+		}
+	}
+	//copy the result back to the filename
+	strcpy(fn,ofn);
+}
+
+
+
+
 /* Another attempt to do randseed properly
  *
  */
-void init_randseed(char *fn){
+unsigned long init_randseed(char *fn){
 
-	unsigned long seedin =  2846144656u;
+	int seedin = 42;
+	unsigned int stmp = 0;
+	unsigned long sl;
 
 	FILE *fpr;
 	if((fpr=fopen(fn,"r"))!=NULL){
-		unsigned int stmp;
 		int rerr = readordef_param_int(fn,"RANDSEED", &stmp, seedin, 0);//read_param_int(fpr,"RANDSEED",&stmp,1);
 		if(rerr){
 			printf("Error %d reading RANDSEED\n",rerr);
 			exit(0);
 		}
-		seedin = stmp;
 		fclose(fpr);
 	}
 
-	unsigned long rseed = longinitmyrand(&seedin);
+	unsigned long rseed;
+	if(stmp){//This means we have read it from the file...
+		sl = stmp;
+		rseed = longinitmyrand(&sl);
+	}
+	else{
+		rseed = longinitmyrand(NULL);
+	}
+
+	char frfn[128];
+
+	sprintf(frfn,"randseed.txt");
+
+	get_unused_fn(&(frfn[0]));
 
 	FILE *frs;
-	if((frs=fopen("randseed.txt","w"))==NULL){
-		printf("Coundln't open randseed.txt\n");
+	if((frs=fopen(frfn,"w"))==NULL){
+		printf("Coundln't open %s\n",frfn);
 		getchar();
+		exit(39);
+	}else{
+		fprintf(frs,"(unsigned) random seed is %lu (%lu was seedin)  \n",rseed,seedin);
+		fflush(frs);
+		fclose(frs);
 	}
-	fprintf(frs,"(unsigned) random seed is %lu (%lu was seedin)  \n",rseed,seedin);
-	fflush(frs);
-	fclose(frs);
 
+	return rseed;
 }
 
 
@@ -1496,16 +1591,22 @@ int smspatial_step(stringPM *A, smsprun *run){
 int smspatial_init(char *fn, stringPM *A, smsprun **run, int runno){
 
 
-	init_randseed(fn);
+
 	A->load(fn,NULL,0,1);
 
 	A->run_number = runno;
 
-	//TODO: It's a little perverse getting this run object out, but we have to decide whether the grid is 'core' stringmol...
-	*run = A->grid;
-
 	//Initialize the popdy file...
 	initpopdyfile(A);
+
+
+	//TODO: It's a little perverse getting this run object out, but we have to decide whether the grid is 'core' stringmol...
+	*run = A->grid;
+	if(run == NULL){
+		printf("No grid data entered for spatial stringmol!\nexiting...");
+		exit(33);
+	}
+
 
 	//Now we have to place each agent on the grid - use the makenext() model -
 	while(A->nowhead!=NULL){
@@ -1586,6 +1687,12 @@ int smspatial_init(char *fn, stringPM *A, smsprun **run, int runno){
 	return 0;
 }
 
+
+
+
+
+
+
 int smspatial(int argc, char *argv[]) {
 
 	printf("Hello spatial stringmol world\n");
@@ -1601,23 +1708,21 @@ int smspatial(int argc, char *argv[]) {
 	int bt=0,ct=0;
 	ct = A.nagents(A.nowhead,-1);
 	printf("Initialisation done, number of molecules is %d\n",ct);
-//	int iteration = 0;
-	A.extit=0;
 
 	if(1){
 		FILE *fpp;
 		char fn[128];
-		sprintf(fn,"out1_%05ld.conf",A.extit);
+		sprintf(fn,"reload_%05u.conf",A.extit);
 		fpp = fopen(fn,"w");
 		A.print_conf(fpp);
 		fclose(fpp);
 	}
 
-
+	A.randseed = init_randseed(argv[2]);
 
 
 //	while(A.nagents(A.nowhead,-1)){
-	while(A.extit < 100000){
+	while(A.extit < A.nsteps){
 		smspatial_step(&A,run);
 		ct = A.nagents(A.nowhead,-1);
 		bt = ct - A.nagents(A.nowhead,B_UNBOUND);
@@ -1636,25 +1741,36 @@ int smspatial(int argc, char *argv[]) {
 		A.extit++;
 
 
-		if(!(A.extit%1000)){
-			printsppct(&A,A.extit);
-		}
+		//if(!(A.extit%1000)){
+		//	printsppct(&A,A.extit);
+		//}
 
 
-		if(!(A.extit%100))
-				printf("Step %ld done, number of molecules is %d, nbound = %d\n",A.extit,ct,bt);
+		//if(!(A.extit%100)){
+		if(!(A.extit%100) || A.extit==1){
+			printf("Step %u done, number of molecules is %d, nbound = %d\n",A.extit,ct,bt);
 
-		//		if(iteration == 66396)
-		//			printf("Pauuuuse\n!");
-		if(!(A.extit%1000) || A.extit==1){
-			FILE *fpp;
+			smspatial_pic(&A, smpic_spp);
+			smspatial_pic(&A, smpic_len);
+
+				FILE *fpp;
 			char fn[128];
-			sprintf(fn,"out1_%05ld.conf",A.extit);
+			sprintf(fn,"out1_%05u.conf",A.extit);
 			fpp = fopen(fn,"w");
+
 			A.print_conf(fpp);
 			fclose(fpp);
 
+
+			//Increment the random number seed so that we aren't always using the same sequence...
+			A.randseed++;
+
+			//Reinitialise the random seed so that the process is repeatable.
+			init_randseed(fn);
+
+
 			//Now let's load the file so we can check:
+			/*
 
 			SMspp		SPB;
 			stringPM	B(&SPB);
@@ -1666,7 +1782,7 @@ int smspatial(int argc, char *argv[]) {
 			fpp = fopen(fn,"w");
 			B.print_conf(fpp);
 			fclose(fpp);
-
+			 */
 
 			FILE *fp;
 			sprintf(fn,"splist%d.dat",A.extit);
@@ -1701,6 +1817,108 @@ void encodeOneStep(const char* filename, std::vector<unsigned char>& image, unsi
 
 
 
+int smspatial_pic(stringPM *A, smpic pt){
+
+
+	smsprun *run;
+	int colours[70][3] = {
+	{ 0, 0, 167 },	{ 0, 10, 177 },	{ 0, 20, 186 },	{ 0, 29, 196 },	{ 0, 39, 206 },	{ 0, 49, 216 },	{ 0, 59, 226 },	{ 0, 69, 235 },
+	{ 0, 78, 245 },	{ 0, 88, 255 },	{ 0, 98, 255 },	{ 0, 108, 255 },{ 0, 118, 255 },{ 0, 128, 255 },{ 0, 137, 255 },{ 0, 147, 255 },
+	{ 0, 157, 255 },{ 0, 167, 255 },{ 10, 177, 255 },{ 20, 186, 255 },{ 29, 196, 255 },{ 39, 206, 255 },{ 49, 216, 255 },{ 59, 226, 255 },
+	{ 69, 235, 255 },{ 78, 245, 255 },{ 88, 255, 255 },	{ 98, 255, 245 },{ 108, 255, 235 },	{ 118, 255, 226 },	{ 128, 255, 216 },	{ 137, 255, 206 },
+	{ 147, 255, 196 },{ 157, 255, 186 },{ 167, 255, 177 },{ 177, 255, 167 },{ 186, 255, 157 },{ 196, 255, 147 },{ 206, 255, 137 },	{ 216, 255, 128 },{ 226, 255, 118 },
+	{ 235, 255, 108 },	{ 245, 255, 98 },{ 255, 255, 88 },{ 255, 245, 78 },	{ 255, 235, 69 },	{ 255, 226, 59 },	{ 255, 216, 49 },	{ 255, 206, 39 },
+	{ 255, 196, 29 },	{ 255, 186, 20 },	{ 255, 177, 10 },	{ 255, 167, 0 },	{ 255, 157, 0 },	{ 255, 147, 0 },	{ 255, 137, 0 },
+	{ 255, 128, 0 },	{ 255, 118, 0 },	{ 255, 108, 0 },	{ 255, 98, 0 },	{ 255, 88, 0 },	{ 245, 78, 0 },	{ 235, 69, 0 },	{ 226, 59, 0 },
+	{ 216, 49, 0 },	{ 206, 39, 0 },	{ 196, 29, 0 },	{ 186, 20, 0 },	{ 177, 10, 0 },	{ 167, 0, 0 },
+	};
+
+
+
+
+	run = A->grid;
+
+	//Create the PNG
+	std::vector<unsigned char> image;
+	image.resize(run->gridx * run->gridy * 4);
+
+	int x,y,val;
+
+	//Bit masks for the 8*8*4 rgb cube
+	int rmask = 0b11100000;
+	int gmask = 0b00011100;
+	int bmask = 0b00000011;
+	int len;
+
+
+	for(x=0;x<run->gridx;++x){
+		for (y=0;y<run->gridy;++y) {
+
+			if(run->grid[x][y] == NULL){
+
+				image[4 * run->gridx * y + 4 * x + 0] = 0;//255 * !(x & y);
+				image[4 * run->gridx * y + 4 * x + 1] = 0;//x ^ y;
+				image[4 * run->gridx * y + 4 * x + 2] = 0;//x | y;
+				image[4 * run->gridx * y + 4 * x + 3] = 255;
+
+
+
+			}
+			else{
+				switch(pt){
+				case smpic_len:
+					len = strlen(run->grid[x][y]->spp->S);
+
+					if(len>69){
+						image[4 * run->gridx * y + 4 * x + 0] = 255;//255 * !(x & y);
+						image[4 * run->gridx * y + 4 * x + 1] = 255;//x ^ y;
+						image[4 * run->gridx * y + 4 * x + 2] = 255;//x | y;
+						image[4 * run->gridx * y + 4 * x + 3] = 255;
+
+					}
+					else{
+
+						image[4 * run->gridx * y + 4 * x + 0] = colours[len][0];//255 * !(x & y);
+						image[4 * run->gridx * y + 4 * x + 1] = colours[len][1];//x ^ y;
+						image[4 * run->gridx * y + 4 * x + 2] = colours[len][2];//x | y;
+						image[4 * run->gridx * y + 4 * x + 3] = 255;
+
+					}
+					break;
+				case smpic_spp:
+
+					val = ((run->grid[x][y]->spp->spp)*5) % 256;
+
+					image[4 * run->gridx * y + 4 * x + 0] = (32  * (1+((val & rmask) >> 5)))-1;
+					image[4 * run->gridx * y + 4 * x + 1] = (32  * (1+((val & gmask) >> 2)))-1;
+					image[4 * run->gridx * y + 4 * x + 2] = (64 *  (1+((val & bmask)     )))-1;
+					image[4 * run->gridx * y + 4 * x + 3] = 255;
+
+					break;
+				}
+
+			}
+		}
+	}
+
+
+	char filename[128];
+	switch(pt){
+	case smpic_len:
+		sprintf(filename,"lenframe%07d.png",A->extit);
+		break;
+	case smpic_spp:
+		sprintf(filename,"sppframe%07d.png",A->extit);
+		break;
+
+	}
+	encodeOneStep(filename, image, run->gridx, run->gridy);
+
+	return 0;
+}
+
+
+
 
 int smspatial_lengthpicsfromlogs(int argc, char *argv[]){
 
@@ -1718,76 +1936,15 @@ int smspatial_lengthpicsfromlogs(int argc, char *argv[]){
 
 
 	int colours[70][3] = {
-	{ 0, 0, 167 },
-	{ 0, 10, 177 },
-	{ 0, 20, 186 },
-	{ 0, 29, 196 },
-	{ 0, 39, 206 },
-	{ 0, 49, 216 },
-	{ 0, 59, 226 },
-	{ 0, 69, 235 },
-	{ 0, 78, 245 },
-	{ 0, 88, 255 },
-	{ 0, 98, 255 },
-	{ 0, 108, 255 },
-	{ 0, 118, 255 },
-	{ 0, 128, 255 },
-	{ 0, 137, 255 },
-	{ 0, 147, 255 },
-	{ 0, 157, 255 },
-	{ 0, 167, 255 },
-	{ 10, 177, 255 },
-	{ 20, 186, 255 },
-	{ 29, 196, 255 },
-	{ 39, 206, 255 },
-	{ 49, 216, 255 },
-	{ 59, 226, 255 },
-	{ 69, 235, 255 },
-	{ 78, 245, 255 },
-	{ 88, 255, 255 },
-	{ 98, 255, 245 },
-	{ 108, 255, 235 },
-	{ 118, 255, 226 },
-	{ 128, 255, 216 },
-	{ 137, 255, 206 },
-	{ 147, 255, 196 },
-	{ 157, 255, 186 },
-	{ 167, 255, 177 },
-	{ 177, 255, 167 },
-	{ 186, 255, 157 },
-	{ 196, 255, 147 },
-	{ 206, 255, 137 },
-	{ 216, 255, 128 },
-	{ 226, 255, 118 },
-	{ 235, 255, 108 },
-	{ 245, 255, 98 },
-	{ 255, 255, 88 },
-	{ 255, 245, 78 },
-	{ 255, 235, 69 },
-	{ 255, 226, 59 },
-	{ 255, 216, 49 },
-	{ 255, 206, 39 },
-	{ 255, 196, 29 },
-	{ 255, 186, 20 },
-	{ 255, 177, 10 },
-	{ 255, 167, 0 },
-	{ 255, 157, 0 },
-	{ 255, 147, 0 },
-	{ 255, 137, 0 },
-	{ 255, 128, 0 },
-	{ 255, 118, 0 },
-	{ 255, 108, 0 },
-	{ 255, 98, 0 },
-	{ 255, 88, 0 },
-	{ 245, 78, 0 },
-	{ 235, 69, 0 },
-	{ 226, 59, 0 },
-	{ 216, 49, 0 },
-	{ 206, 39, 0 },
-	{ 196, 29, 0 },
-	{ 186, 20, 0 },
-	{ 177, 10, 0 },
-	{ 167, 0, 0 },
+	{ 0, 0, 167 },	{ 0, 10, 177 },	{ 0, 20, 186 },	{ 0, 29, 196 },	{ 0, 39, 206 },	{ 0, 49, 216 },	{ 0, 59, 226 },	{ 0, 69, 235 },
+	{ 0, 78, 245 },	{ 0, 88, 255 },	{ 0, 98, 255 },	{ 0, 108, 255 },{ 0, 118, 255 },{ 0, 128, 255 },{ 0, 137, 255 },{ 0, 147, 255 },
+	{ 0, 157, 255 },{ 0, 167, 255 },{ 10, 177, 255 },{ 20, 186, 255 },{ 29, 196, 255 },{ 39, 206, 255 },{ 49, 216, 255 },{ 59, 226, 255 },
+	{ 69, 235, 255 },{ 78, 245, 255 },{ 88, 255, 255 },	{ 98, 255, 245 },{ 108, 255, 235 },	{ 118, 255, 226 },	{ 128, 255, 216 },	{ 137, 255, 206 },
+	{ 147, 255, 196 },{ 157, 255, 186 },{ 167, 255, 177 },{ 177, 255, 167 },{ 186, 255, 157 },{ 196, 255, 147 },{ 206, 255, 137 },	{ 216, 255, 128 },{ 226, 255, 118 },
+	{ 235, 255, 108 },	{ 245, 255, 98 },{ 255, 255, 88 },{ 255, 245, 78 },	{ 255, 235, 69 },	{ 255, 226, 59 },	{ 255, 216, 49 },	{ 255, 206, 39 },
+	{ 255, 196, 29 },	{ 255, 186, 20 },	{ 255, 177, 10 },	{ 255, 167, 0 },	{ 255, 157, 0 },	{ 255, 147, 0 },	{ 255, 137, 0 },
+	{ 255, 128, 0 },	{ 255, 118, 0 },	{ 255, 108, 0 },	{ 255, 98, 0 },	{ 255, 88, 0 },	{ 245, 78, 0 },	{ 235, 69, 0 },	{ 226, 59, 0 },
+	{ 216, 49, 0 },	{ 206, 39, 0 },	{ 196, 29, 0 },	{ 186, 20, 0 },	{ 177, 10, 0 },	{ 167, 0, 0 },
 	};
 
 	////generates pics from a config file via SDL
@@ -1851,6 +2008,48 @@ int smspatial_lengthpicsfromlogs(int argc, char *argv[]){
 				char filename[128];
 				sprintf(filename,"lenkey.png");
 				encodeOneStep(filename, image, run->gridx, run->gridy);
+
+
+				/* Make the rgb species pallette
+				 *
+				 */
+				//Bit masks for the 8*8*4 rgb cube
+				int rmask = 0b11100000;
+				int gmask = 0b00011100;
+				int bmask = 0b00000011;
+
+				int rbits,gbits,bbits;
+
+				printf("Mask values are r:%d, g:%d, b:%d\n",rmask,gmask,bmask);
+
+				for(y=0;y<run->gridy;++y){
+					val = y;//((x+1) * 5) % 256;
+
+					rbits = (val & rmask);
+					gbits = (val & gmask);
+					bbits = (val & bmask);
+
+					printf("y = %d, val = %d, \tRGB unscaled = r:%d, g:%d, b:%d \t scaled = r:%d g:%d b:%d\n",y,val,rbits,gbits,bbits,rbits>>5,gbits>>2,bbits);
+
+
+				}
+				for(x=0;x<run->gridx;++x){
+					for (y=0;y<run->gridy;++y) {
+
+						val = ((y+1)*5) % 256;
+
+						image[4 * run->gridx * y + 4 * x + 0] = (32  * (1+((val & rmask) >> 5)))-1;
+						image[4 * run->gridx * y + 4 * x + 1] = (32  * (1+((val & gmask) >> 2)))-1;
+						image[4 * run->gridx * y + 4 * x + 2] = (64 *  (1+((val & bmask)     )))-1;
+						image[4 * run->gridx * y + 4 * x + 3] = 255;
+
+
+					}
+				}
+
+				sprintf(filename,"sppkey.png");
+				encodeOneStep(filename, image, run->gridx, run->gridy);
+
 			}
 
 

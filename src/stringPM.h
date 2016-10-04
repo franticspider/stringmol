@@ -57,7 +57,7 @@ public:
 	long agct;
 	unsigned int extit; 	//record of the cell iteration count
 
-	unsigned int randseed;
+	unsigned long randseed;
 
 	long biomass; 	//used as a measure of fitness
 	long bstart;    //time of biomass reset
@@ -100,6 +100,9 @@ public:
 
 	//toggle for granularity
 	int granular_1;
+
+	//File name for the popdy file...
+	char popdyfn[128];
 
 	//constructor
 	stringPM(SMspp * pSP);

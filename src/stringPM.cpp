@@ -772,6 +772,10 @@ int stringPM::load_agents(char *fn, char *fntab, int test, int verbose){
 	 * Important also to maintaint the species numbering - will save a *lot* of hassle later!
 	 */
 	int spp_err = load_splist(fn,verbose);
+	if(spp_err){//TODO: this will never be called because the function always returns 0
+		printf("Problem loading species list...exiting\n");
+		exit(456);
+	}
 
 	/* READ THE AGENTS IN NOW */
 	//TODO: this is the actual agent-loading part of the function... rename / refactor needed....
@@ -4760,7 +4764,7 @@ int stringPM::print_conf(FILE *fp){
 	USING	/n/staff/sjh/current/ewSTRING/SMconfigs/instr_set1.mis
 */
 	fprintf(fp,"%%%%%%AUTOMATICALLY GENERATED Stringmol CONFIG FILE\n");
-	fprintf(fp,"%%%%%%Generated at time:\nEXTIT  		%ld\n\n",extit);
+	fprintf(fp,"%%%%%%Generated at time:\nEXTIT  		%u\n\n",extit);
 	fprintf(fp,"%%%%%%CELL PARAMETERS\n");
 	fprintf(fp,"CELLRAD		%d\n",(int) cellrad);
 	fprintf(fp,"AGRAD       %d\n",(int) agrad);
@@ -4813,7 +4817,7 @@ int stringPM::print_conf(FILE *fp){
 
 
 
-	fprintf(fp,"%%%%%%RANDOM NUMBER SEED:\nRANDSEED  		%ld\n\n\n",randseed);
+	fprintf(fp,"%%%%%%RANDOM NUMBER SEED:\nRANDSEED  		%lu\n\n\n",randseed);
 	fprintf(fp,"%%%%%%GRID PARAMETERS\n");
 	fprintf(fp,"GRIDX		%d\n",(int) grid->gridx);
 	fprintf(fp,"GRIDY       %d\n\n\n",(int) grid->gridy);

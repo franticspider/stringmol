@@ -78,10 +78,7 @@ int initmyrand(int seed){
 
 
 
-
-
-
-
+/* UNSIGNED LONG VERSIONS */
 unsigned long longdevrandomseed(){
 
 	int randomData = open("/dev/random", O_RDONLY);
@@ -93,6 +90,8 @@ unsigned long longdevrandomseed(){
 	printf("in devrandomseed, seed is %ld (%lu)\n",sjhRandomInteger,(unsigned long int) sjhRandomInteger);
 	return sjhRandomInteger;
 }
+
+
 
 unsigned long longinitmyrand(unsigned long *inseed){
 

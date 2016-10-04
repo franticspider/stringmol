@@ -110,7 +110,7 @@ l_spp * SMspp::make_spp_from_string(char *S, int extit, const int maxl0, const i
 		l_spp *lsp;
 		for(lsp = species; lsp != NULL; lsp = lsp->next){
 			if(lsp->spp == spno){
-				printf("ERROR: species %d already exists! string is: %s\n",lsp->S);
+				printf("ERROR: species %d already exists! string is: %s\n",lsp->spp,lsp->S);
 				return NULL; //todo handle the error more gracefully!
 			}
 		}
@@ -133,8 +133,6 @@ l_spp * SMspp::make_spp_from_string(char *S, int extit, const int maxl0, const i
 
 
 l_spp * SMspp::make_spp_from_agent(s_ag *a, int extit, const int maxl0){
-
-	int l;
 
 	l_spp *sp;
 

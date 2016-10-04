@@ -20,6 +20,11 @@
 #ifndef SETUPSM_H_
 #define SETUPSM_H_
 
+	/*Utilities */
+	//For restarted runs, we need to make sure we don't overwrite...
+	void get_unused_fn(char *fn);
+
+
 	/*Flags and parameters that exist outside the stringPM object*/
 	struct runparams{
 		int gaqnn;		//0 or 1: whether to use the QNN measure in comass_GA
@@ -75,4 +80,10 @@
 
 	void encodeOneStep(const char* filename, std::vector<unsigned char>& image, unsigned width, unsigned height);
 
+	enum smpic{
+		smpic_spp,
+		smpic_len
+	};
+
+	int smspatial_pic(stringPM *A, smpic pt);
 #endif /* SETUPSM_H_ */
