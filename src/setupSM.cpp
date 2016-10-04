@@ -1393,7 +1393,7 @@ void get_unused_fn(char *fn){
 /* Another attempt to do randseed properly
  *
  */
-unsigned long init_randseed(char *fn){
+unsigned long init_randseed(char *fn, int printrandseed=0){
 
 	int seedin = 42;
 	unsigned int stmp = 0;
@@ -1418,21 +1418,23 @@ unsigned long init_randseed(char *fn){
 		rseed = longinitmyrand(NULL);
 	}
 
-	char frfn[128];
+	if(printrandseed){
+		char frfn[128];
 
-	sprintf(frfn,"randseed.txt");
+		sprintf(frfn,"randseed.txt");
 
-	get_unused_fn(&(frfn[0]));
+		get_unused_fn(&(frfn[0]));
 
-	FILE *frs;
-	if((frs=fopen(frfn,"w"))==NULL){
-		printf("Coundln't open %s\n",frfn);
-		getchar();
-		exit(39);
-	}else{
-		fprintf(frs,"(unsigned) random seed is %lu (%lu was seedin)  \n",rseed,seedin);
-		fflush(frs);
-		fclose(frs);
+		FILE *frs;
+		if((frs=fopen(frfn,"w"))==NULL){
+			printf("Coundln't open %s\n",frfn);
+			getchar();
+			exit(39);
+		}else{
+			fprintf(frs,"(unsigned) random seed is %lu (%lu was seedin)  \n",rseed,seedin);
+			fflush(frs);
+			fclose(frs);
+		}
 	}
 
 	return rseed;
@@ -1752,7 +1754,9 @@ int smspatial(int argc, char *argv[]) {
 
 			smspatial_pic(&A, smpic_spp);
 			smspatial_pic(&A, smpic_len);
+		}
 
+		if(!(A.extit%1000) || A.extit==1){
 				FILE *fpp;
 			char fn[128];
 			sprintf(fn,"out1_%05u.conf",A.extit);
@@ -1761,13 +1765,12 @@ int smspatial(int argc, char *argv[]) {
 			A.print_conf(fpp);
 			fclose(fpp);
 
+			//Reinitialise the random seed so that the process is repeatable
+			//(the seed is read from the file just created)
+			init_randseed(fn);
 
 			//Increment the random number seed so that we aren't always using the same sequence...
 			A.randseed++;
-
-			//Reinitialise the random seed so that the process is repeatable.
-			init_randseed(fn);
-
 
 			//Now let's load the file so we can check:
 			/*

@@ -5010,6 +5010,8 @@ int stringPM::print_conf(FILE *fp){
 	}
 	free(done);
 */
+
+	update();
 	return 0;
 
 }
