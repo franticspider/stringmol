@@ -2114,24 +2114,215 @@ int smspatial_lengthpicsfromlogs(int argc, char *argv[]){
 }
 
 
+struct anc_node{
+	int spno;
+	int origintime;
+	char * S;
+	anc_node *aa; //active parent
+	anc_node *pp; //passive parent
+	anc_node *dd; //pointer to descendents (may be useful...)
+	anc_node *ss; //pointer to siblings (may be useful...)
+};
 
+
+anc_node * alloc_anc_node(){
+	anc_node *node;
+
+	node = (anc_node *) malloc(sizeof(anc_node));
+
+	node->spno=0;
+	node->origintime=0;
+
+	node->S = NULL;
+
+	node->aa = NULL;
+	node->pp = NULL;
+	node->dd = NULL;
+	node->ss = NULL;
+
+	return node;
+}
+
+anc_node * new_anc_node(int sp, int time){
+	anc_node *aa;
+
+	aa = alloc_anc_node();
+	aa->spno = sp;
+	aa->origintime = time;
+	return aa;
+}
+
+
+void find_parents(anc_node *aa, int timestep, int depth, char * ofn, int *found_spp){
+
+	FILE *fp,*ofp;
+	const int llen = 3000;
+
+	char fn[128],line[llen],seq[llen];
+
+	int s1,a1,p1;
+	int nr,t1;
+
+	int found = 0;
+
+	while(!found){
+		sprintf(fn,"splist%d.dat",timestep);
+		if((fp=fopen(fn,"r"))==NULL){
+			printf("Cannot open file %s so cannot proceed\n",fn);
+			return;
+		}
+		else{
+
+			timestep -= 100;
+			int lno = 0;
+			printf("Successfully opened file %s\nNow looking for species %d\n", fn, aa->spno);
+			while((fgets(line,llen,fp)) != NULL){
+
+				//56189,-1,-1,1,EK$OYHOJLRWEK$BLUBO^>C$=?>D$BLUB}B$=?$$$BLBLUB}OYYHKOBLBLUB}OYYHKO
+				sscanf(line,"%d,%d,%d",&s1,&a1,&p1);
+				lno++;
+
+				//TODO: Need a better way to resolve multiple parenting events, especially when spread over many logfiles....
+				if(s1 == aa->spno && s1>a1 && s1 >p1){
+					if(a1==-1 && p1==-1){
+						//printf("Line %d: Ancestors of spp %d are from an earlier file, decrementing timestep\n",lno,s1);
+						//fclose(fp);
+						if(!timestep){
+							printf("Line %d: Made it to the dawn of time!\nLUCA is:\n",lno);
+							//1,-1,-1,1,WWGEWLHHHRLUEUWJJJRJXUUUDYGRHJLRWWRE$BLUBO^B>C$=?>$$BLUBO%}OYHOB
+							sscanf(line,"%*d,%*d,%*d,%*d,%s",&(seq[0]));
+							printf("depth\ttime\tspp\tact\tpass\tsequence\n");
+							printf("%d\t1\t%d\t%d\t%d\t%s\n",depth,s1,a1,p1,seq);
+
+							//Add this discovery to the ancestry log file
+							ofp=fopen(ofn,"a");
+
+							//fprintf(ofp,"depth,time,spp,act,pass,sequence\n");
+							//todo: figure out how graphviz will view this information
+							fprintf(ofp,"%d,1,%d,-1,-1,%s\n",depth,aa->spno,seq);
+							fclose(ofp);
+
+							fclose(fp);
+							return;
+						}
+						break;
+					}
+					else{
+						printf("Line %d: Ancestors of spp %d found! Active is %d, Passive is %d\n",lno,s1,a1,p1);
+						sscanf(line,"%*d,%*d,%*d,%*f,%d,%d,%*d,%s",&nr,&t1,&(seq[0]));
+						found = 1;
+						//fclose(fp);
+
+
+						//Add this discovery to the ancestry log file
+						ofp=fopen(ofn,"a");
+
+						//fprintf(ofp,"depth,time,spp,act,pass,sequence\n");
+						fprintf(ofp,"%d,%d,%d,%d,%d,%s\n",depth,t1,aa->spno,a1,p1,seq);
+
+						printf("depth\ttime\tspp\tact\tpass\tsequence\n");
+						printf("%d\t%d\t%d\t%d\t%d\t%s\n",depth,t1,s1,a1,p1,seq);
+
+
+						fclose(ofp);
+						break;
+					}
+				}
+			}
+			//if(fp != NULL)
+			//fclose(fp);		printf("Finished looking at file %s\n");
+			fclose(fp);
+
+		}
+	}
+
+
+	aa->origintime = t1;
+
+	int L = strlen(seq)+1;
+	aa->S = (char *) malloc( L *sizeof(char));
+	memset(aa->S,0,L*sizeof(char));
+	strcpy(aa->S,seq);
+
+	//Go up a generation:
+
+	if(!found_spp[aa->spno]){
+
+		found_spp[aa->spno]=1;
+		aa->aa = new_anc_node(a1,-1);
+		find_parents(aa->aa,timestep,depth+1,ofn,found_spp);
+		//Don't bother tracing the passive branch if parents are the same species..
+		if(a1 != p1){
+			aa->pp = new_anc_node(p1,-1);
+			find_parents(aa->pp,timestep,depth+1,ofn,found_spp);
+		}
+	}
+
+}
+
+
+/**Strategy is to create a text file containing the ancestry. We'll write an R or graphviz script to
+ * parse this and generate figures.
+ */
 int smspatial_ancestry(int argc, char *argv[]){
+
+
+	if(argc != 4 && argc !=5){
+		printf("Try again :) Usage:\n\tstringmol 34 spno timestep (outfile)\n");
+		exit(340);
+	}
+
+	char ofn[128];
+	FILE *ofp;
+
+	if(argc == 5){
+		sprintf(ofn,"%s",argv[4]);
+	}
+	else{
+		sprintf(ofn,"outfile.txt");
+	}
+
+	if((ofp = fopen(ofn,"w"))==NULL){
+		printf("Problem opening output file %s\n",ofn);
+		exit(341);
+	}
+
+
+	fprintf(ofp,"depth,time,spp,act,pass,sequence\n");
+	fclose(ofp);
+
+	anc_node *aa;
+
+	aa = alloc_anc_node();
 
 	int spno = atoi(argv[2]);
 	int timestep = atoi(argv[3]);
 	const int llen = 3000;
 
-	char fn[128],line[llen];
-	FILE *fp;
+	int *found_spp;
+
+	found_spp = (int *)malloc((spno+1)*sizeof(int));
+	memset(found_spp,0,(spno+1)*sizeof(int));
+
+	/*set up the recursion*/
+
+	aa->spno = spno;
+
+	find_parents(aa,timestep,0,ofn,found_spp);
 
 
-	int found_luca=0;
-
-	int s1,a1,p1;
-
+	/*
 	while(!found_luca){
+
+
+
+
 		sprintf(fn,"splist%d.dat",timestep);
-		if((fp=fopen(fn,"r"))!=NULL){
+		if((fp=fopen(fn,"r"))==NULL){
+			printf("Cannot open file %s so cannot proceed\n",fn);
+			exit(341);
+		}
+		else{
 
 			printf("Successfully opened file %s\nNow looking for species %d\n", fn, spno);
 			while((fgets(line,llen,fp)) != NULL){
@@ -2156,7 +2347,7 @@ int smspatial_ancestry(int argc, char *argv[]){
 			//find the species
 		}
 	}
-
+	*/
 
 
 	/*Open the splist file and find the entries for the species*/
