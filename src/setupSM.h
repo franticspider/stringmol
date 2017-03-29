@@ -76,6 +76,7 @@
 
 	/* diagnostics for spatial stringmol */
 	int smspatial_ancestry(int argc, char *argv[]);
+	int smspatial_community(int argc, char *argv[]);
 	int smspatial_lengthpicsfromlogs(int argc, char *argv[]);
 
 	void encodeOneStep(const char* filename, std::vector<unsigned char>& image, unsigned width, unsigned height);

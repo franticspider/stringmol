@@ -1765,14 +1765,18 @@ int smspatial(int argc, char *argv[]) {
 			A.print_conf(fpp);
 			fclose(fpp);
 
-			//Reinitialise the random seed so that the process is repeatable
-			//(the seed is read from the file just created)
-			init_randseed(fn);
+			/* THIS DOESN'T WORK! - AND IT MAY INTRODUCE BIASES INTO THE PROCESS
+			 * What we need to do is record the entire Mersenne Twister Array and its index - and then reinstate that
+			 *
+				//Reinitialise the random seed so that the process is repeatable
+				//(the seed is read from the file just created)
+				init_randseed(fn);
 
-			//Increment the random number seed so that we aren't always using the same sequence...
-			A.randseed++;
+				//Increment the random number seed so that we aren't always using the same sequence...
+				A.randseed++;
+			*/
 
-			//Now let's load the file so we can check:
+			//If testing,  let's load the file so we can check:
 			/*
 
 			SMspp		SPB;
@@ -2358,6 +2362,120 @@ int smspatial_ancestry(int argc, char *argv[]){
 }
 
 
+struct comm_node{
+	int aspno;
+	int pspno;
+	int count;
+	char * Sa;
+	char * Sp;
+	comm_node *next;
+};
+
+
+comm_node * alloc_comm_node(){
+	comm_node *node;
+
+	node = (comm_node *) malloc(sizeof(comm_node));
+
+	node->aspno=0;
+	node->pspno=0;
+	node->count=0;
+
+	node->Sa = NULL;
+	node->Sp = NULL;
+
+	node->next = NULL;
+	return node;
+}
+
+
+char * set_seq(char *S){
+	char *out;
+	int len = 1+strlen(S);
+	out = (char *) malloc((len)*sizeof(char));
+	memset(out,0,len*sizeof(char));
+	strncpy(out,S,len);
+	return out;
+
+}
+
+
+comm_node * new_comm_node(int ac, int pa, char *Sa, char *Sp){
+	comm_node *aa;
+
+	aa = alloc_comm_node();
+
+	aa->aspno = ac;
+	aa->pspno = pa;
+	aa->count = 1;
+
+	aa->Sa = set_seq(Sa);
+	aa->Sp = set_seq(Sp);
+
+
+	//TODO: copy the strings - if necessary...
+
+	return aa;
+}
+
+int smspatial_community(int argc, char *argv[]){
+
+	comm_node * bbb;
+	bbb = NULL;
+
+	if(argc != 3){
+		printf("Try again :) Usage:\n\tstringmol 36 outfile\n");
+		exit(360);
+	}
+	SMspp		SP;
+	stringPM	A(&SP);
+
+	smsprun *run;
+	run = NULL;
+
+	smspatial_init(argv[2],&A,&run,1);
+
+	s_ag *ag;
+
+	for(ag=A.nowhead; ag != NULL; ag = ag->next){
+		if(ag->status == B_ACTIVE){
+			int found =0;
+			comm_node *pb,*pend;
+			pend=bbb;
+			for(pb = bbb; pb != NULL; pb = pb->next){
+				if(ag->spp->spp == pb->aspno){
+					if(ag->pass->spp->spp == pb->pspno){
+						found = 1;
+						pb->count++;
+						break;
+					}
+				}
+				pend=pb;
+			}
+			if(!found){
+				if(bbb == NULL)
+					bbb = new_comm_node(ag->spp->spp,ag->pass->spp->spp,ag->spp->S,ag->pass->spp->S);
+				else
+				pend->next = new_comm_node(ag->spp->spp,ag->pass->spp->spp,ag->spp->S,ag->pass->spp->S);
+			}
+		}
+	}
+
+	comm_node *pb;
+	FILE *fp;
+	fp = fopen("1mcommunity.dat","w");
+
+	printf("ACT\tPASS\tCOUNT\tSEQA\tSEQB\n");
+	fprintf(fp,"ACT,PASS,COUNT,SEQA,SEQB\n");
+	for(pb = bbb; pb != NULL; pb = pb->next){
+		printf("%d\t%d\t%d\t%s\t%s\n",pb->aspno,pb->pspno,pb->count,pb->Sa,pb->Sp);
+		fprintf(fp,"%d,%d,%d,%s,%s\n",pb->aspno,pb->pspno,pb->count,pb->Sa,pb->Sp);
+	}
+	printf("Finished!\n");
+	fflush(stdout);
+	fclose(fp);
+	return 1;
+}
 
 
 

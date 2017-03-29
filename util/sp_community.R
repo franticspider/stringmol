@@ -30,7 +30,7 @@ require("Rgraphviz")
 
 
 
-fn<-"~/Desktop/ancestry121.txt"
+#fn<-"~/Desktop/ancestry121.txt"
 
 #This version was an attempt to make the tree directly in R
 make_tree <- function(fn){
@@ -83,49 +83,35 @@ make_tree <- function(fn){
 ofn <- "out.dot"
 
 x <- read.table(fn,header=T,sep=",")
-x$depth <- as.integer(x$depth)
-x$time <- as.integer(x$time)
-x$spp <- as.integer(x$spp)
-x$act<- as.integer(x$act)
-x$pass<-as.integer(x$pass)
-x <- x[order(x$time),]
-times <- unique(x$time)
+x$ACT <- as.integer(x$ACT)
+x$PASS <- as.integer(x$PASS)
+x$COUNT <- as.integer(x$COUNT)
 
 
 #DOTFILE HEADER
 ofp <- file(ofn)
 writeLines(c("digraph simple_hierarchy {",
-#"size=\".83,1.17!\" ratio=fill;",
-"nodesep=0.1; sep =0.1; len = 0.1;",
-"overlap = scale"), ofp)
+#"size = \"50,50!\"; ratio=fill;",
+"nodesep=1; sep =0.5; len = 0.1;",
+"overlap = false"), ofp)
 close(ofp)
 
 
-#WRITE THE TIME LINE
-write("",file = ofn, append=T)
-write("/* TIME LINE */",file = ofn, append=T)
-write("{node [shape=plaintext, fontsize=16];",file = ofn, append=T)	
-for(i in 1:length(times)){
-	message(sprintf("Writing %d to timeline",times[i]))
-	line <- ""
-	if(i<length(times))
-		line <- sprintf("%d ->",times[i])
-	else
-		line <- sprintf("%d;",times[i])
-	write(line, file = ofn,append=T)
-}
-write("}",file = ofn, append=T)
-write("",file = ofn, append=T)
+min_num_binds = 4
+x <- x[x$COUNT>min_num_binds,]
 
-
-
-#WRITE THE GRAPH NODES
-spnodes <- x[!duplicated(x$spp),]
+#WRITE THE NODES
+##Create the node list
+sp1 <- array(c(as.integer(x$ACT),as.character(x$SEQA)),c(length(x$ACT),2))
+sp2 <- array(c(as.integer(x$PASS),as.character(x$SEQB)),c(length(x$PASS),2))
+splist <- rbind(sp1,sp2)
+spu <- unique(splist)
+#spu[,1] <- as.integer(spu[,1])
 write("",file = ofn, append=T)
 write("/* SPECIES */",file = ofn, append=T)
-for(i in 1:nrow(spnodes)){
-	message(sprintf("Writing spp %d at time %d",spnodes$spp[i],spnodes$time[i]))
-	line <- sprintf("{rank=same %d; anc%d [label=\"%d\n%s\",fontsize = 6]}",spnodes$time[i],spnodes$spp[i],spnodes$spp[i],spnodes$seq[i])
+for(i in 1:nrow(spu)){
+	message(sprintf("Writing spp %d with sequence %s",as.integer(spu[i,1]),spu[i,2]))
+	line <- sprintf("{spp%d [label=\"%d\n%s\",fontsize = 6]}",as.integer(spu[i,1]),as.integer(spu[i,1]),spu[i,2])
 	write(line, file = ofn, append=T)
 }
 write("",file = ofn, append=T)
@@ -133,17 +119,22 @@ message("finished writing nodes")
 
 
 
+
+
 #WRITE THE GRAPH EDGES
-spnodes <- as.data.frame(unique(cbind(x$spp,x$act,x$pass)))
-colnames(spnodes) <- c("spp","act","pass")
 write("",file = ofn, append=T)
 write("/* DESCENT */",file = ofn, append=T)
-for(i in 1:nrow(spnodes)){
-	if(spnodes$act[i] > -1){
-		message(sprintf("Link %d: %d + %d -> %d",i,spnodes$act[i],spnodes$pass[i],spnodes$spp[i]))
-		line <- sprintf("\t anc%d -> anc%d [color = red]",spnodes$act[i],spnodes$spp[i])
-		write(line, file = ofn, append=T)
-		line <- sprintf("\t anc%d -> anc%d [color = blue]",spnodes$pass[i],spnodes$spp[i])
+for(i in 1:nrow(x)){
+		cc <- "black"
+		if(x$COUNT[i]>30)
+			cc<- "red"
+	
+		line <- sprintf("\tspp%d -> spp%d [penwidth = %d, color = %s, len = %0.3f]",x$ACT[i],x$PASS[i],
+		#min(15,x$COUNT[i]),
+		floor((min(15,x$COUNT[i])-min_num_binds+1)*1.5),
+		cc,100/x$COUNT[i])
+	if(x$COUNT[i] > min_num_binds){
+		message(sprintf("Writing %s",line))
 		write(line, file = ofn, append=T)
 	}
 }
@@ -155,19 +146,13 @@ message("finished writing edges")
 #DOTFILE FOOTER
 write(";}",file = ofn, append=T)
 
-#Use a system call to make the pdf: 
-system("dot -Tpdf out.dot -o ancestry1.pdf")
+message("Writing dot to pdf")
+#Use a system call to make the pdf:
 
-#Use a system call to make the pdf: 
-system("neato -Tpdf out.dot -o ancestry1_neato.pdf")
-
-#Use a system call to make the pdf: 
-system("dot -Tpdf out.dot -o ancestry1.pdf")
-
-
-
-
-
+syscall <- sprintf("neato -Gepsilon=.000000000001 -Gstart=5 -Tpdf out.dot -o community_thr%d.pdf",min_num_binds)
+system(syscall) 
+ 
+ 
 
 
 

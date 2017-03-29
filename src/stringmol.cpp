@@ -2734,6 +2734,11 @@ int main(int argc, char *argv[]) {
 			smspatial_lengthpicsfromlogs(argc,argv);
 			break;
 
+		/*************************************************/
+		case 36://Analyse spatial stringmol experiments - generate community from config file
+			smspatial_community(argc,argv);
+			break;
+
 
 		/*************************************************/
 		case 44://For final experiment in the comass experiment, spring 2015
