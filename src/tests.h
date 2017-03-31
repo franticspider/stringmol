@@ -42,6 +42,9 @@ int test_all(int argc, char *argv[]);
 /* Premiminary check that a config is sane */
 stringPM * test_config_settings( int argc, char *argv[], int return_SM);
 
+/* Test that we can store the state of the rng */
+void test_rand_config(int argc, char *argv[]);
+
 
 
 

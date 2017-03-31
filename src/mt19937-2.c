@@ -157,6 +157,101 @@ void mt_set_mti(int val){
 }
 
 
+/*RECORDING FUNCTION*/
+void print_mt(FILE *fp){
+	int i=0;
+	fprintf(fp,"MTI %d\n",mti);
+	for(i=0;i<N;i++){
+		fprintf(fp,"%lu\n",mt[i]);
+	}
+}
+
+
+
+int report_load_error(enum load_mt_errcode ec, int posn, char *fn){
+	char msg[128];
+	switch(ec){
+	case load_mt_nofile:
+		sprintf(msg,"ERROR: can't open mt file %s\n",fn);
+		break;
+	case load_mt_bad_mti:
+		sprintf(msg,"ERROR: bad mti value in file %s\n",fn);
+		break;
+	case load_mt_bad_mt:
+		sprintf(msg,"ERROR: bad mt value at posn %d in file %s\n",posn,fn);
+		break;
+	default:
+		sprintf(msg,"UNKNOWN ERROR LOADING MT RNG\n",posn,fn);
+		break;
+	}
+
+	if(ec != load_mt_success){
+		printf("%s",msg);
+		fflush(stdout);
+	}
+
+	return ec;
+}
+
+
+
+/*LOADING FUNCTION */
+int load_mt(char *fn){
+
+	FILE *fp;
+	const int maxl = 128;
+	char line[maxl];
+	int mtival,args_read=0,ii;
+	enum load_mt_errcode errcode = load_mt_success;
+	unsigned long mtval;
+
+	if((fp = fopen(fn,"r"))!=NULL){
+
+		//First line gets the position of mti
+		if((fgets(line,maxl,fp))!=NULL){
+			args_read = sscanf(line,"MTI %d",&mtival);
+			if(args_read == 1){
+				mti = mtival;
+				//Now we can read the rest of the data;
+				for(ii=0;ii<N;ii++){
+					if((fgets(line,maxl,fp))!=NULL){
+
+						args_read = sscanf(line,"%lu",&mtval);
+						if(args_read == 1){
+							mt[ii] = mtval;
+						}
+						else{
+							errcode = load_mt_bad_mt;
+							break;
+						}
+					}
+					else{
+						errcode = load_mt_bad_mt;
+						break;
+					}
+				}
+			}
+			else{
+				errcode = load_mt_bad_mti;
+			}
+		}
+		else{
+			errcode = load_mt_bad_mti;
+		}
+
+		fclose(fp);
+
+	}
+	else{
+
+		errcode = load_mt_nofile;
+	}
+
+	return report_load_error(errcode,ii,fn);
+}
+
+
+
 // this main() outputs first 1000 generated numbers
 /*
 main()

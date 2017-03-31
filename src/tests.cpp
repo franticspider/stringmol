@@ -27,6 +27,7 @@
 
 /*TODO: To many interdependencies here - stringPM.h requires agests_base.h requires rules.h ...*/
 //utilities
+#include "mt19937-2.h"
 #include "randutil.h"
 
 //abm stuff
@@ -47,35 +48,6 @@
 #include "setupSM.h"
 
 #include "tests.h"
-
-/*
- * This shows that it isn't currently possible to record a position in the MT sequence and then jump to it.
- *
- * A possible solution is at http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/JUMP/index.html
- * general search for '"jump ahead" mersenne twister' yields many papers.
- *
- */
-int test_mti(int pos){
-	const int ntests=10;
-	double dres[ntests]; //holds a seqence of random doubles
-
-	set_mti(pos);
-	for(int i=0;i<ntests;i++){
-		dres[i] = rand0to1();
-		printf("Call %d, position is %d, value is %f\n",i,get_mti(),dres[i]);
-
-	}
-	printf("Resetting position..\n");
-	set_mti(pos);
-
-	for(int i=0;i<ntests;i++){
-		dres[i] = rand0to1();
-		printf("Call %d, position is %d, value is %f\n",i,get_mti(),dres[i]);
-	}
-
-	return 0;
-}
-
 
 
 
@@ -118,7 +90,6 @@ int test_rand(int verbose){
 	int pos = 22;
 	set_mti(pos);
 	pos = get_mti();
-	test_mti(pos);
 
 
 
@@ -312,3 +283,66 @@ int test_all(int argc, char *argv[]){
 
 	return failed;
 }
+
+
+void test_rand_config(int argc, char *argv[]){
+	int j=0;
+
+	//Seed the rng
+	//TODO: Get the Seed from the config file...
+	sgenrand(1); //any nonzero integer can be used as a seed
+
+	/* The size of the MT array is 624, but mti is incremented
+	 * *after* being used, so the range of values of mti is
+	 * between 1 and 624...
+	 */
+	int lim = 625;
+	for (j=0; j<lim; j++) {
+		printf("%0.8f ", rand0to1());//genrand());
+		if (j%8==7) printf("\n");
+	}
+	printf("\nMTSTATE IS:\n");
+
+	//Save the state:
+	print_mt(stdout);
+	FILE *fp,*tfp1,*tfp2;
+	fp = fopen("TestMT1.dat","w");
+	print_mt(fp);
+	fclose(fp);
+
+	//Run the rng on another 1000, save output to file
+	fp = fopen("testdata1.dat","w");
+	for (j=0; j<lim; j++) {
+		fprintf(fp, "%0.8f", rand0to1());//genrand());
+		if (j%8==7)fprintf(fp,"\n");else fprintf(fp,"\t");
+	}
+	fclose(fp);
+
+	load_mt("TestMT1.dat");
+
+
+	fp = fopen("testdata1_again.dat","w");
+	for (j=0; j<lim; j++) {
+		fprintf(fp, "%0.8f", rand0to1());//genrand());
+		if (j%8==7)fprintf(fp,"\n");else fprintf(fp,"\t");
+	}
+	fclose(fp);
+
+	//Just to be sure, let's run this a few hundred thousand times and add a prime...
+	for (j=0; j<((lim*1000)+13); j++) {
+		rand0to1();
+	}
+
+	//Now see if the two sets of values are the same:
+	tfp1 = fopen ("testdata1.dat","r");
+	tfp2 = fopen ("testdata1_again.dat","r");
+	//TODO: write this test (doing it manually atm)
+
+	fclose(tfp1);
+	fclose(tfp2);
+
+
+
+
+}
+

@@ -37,6 +37,18 @@ unsigned long genrandint();/* unsigned long */ /* for integer generation */
 int mt_get_mti();
 void mt_set_mti(int val);
 
+/*read/write mt state */
+void print_mt(FILE *fp);
+int load_mt(char *fn);
+
+/* ERROR CODES FOR LOADING THE MT STATE */
+enum load_mt_errcode{
+	load_mt_nofile,
+	load_mt_bad_mti,
+	load_mt_bad_mt,
+	load_mt_success
+};
+
 #endif /* MT199372_H_ */
 
 #ifdef __cplusplus

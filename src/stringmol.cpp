@@ -2749,6 +2749,14 @@ int main(int argc, char *argv[]) {
 		case 99:
 			test_all(argc,argv);
 			break;
+
+
+		/*************************************************/
+		case 901:
+
+			test_rand_config(argc,argv);
+			break;
+
 		}
 		printf("Finished!\n");
 		fflush(stdout);
@@ -2771,6 +2779,7 @@ int main(int argc, char *argv[]) {
 		printf("Spatial Stringmol(33)         1: .conf;  (2: .mtx)\n");
 		printf("Comass GA boost   44          1: .conf;   2: boost.dat\n\n\n");
 		printf("Test All          99          1: .conf;  (2: .mtx)\n\n\n");
+		printf("Test RNG         (901)       (1: .conf;) (2: .mtx)\n\n\n");
 	}
 
 	return 0;
