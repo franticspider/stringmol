@@ -24,6 +24,7 @@
 #include <float.h>
 
 #include "memoryutil.h"
+#include "mt19937-2.h"
 #include "randutil.h"
 #include "params.h"
 #include "hsort.h"
@@ -4771,6 +4772,7 @@ int stringPM::print_conf(FILE *fp){
 	fprintf(fp,"ENERGY		%d\n",(int) energy);
 	fprintf(fp,"NSTEPS		%d\n",(int) nsteps);//1200000000\n");
 
+
 	/* Mutation rate is complicated. In the original paper, there were two rates:
 	 * 		Indelrate: The rate of insertion and deletion
 	 * 		Subrate: The rate of substitution.
@@ -4818,6 +4820,22 @@ int stringPM::print_conf(FILE *fp){
 
 
 	fprintf(fp,"%%%%%%RANDOM NUMBER SEED:\nRANDSEED  		%lu\n\n\n",randseed);
+
+	char mt_file[128];
+	FILE *fp2;
+	sprintf(mt_file,"RNGstate_%u.txt",extit);
+	if((fp2 = fopen(mt_file,"w"))!=NULL){
+		print_mt(fp2);
+		fclose(fp2);
+	}
+	else{
+		printf("Failed to record RNG state to file %s\n",mt_file);
+	}
+
+
+	fprintf(fp,"%%%%%%RNG DATA FILE:\nRNGFILE %s\n\n",mt_file);
+
+
 	fprintf(fp,"%%%%%%GRID PARAMETERS\n");
 	fprintf(fp,"GRIDX		%d\n",(int) grid->gridx);
 	fprintf(fp,"GRIDY       %d\n\n\n",(int) grid->gridy);

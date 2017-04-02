@@ -10,3 +10,7 @@ src/smspatial_dbg
 
 # gedit backups
 *~
+
+#Eclipse stuff:
+.project
+.cproject
