@@ -427,7 +427,8 @@ int origlife(int argc, char *argv[]){
 
 
 	//Read nsteps:
-	unsigned int maxnsteps=0;
+	//unsigned int maxnsteps=0;
+	unsigned int maxnsteps {0};
 	if((fp=fopen(argv[2],"r"))!=NULL){
 		rerr = read_param_int(fp,"NSTEPS",&maxnsteps,1);
 		switch(rerr){
@@ -813,7 +814,7 @@ int comass_AlifeXII(int argc, char *argv[]){
 	SMspp		SP;
 	stringPM	A(&SP);
 	FILE *fp;
-	int indefinite=1;
+	int indefinite {1};
 
 	long rseed = initmyrand(437);//-1);//437);
 	//R.printasint();
@@ -1151,6 +1152,9 @@ int comass_GA(int argc, char *argv[]){
 	if((fpr=fopen(argv[2],"r"))!=NULL){
 		unsigned int stmp;
 		int rerr = read_param_int(fpr,"RANDSEED",&stmp,1);
+		//TODO: load the full RNG state using load_mt (RNGFILE in config)
+
+
 		rerr = read_param_int(fpr,"GAQNN",&qnnscoring,1);
 		if(rerr)
 			qnnscoring=1;
@@ -1804,6 +1808,9 @@ int SmPm_conpop(int argc, char *argv[]){
 	if((fpr=fopen(argv[2],"r"))!=NULL){
 		unsigned int stmp;
 		int rerr = read_param_int(fpr,"RANDSEED",&stmp,1);
+		//TODO: load the full RNG state using load_mt (RNGFILE in config)
+
+
 		seedin = stmp;
 
 		unsigned int nctmp;

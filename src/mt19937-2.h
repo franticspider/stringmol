@@ -39,14 +39,14 @@ void mt_set_mti(int val);
 
 /*read/write mt state */
 void print_mt(FILE *fp);
-int load_mt(char *fn);
+int load_mt(const char *fn);
 
 /* ERROR CODES FOR LOADING THE MT STATE */
 enum load_mt_errcode{
-	load_mt_nofile,
-	load_mt_bad_mti,
-	load_mt_bad_mt,
-	load_mt_success
+	load_mt_nofile=3,
+	load_mt_bad_mti=4,
+	load_mt_bad_mt=5,
+	load_mt_success=1
 };
 
 #endif /* MT199372_H_ */

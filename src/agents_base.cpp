@@ -199,7 +199,7 @@ void agents_base::preset(){
 
 
 // VJH - added this function for youShare - some alterations on merge
-void agents_base::load(char *fn, char *fninput, int test=0, int verbose=0){
+void agents_base::load(const char *fn, char *fninput, int test=0, int verbose=0){
 
 	load_params(fn,test,verbose);
 	load_influx(fn);
@@ -262,7 +262,7 @@ void agents_base::printfr(FILE *fp, rules *rset){
 
 
 
-int agents_base::load_params(char *fn, int test, int verbose){
+int agents_base::load_params(const char *fn, int test, int verbose){
 
 	FILE *fp;
 	int e,err = 0;
@@ -307,7 +307,7 @@ int agents_base::load_params(char *fn, int test, int verbose){
 }
 
 
-int agents_base::load_influx(char *fn){
+int agents_base::load_influx(const char *fn){
 	const int maxl = 128;
 	FILE *fp;
 	char line[maxl];

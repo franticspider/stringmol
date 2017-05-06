@@ -69,6 +69,7 @@ sgenrand(unsigned long seed)
         mt[mti] = (69069 * mt[mti-1]) & 0xffffffff;
 }
 
+
 double /* generating reals */
 /* unsigned long */ /* for integer generation */
 genrand()
@@ -168,7 +169,7 @@ void print_mt(FILE *fp){
 
 
 
-int report_load_error(enum load_mt_errcode ec, int posn, char *fn){
+int report_load_error(enum load_mt_errcode ec, int posn, const char *fn){
 	char msg[128];
 	switch(ec){
 	case load_mt_nofile:
@@ -181,7 +182,7 @@ int report_load_error(enum load_mt_errcode ec, int posn, char *fn){
 		sprintf(msg,"ERROR: bad mt value at posn %d in file %s\n",posn,fn);
 		break;
 	default:
-		sprintf(msg,"UNKNOWN ERROR LOADING MT RNG\n",posn,fn);
+		sprintf(msg,"UNKNOWN ERROR LOADING MT RNG\n");
 		break;
 	}
 
@@ -196,7 +197,7 @@ int report_load_error(enum load_mt_errcode ec, int posn, char *fn){
 
 
 /*LOADING FUNCTION */
-int load_mt(char *fn){
+int load_mt(const char *fn){
 
 	FILE *fp;
 	const int maxl = 128;

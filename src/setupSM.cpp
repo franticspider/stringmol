@@ -28,6 +28,7 @@
 #include <string.h>
 #include <math.h>
 
+#include "mt19937-2.h"
 #include "randutil.h"
 #include "params.h"
 //}
@@ -186,7 +187,7 @@ void initpopdyfile(stringPM *A, bool overwrite = false){
  */
 void printsppct(stringPM *A, int t){
 
-	char fn[128];
+	//char fn[128];
 	FILE *fp;
 	s_ag *pa;
 	int spc,count;
@@ -657,6 +658,9 @@ void init_randseed_config(int argc, char *argv[]){
 	if((fpr=fopen(argv[2],"r"))!=NULL){
 		unsigned int stmp;
 		int rerr = read_param_int(fpr,"RANDSEED",&stmp,1);
+		//TODO: load the full RNG state using load_mt (RNGFILE in config)
+
+
 		rerr = read_param_int(fpr,"GAQNN",&qnnscoring,1);
 		if(rerr)
 			qnnscoring=1;
@@ -820,7 +824,7 @@ void obsolete_find_ag_gridpos(s_ag *pag,smsprun *run, int *x, int *y){
 			}
 		}
 	}
-	printf("Unable to find agent %S\n",pag->S);
+	printf("Unable to find agent %s\n",pag->S);
 }
 
 
@@ -1038,15 +1042,18 @@ int spatial_cleave(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 		memset(act->f[act->ft],0,cpy*sizeof(char));
 
 		csite->len = strlen(csite->S);
+
+#ifdef DODEBUG
 		if(csite->len==0){
 			printf("zero length parent string!\n");
 		}
+#endif
 
 
 		//Get rid of zero-length strings...
 		//NB - grid status will be updated at the end of the timestep - simpler.
 		if((dac = A->check_ptrs(act))){
-			int x,y;
+			//int x,y;
 			switch(dac){
 			case 1://Destroy active - only append passive
 				A->unbind_ag(pass,'P',1,act->spp,pass->spp);
@@ -1300,7 +1307,7 @@ int spatial_testdecay(stringPM *A, smsprun *run, s_ag *pag){
 			bag = pag->exec;
 			break;
 		}
-		int x,y;
+		//int x,y;
 
 		//find_ag_gridpos(pag,run,&x,&y);
 		run->grid[pag->x][pag->y]=NULL;
@@ -1354,13 +1361,13 @@ void get_unused_fn(char *fn){
 
 
 			if(point_pos==NULL){
-				printf("Can't extend the filename %s, exiting\n");
+				printf("Can't extend the filename %s, exiting\n",fn);
 				fflush(stdout);
 				exit(37);
 			}
 			else{
 				if(strlen(ofn)>127){
-					printf("potential buffer overrun for filename %s, exiting\n");
+					printf("potential buffer overrun for filename %s, exiting\n",ofn);
 					fflush(stdout);
 					exit(38);
 				}
@@ -1395,27 +1402,85 @@ void get_unused_fn(char *fn){
  */
 unsigned long init_randseed(char *fn, int printrandseed=0){
 
-	int seedin = 42;
-	unsigned int stmp = 0;
-	unsigned long sl;
+	//TODO: more work needed with the rand seed and rng logic!!
+	unsigned long seedin{42};
+	unsigned int stmp{0};
+	unsigned long sl{};
 
-	FILE *fpr;
+	bool foundrng{true};
+
+	FILE *fpr,*fprng;
 	if((fpr=fopen(fn,"r"))!=NULL){
+		//TODO: load the full RNG state using load_mt (RNGFILE in config)
+		char *rngfn,*rngpath;
+		rngfn=NULL;
+		//rngfn = (char *) malloc (256*sizeof(char));
+		rngpath = (char *) malloc (512*sizeof(char));
+		memset(rngpath,0,512*sizeof(char));
+		rngfn =  read_param_string(&fpr, "RNGFILE",0);
+
+		if(rngfn !=NULL){
+			//Add the file path from the input file to the RNGfile
+			int l = strlen(fn);
+			while(l>0){
+				if(fn[l]=='/')
+					break;
+				else
+					l--;
+			}
+			strncpy(rngpath,fn,l+1);
+			char *pp;
+			pp = &(rngpath[l+1]);
+			strcpy(pp,rngfn);
+
+			if((fprng=fopen(rngpath,"r"))!=NULL){
+				if(load_mt(rngpath) != load_mt_success){
+					printf("ERROR reading Random Number Generator config %s\n",rngfn);
+					foundrng = false;
+				}
+				else{
+					//Record the RNG state (for debugging)
+					FILE *rfp;
+					rfp=fopen("RNGsmsp_initX_shouldwork.dat","w");
+					print_mt(rfp);
+					fclose(rfp);
+				}
+			}
+			else{
+				printf("ERROR reading Random Number Generator config %s\n",rngfn);
+				foundrng = false;
+			}
+		}
+		else{
+			foundrng=false;
+		}
+
 		int rerr = readordef_param_int(fn,"RANDSEED", &stmp, seedin, 0);//read_param_int(fpr,"RANDSEED",&stmp,1);
+
+
 		if(rerr){
 			printf("Error %d reading RANDSEED\n",rerr);
 			exit(0);
 		}
+
+		free(rngfn);
+		free(rngpath);
 		fclose(fpr);
 	}
 
+
 	unsigned long rseed;
-	if(stmp){//This means we have read it from the file...
-		sl = stmp;
-		rseed = longinitmyrand(&sl);
+	if(!foundrng){
+		if(stmp){//This means we have read it from the file...
+			sl = stmp;
+			rseed = longinitmyrand(&sl);
+		}
+		else{
+			rseed = longinitmyrand(NULL);
+		}
 	}
 	else{
-		rseed = longinitmyrand(NULL);
+		rseed = seedin = sl = stmp;
 	}
 
 	if(printrandseed){
@@ -1475,12 +1540,28 @@ int smspatial_step(stringPM *A, smsprun *run){
 	A->energy = run->gridx * run->gridy;
 	//printf("After update, energy is %d\n",A->energy);
 
+	int ct=0;
 
 	while(A->nowhead!=NULL){
 
 		pag = A->rand_ag(A->nowhead,-1);
 		A->extract_ag(&A->nowhead,pag);
 		changed = 0;
+
+		//For debugging RNG diffs.
+		if(A->extit == 90001){
+			printf("%d\t%d\t%d\t\n",//%c%c%c%c\n",
+					ct++,
+					get_mti(),
+					pag->idx//,
+					//&pag->i[pag->it],
+					//&pag->r[pag->rt],
+					//&pag->w[pag->wt],
+					//&pag->f[pag->ft]
+					);
+		}
+
+
 
 		//extract any partner:
 		bag = NULL;
@@ -1590,7 +1671,7 @@ int smspatial_step(stringPM *A, smsprun *run){
 
 
 
-int smspatial_init(char *fn, stringPM *A, smsprun **run, int runno){
+int smspatial_init(const char *fn, stringPM *A, smsprun **run, int runno){
 
 
 
@@ -1610,69 +1691,87 @@ int smspatial_init(char *fn, stringPM *A, smsprun **run, int runno){
 	}
 
 
-	//Now we have to place each agent on the grid - use the makenext() model -
-	while(A->nowhead!=NULL){
-		s_ag *pag;
-		pag = A->rand_ag(A->nowhead,-1);
-		A->extract_ag(&(A->nowhead),pag);
-    	int found = 0;
+	//TODO: Now we have to place each agent on the grid - use the makenext() model -
+	//But we only need to do this if extit == 0, because otherwise we'll have the molecular positions...
+	if(!A->extit){
+		while(A->nowhead!=NULL){
+			s_ag *pag;
+			pag = A->rand_ag(A->nowhead,-1);
+			A->extract_ag(&(A->nowhead),pag);
+			int found = 0;
 
-    	//Check to see if a position has been set for each molecule..
-    	if( pag->x > -1 ){
-    		if( pag->y > -1){
-				place_mol(pag,*run,pag->x,pag->y);
-				A->append_ag(&(A->nexthead),pag);
-				found = 1;
-    		}
-    		else{
-    			printf("Bad xy position for this agent (%d,%d) \n",pag->x,pag->y);
-    			exit(0);
-    		}
+			//Check to see if a position has been set for each molecule..
+			if( pag->x > -1 ){
+				if( pag->y > -1){
+					place_mol(pag,*run,pag->x,pag->y);
+					A->append_ag(&(A->nexthead),pag);
+					found = 1;
+				}
+				else{
+					printf("Bad xy position for this agent (%d,%d) \n",pag->x,pag->y);
+					exit(0);
+				}
 
-    	}
+			}
 
-    	while(!found){
-			int pos = (*run)->gridx * (*run)->gridy * rand0to1();
+			while(!found){
+				int pos = (*run)->gridx * (*run)->gridy * rand0to1();
 
-			int x = pos%(*run)->gridx;
-			int y = pos/(*run)->gridx;
+				int x = pos%(*run)->gridx;
+				int y = pos/(*run)->gridx;
 
-			if((*run)->grid[x][y]==0){
+				if((*run)->grid[x][y]==0){
 
-				//TODO: this command should be moved to the smspatial
-		        //((uint8_t *)screen->pixels)[x + (y * sdlPitch)] = 0;
+					//TODO: this command should be moved to the smspatial
+					//((uint8_t *)screen->pixels)[x + (y * sdlPitch)] = 0;
 
-		        //Add the partner in the Moore neighborhood
-		        int ffound=0;
+					//Add the partner in the Moore neighborhood
+					int ffound=0;
 
-		        while(!ffound){
-					int xx,yy;
-					//randy_Moore(const int X, const int Y, const int Xlim, const int Ylim, int *xout, int *yout){
-					randy_Moore(x,y,(*run)->gridx,(*run)->gridy,&xx,&yy);
-					if((*run)->grid[xx][yy]==0){
+					while(!ffound){
+						int xx,yy;
+						//randy_Moore(const int X, const int Y, const int Xlim, const int Ylim, int *xout, int *yout){
+						randy_Moore(x,y,(*run)->gridx,(*run)->gridy,&xx,&yy);
+						if((*run)->grid[xx][yy]==0){
 
-						ffound=found=1;
+							ffound=found=1;
 
-						//Place each agent on the list
-						place_mol(pag,*run,x,y);
+							//Place each agent on the list
+							place_mol(pag,*run,x,y);
 
-						//Move to the 'used' bucket
-						A->append_ag(&(A->nexthead),pag);
+							//Move to the 'used' bucket
+							A->append_ag(&(A->nexthead),pag);
 
-						s_ag *bag;
-						bag = A->rand_ag(A->nowhead,-1);
-						if(bag != NULL){
-							A->extract_ag(&(A->nowhead),bag);
-							place_mol(bag,*run,xx,yy);
-							A->append_ag(&(A->nexthead),bag);
+							s_ag *bag;
+							bag = A->rand_ag(A->nowhead,-1);
+							if(bag != NULL){
+								A->extract_ag(&(A->nowhead),bag);
+								place_mol(bag,*run,xx,yy);
+								A->append_ag(&(A->nexthead),bag);
+							}
 						}
 					}
-		        }
+				}
 			}
-    	}
-    }
+		}
 
-	A->update();
+		A->update();
+	}
+	else{
+		//Fill the grid
+		s_ag *pag{};
+
+		for(int x=0;x<(*run)->gridx;x++)
+			for(int y=0;y<(*run)->gridy;y++)
+				(*run)->grid[x][y] =NULL;
+
+		for(pag=A->nowhead; pag != NULL; pag=pag->next){
+			place_mol(pag,*run,pag->x,pag->y);
+		}
+
+		update_grid(A->grid);
+	}
+
 
 	//#ifdef DEBUG
 	for(int x=0;x<(*run)->gridx;x++){
@@ -1699,35 +1798,80 @@ int smspatial(int argc, char *argv[]) {
 
 	printf("Hello spatial stringmol world\n");
 
-	SMspp		SP;
-	stringPM	A(&SP);
+	SMspp		SP{};
+	stringPM	A{&SP};
 
-	smsprun *run;
+	smsprun *run{};
 	run = NULL;
 
+	A.randseed = init_randseed(argv[2]);
 	smspatial_init(argv[2],&A,&run,1);
 
-	int bt=0,ct=0;
+	int bt{0},ct{0};
 	ct = A.nagents(A.nowhead,-1);
 	printf("Initialisation done, number of molecules is %d\n",ct);
 
-	if(1){
-		FILE *fpp;
-		char fn[128];
-		sprintf(fn,"reload_%05u.conf",A.extit);
-		fpp = fopen(fn,"w");
-		A.print_conf(fpp);
-		fclose(fpp);
-	}
+	//This used to be called here - but better to do it before smspatial_init()
+	//that way you don't reinitialize the seed after (perhaps) positioning the
+	//agents on the grid
+	//
+	//A.randseed = init_randseed(argv[2]);
 
-	A.randseed = init_randseed(argv[2]);
+
+	//reload file: should have identical settings to the input conig:
+	FILE *fpp{};
+	char fn[128]{};
+	sprintf(fn,"reload_%05u.conf",A.extit);
+	fpp = fopen(fn,"w");
+	A.print_conf(fpp);
+	fclose(fpp);
+
+
+	//Graphic to console - sometimes useful..
+	//A.print_grid(stdout);
 
 
 //	while(A.nagents(A.nowhead,-1)){
 	while(A.extit < A.nsteps){
+
+		//if(!(A.extit%100) || A.extit==1){
+		//if(!(A.extit%100)){
+		if(!(A.extit%A.image_every)){
+			ct = A.nagents(A.nowhead,-1);
+			bt = ct - A.nagents(A.nowhead,B_UNBOUND);
+			printf("Step %u done, number of molecules is %d, nbound = %d\n",A.extit,ct,bt);
+
+			smspatial_pic(&A, smpic_spp);
+			smspatial_pic(&A, smpic_len);
+		}
+
+		//When debugging you can set specific timesteps here (not elegant, but quick!)
+		//if(!(A.extit%1000) || A.extit==1
+		//		|| (A.extit%1000) == 999 || (A.extit%1000) == 1  || !(A.extit%97) || !(A.extit%47)
+		//		|| (A.extit%1000) == 99 || (A.extit%1000) == 100|| (A.extit%1000) == 101
+		//		|| (A.extit>90001 && A.extit <9000))
+		if(!(A.extit%A.report_every)){
+			FILE *fpp{};
+			char fn[128]{};
+			sprintf(fn,"out1_%05u.conf",A.extit);
+			fpp = fopen(fn,"w");
+
+			A.print_conf(fpp);
+			fclose(fpp);
+
+			FILE *fp{};
+			sprintf(fn,"splist%d.dat",A.extit);
+			fp = fopen(fn,"w");
+			SP.print_spp_list(fp);
+			fclose(fp);
+
+
+			printsppct(&A,A.extit);
+
+		}
+
 		smspatial_step(&A,run);
-		ct = A.nagents(A.nowhead,-1);
-		bt = ct - A.nagents(A.nowhead,B_UNBOUND);
+
 #ifdef DODEBUG
 		printf("Nowhead is %d, Nexthead is %d\n",A.nowhead,A.nexthead);
 		s_ag *p;
@@ -1740,67 +1884,9 @@ int smspatial(int argc, char *argv[]) {
 			p = p->next;
 		}
 #endif
+
 		A.extit++;
 
-
-		//if(!(A.extit%1000)){
-		//	printsppct(&A,A.extit);
-		//}
-
-
-		//if(!(A.extit%100)){
-		if(!(A.extit%100) || A.extit==1){
-			printf("Step %u done, number of molecules is %d, nbound = %d\n",A.extit,ct,bt);
-
-			smspatial_pic(&A, smpic_spp);
-			smspatial_pic(&A, smpic_len);
-		}
-
-		if(!(A.extit%1000) || A.extit==1){
-				FILE *fpp;
-			char fn[128];
-			sprintf(fn,"out1_%05u.conf",A.extit);
-			fpp = fopen(fn,"w");
-
-			A.print_conf(fpp);
-			fclose(fpp);
-
-			/* THIS DOESN'T WORK! - AND IT MAY INTRODUCE BIASES INTO THE PROCESS
-			 * What we need to do is record the entire Mersenne Twister Array and its index - and then reinstate that
-			 *
-				//Reinitialise the random seed so that the process is repeatable
-				//(the seed is read from the file just created)
-				init_randseed(fn);
-
-				//Increment the random number seed so that we aren't always using the same sequence...
-				A.randseed++;
-			*/
-
-			//If testing,  let's load the file so we can check:
-			/*
-
-			SMspp		SPB;
-			stringPM	B(&SPB);
-			B.load(fn,NULL,0,1);
-
-			B.print_agents(stdout,"NOW",0);
-
-			sprintf(fn,"outB_%05d.conf",A.extit);
-			fpp = fopen(fn,"w");
-			B.print_conf(fpp);
-			fclose(fpp);
-			 */
-
-			FILE *fp;
-			sprintf(fn,"splist%d.dat",A.extit);
-			fp = fopen(fn,"w");
-			SP.print_spp_list(fp);
-			fclose(fp);
-
-
-			printsppct(&A,A.extit);
-
-		}
 	}
 
 	printf("FINISHED smspatial\n");
@@ -2301,7 +2387,7 @@ int smspatial_ancestry(int argc, char *argv[]){
 
 	int spno = atoi(argv[2]);
 	int timestep = atoi(argv[3]);
-	const int llen = 3000;
+	//const int llen = 3000;
 
 	int *found_spp;
 

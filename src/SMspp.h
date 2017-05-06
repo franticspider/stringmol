@@ -22,7 +22,7 @@
 #define SMSPP_H_
 
 
-enum s_bind{B_UNBOUND,B_PASSIVE,B_ACTIVE};
+enum s_bind{B_UNBOUND=1,B_PASSIVE=2,B_ACTIVE=3};
 
 //Forward declare the parent structure
 struct s_parent;

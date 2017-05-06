@@ -130,6 +130,7 @@ char * read_param_string(FILE **pfp,const char *label, int verbose){
 	char line[maxl];
 	char st[maxl];
 	char *s;
+	s = NULL;
 	int found=0;
 	FILE *fp;
 
@@ -151,13 +152,16 @@ char * read_param_string(FILE **pfp,const char *label, int verbose){
 	if(!found)
 		return NULL;
 	else{
-		s = (char *) malloc(sizeof(char)*strlen(st));
+		//TODO: checking needed on size of string!
+		s = (char *) malloc(sizeof(char)*256);//(strlen(st)+1));
+		memset(s,0,256*sizeof(char));
+		strncpy(s,st,strlen(st));
 		return s;
 	}
 }
 
 
-int readordef_param_int(char *fn, const char *label, unsigned int *val, const int defaultvalue, const int verbose){
+int readordef_param_int(const char *fn, const char *label, unsigned int *val, const int defaultvalue, const int verbose){
 	int rerr=1;
 	int errcode = 3;
 	FILE *fp;

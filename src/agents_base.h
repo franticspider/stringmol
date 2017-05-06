@@ -94,19 +94,19 @@ class agents_base{
 
 
 		//fromfile stuff
-		void load(char *fn, char *fninput, int test, int verbose);
-		void load(char *fn, int test, int verbose);
+		void load(const char *fn, char *fninput, int test, int verbose);
+		void load(const char *fn, int test, int verbose);
 		int test(char *fn);
 		void test2();
 
-		int load_params(char *fn, int test, int verbose);
-		int load_influx(char *fn);
+		int load_params(const char *fn, int test, int verbose);
+		int load_influx(const char *fn);
 		int load_division(char *fn);
 		int load_replenish(char *fn);
 		//declaring this as virtual and calling it from load caused problems...
 		//the `=0' is key!
 		//virtual int load_agents(char *fn, int test, int verbose) = 0;
-		virtual int load_agents(char *fn, char *fninput, int test=0, int verbose=0) = 0;// VJH - added this function
+		virtual int load_agents(const char *fn, char *fninput, int test=0, int verbose=0) = 0;// VJH - added this function
 
 
 

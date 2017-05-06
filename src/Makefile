@@ -4,8 +4,19 @@
 
 
 # which compiler to use 
-C4C = gcc -O0 -Wall -Wunused
-CC = g++ -O0 -Wall -Wunused
+C4C = gcc -O3 -Wall -Wunused
+CC = g++ -O3 -Wall -Wunused -std=c++11
+
+#TODO: Handle profiling better...
+debug: C4C = gcc -O0 -Wall -Wunused -DDEBUG -g 
+debug: CC = g++ -O0 -Wall -Wunused -std=c++11 -DDEBUG -g
+
+
+#If you want profiling, comment out the above and replace with: 
+#debug: C4C = gcc -O0 -Wall -Wunused -DDEBUG -g -pg
+#debug: CC = g++ -O0 -Wall -Wunused -std=c++11 -DDEBUG -g -pg
+
+
 
 #build directories:
 DEBUG_DIR =  ../debug
@@ -14,13 +25,6 @@ RELEASE_DIR =  ../release
 #TODO: There's a lot of repetition of $(OUTPUT_DIR) atm...!!!
 OUTPUT_DIR = $(RELEASE_DIR)
 debug: OUTPUT_DIR = $(DEBUG_DIR)
-
-#TODO: Handle profiling better...
-debug: C4C += -DDEBUG -g
-debug: CC += -DDEBUG -g
-#If you want profiling, comment out the above and replace with: 
-#debug: C4C += -DDEBUG -g -pg
-#debug: CC += -DDEBUG -g -pg
 
 
 
@@ -32,7 +36,7 @@ debug: CC += -DDEBUG -g
 # We have to run a `cleano' before all/debug because otherwise there'll be .o files that may have been built with a different config
 
 #Make everything from scratch:
-all: $(OUTPUT_DIR)/stringmol $(OUTPUT_DIR)/smspatial
+all: $(OUTPUT_DIR)/stringmol $(OUTPUT_DIR)/smspatial cleano
 
 #TODO: Figure out how to set the debug flag to call SDL-devel (or SDL-dev)
 #debug: stringmol web_api smspatial

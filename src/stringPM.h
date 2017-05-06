@@ -26,6 +26,14 @@ enum e_mut{M_NONE,M_INCREMENT,M_DECREMENT,M_INSERT,M_DELETE};
 /* Cellular Automata parameters */
 enum s_gstatus{G_EMPTY,G_NOW,G_DOING,G_NEXT};
 
+/* Reaction Load params */
+//L_EVOEVO 		was only used for 2016 EvoEvo experiments
+//L_REPLICABLE	is designed to have runs that can be restarted
+enum s_loadtype{
+	L_EVOEVO,
+	L_REPLICABLE};
+
+
 typedef struct td_smsprun{
 	int 	 gridx;
 	int		 gridy;
@@ -58,6 +66,7 @@ public:
 	unsigned int extit; 	//record of the cell iteration count
 
 	unsigned long randseed;
+	s_loadtype loadtype;		//Type of load we are doing (for backwards compatibility)
 
 	long biomass; 	//used as a measure of fitness
 	long bstart;    //time of biomass reset
@@ -88,6 +97,10 @@ public:
 	int verbose_load;
 	unsigned int splprint;		//the number of timesteps before printing out the specieslist
 
+	//Reporting timings
+	unsigned int report_every;			//How often to write splists and configs
+	unsigned int image_every;			//How often to generate an image (spatial stringmol only)
+
 	//Signal string - for getting a signal score:
 	char *signal;
 
@@ -104,6 +117,10 @@ public:
 	//File name for the popdy file...
 	char popdyfn[128];
 
+	//linecount variable for loading
+	int linecount;
+
+
 	//constructor
 	stringPM(SMspp * pSP);
 	//destructor
@@ -116,18 +133,18 @@ public:
 	char * parse_error(int errno);
 
 	//Loading
-	int load_splist(char *fn,int verbose);
+	int load_splist(const char *fn,int verbose);
 
 	//int load_agents(char *fn,                int test, int verbose);
 	// VJH version for youShare
-	int load_agents(char *fn, char *fninput, int test, int verbose);
+	int load_agents(const char *fn, char *fninput, int test, int verbose);
 
-	float load_mut(char *fn, int verbose); //load the mutation rate
-	float load_decay(char *fn, int verbose); //load the decay rate
+	float load_mut(const char *fn, int verbose); //load the mutation rate
+	float load_decay(const char *fn, int verbose); //load the decay rate
 
-	int load_reactions(char *fn, char *fntab, int test, int verbose);
+	int load_reactions(const char *fn, char *fntab, int test, int verbose);
 
-	int load_table_matrix(char *fn);
+	int load_table_matrix(const char *fn);
 	//int load(char *fn);
 
 
@@ -183,15 +200,24 @@ public:
 	void move_ag(s_ag *a1);
 
 	//Cellular Automaton stuff
-
 	smsprun *grid;
 	smsprun * init_smprun(const int gridx, const int gridy);
 	void free_grid();
+	void print_grid(FILE *fp);
+
+	//Loading from config file (see also agents_base)
+	int 	load_table(const char *fn);
+	int 	load_replicable(const char *fn);
+
+	s_ag * 	read_unbound_agent(FILE **fp, char line[], const int llen);
+	s_ag *  read_active_agent(FILE **fp, char line[], const int llen, int &pidx);
+	s_ag *  read_passive_agent(FILE **fp, char line[], const int llen);
+
+
+
 
 	//String & alignment stuff
-
 	int 	h_pos(s_ag *pag, char head); 	//Find the position of a particular head.
-	int 	load_table(char *fn);
 	void 	get_string_comp(s_ag *pag);
 	float 	get_sw(s_ag *a1, s_ag *a2, align *sw);
 	float 	get_bprob(align *sw);
@@ -213,7 +239,7 @@ public:
 
 
 	//Trying conservation of mass
-	int 	load_comass(char *fn, int verbose); //load single value from a file
+	int 	load_comass(const char *fn, int verbose); //load single value from a file
 	int 	set_mass(int *param);  //load a set of values from an array
 	void 	comass_make_next();
 	int 	comass_testdecay(s_ag *pag);
@@ -262,7 +288,10 @@ public:
 
 	//Output a config file at any point in the trial:
 	int 		print_conf(FILE *fp);
-	void 		print_agent_cfg(FILE *fp, s_ag *pa);
+	void 		print_agent_cfg(FILE *fp, s_ag *pa, const int pass_index);
+
+	//Write a species list to a config file
+	void 		write_extant_spp(FILE *fp);
 
 };
 

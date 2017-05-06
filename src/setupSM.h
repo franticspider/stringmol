@@ -71,7 +71,7 @@
 	/* Spatial Stringmol functions */
 	int randy_Moore(const int X, const int Y, const int Xlim, const int Ylim, int *xout, int *yout);
 	int smspatial(int argc, char *argv[]);
-	int smspatial_init(char *fn, stringPM *A, smsprun **run, int runno);
+	int smspatial_init(const char *fn, stringPM *A, smsprun **run, int runno);
 	int smspatial_step(stringPM *A, smsprun *run);
 
 	/* diagnostics for spatial stringmol */
