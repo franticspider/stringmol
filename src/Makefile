@@ -186,8 +186,8 @@ $(OUTPUT_DIR)/smspatial: 	$(OUTPUT_DIR)/smspatial.o \
 	$(CC) -o smspatial -s -lm 	\
 	        -funroll-loops -fomit-frame-pointer \
 	        $(OUTPUT_DIR)/smspatial.o \
-			$(COBJECTS) $(CPPOBJECTS) \
-			-lSDL 
+			$(COBJECTS) $(CPPOBJECTS) 
+#			-lSDL 
 		
 		
 ###########################################################

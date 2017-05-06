@@ -13,8 +13,8 @@ debug: CC = g++ -O0 -Wall -Wunused -std=c++11 -DDEBUG -g
 
 
 #If you want profiling, comment out the above and replace with: 
-#debug: C4C += -DDEBUG -g -pg
-#debug: CC += -DDEBUG -g -pg
+#debug: C4C = gcc -O0 -Wall -Wunused -DDEBUG -g -pg
+#debug: CC = g++ -O0 -Wall -Wunused -std=c++11 -DDEBUG -g -pg
 
 
 
