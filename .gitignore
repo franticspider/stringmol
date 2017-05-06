@@ -7,6 +7,8 @@ src/stringmol_dbg
 src/smspatial
 src/smspatial_dbg
 *.cgi
+debug/stringmol
+release/stringmol
 
 # gedit backups
 *~
