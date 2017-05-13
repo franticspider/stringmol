@@ -1832,12 +1832,11 @@ int smspatial(int argc, char *argv[]) {
 
 
 //	while(A.nagents(A.nowhead,-1)){
-	while(A.extit < A.nsteps){
+	while((A.extit < A.nsteps) && (ct > 0)){
 
 		//if(!(A.extit%100) || A.extit==1){
 		//if(!(A.extit%100)){
 		if(!(A.extit%A.image_every)){
-			ct = A.nagents(A.nowhead,-1);
 			bt = ct - A.nagents(A.nowhead,B_UNBOUND);
 			printf("Step %u done, number of molecules is %d, nbound = %d\n",A.extit,ct,bt);
 
@@ -1886,6 +1885,7 @@ int smspatial(int argc, char *argv[]) {
 #endif
 
 		A.extit++;
+		ct = A.nagents(A.nowhead,-1);
 
 	}
 
