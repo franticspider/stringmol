@@ -32,15 +32,17 @@ debug: OUTPUT_DIR = $(DEBUG_DIR)
 ################## TOP LEVEL TARGETS       ##################
 #############################################################
 
-# Notes on the all/debug thing. There's a lot of duplication here, but this helps to keep things clear. 
-# We have to run a `cleano' before all/debug because otherwise there'll be .o files that may have been built with a different config
+# Notes on the all/debug thing. There's a lot of duplication here, but this 
+# helps to keep things clear. We have to run a `cleano' before all/debug because
+# otherwise there'll be .o files that may have been built with a different
+# config
 
 #Make everything from scratch:
-all: $(OUTPUT_DIR)/stringmol $(OUTPUT_DIR)/smspatial cleano
+all: $(OUTPUT_DIR)/stringmol $(OUTPUT_DIR)/smspatial
 
 #TODO: Figure out how to set the debug flag to call SDL-devel (or SDL-dev)
 #debug: stringmol web_api smspatial
-debug: $(OUTPUT_DIR)/stringmol cleano
+debug: $(OUTPUT_DIR)/stringmol $(OUTPUT_DIR)/smspatial
 
 web_api: bind step
 

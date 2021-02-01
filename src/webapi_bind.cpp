@@ -51,14 +51,15 @@
 #include <iostream>
 #include "setupSM.h"
 
-
 #include "webapi_util.h"
 
 
 //TODO: this is defined in webapi_util.cpp
+
+
+
+
 const int MAXSTR = 5000;
-
-
 
 
 int main(int argc, char*argv[]){
@@ -80,6 +81,9 @@ int main(int argc, char*argv[]){
 	data = getenv("QUERY_STRING");
 
 #ifdef DEBUG
+	
+
+
 	printf("%s%c%c\n",
 	"Content-Type:text/html;charset=iso-8859-1",13,10);
 	printf("<TITLE>Multiplication results</TITLE>\n");

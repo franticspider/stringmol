@@ -1,0 +1,10 @@
+# https://caiorss.github.io/C-Cpp-Notes/Doxygen-documentation.html
+
+PROJECT_NAME			= "Stringmol"
+PROJECT_BRIEF			= "Artificial Chemistry"
+INPUT							= ./
+OUTPUT_DIRECTORY	= ../docs
+PREDEFINED				= __cplusplus
+GENERATE_LATEX		= YES
+CALL_GRAPH 				= YES
+EXCLUDE_PATTERNS  = lodepng.*

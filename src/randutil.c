@@ -41,7 +41,9 @@ int devrandomseed(){
 
 	int randomData = open("/dev/random", O_RDONLY);
 	int sjhRandomInteger;
-	read(randomData, &sjhRandomInteger, sizeof sjhRandomInteger);
+  ssize_t rs;
+	rs=read(randomData, &sjhRandomInteger, sizeof sjhRandomInteger);
+  if(rs < 0) printf("Error reading randomData in devrandomseed\n");
 	// you now have a random integer!
 	close(randomData);
 
@@ -83,7 +85,9 @@ unsigned long longdevrandomseed(){
 
 	int randomData = open("/dev/random", O_RDONLY);
 	long sjhRandomInteger;
-	read(randomData, &sjhRandomInteger, sizeof sjhRandomInteger);
+  ssize_t rs;
+	rs=read(randomData, &sjhRandomInteger, sizeof sjhRandomInteger);
+	if(rs < 0) printf("Error reading randomData in longdevrandomseed\n");
 	// you now have a random integer!
 	close(randomData);
 

@@ -96,7 +96,7 @@ l_spp * SMspp::make_spp_from_string(char *S, int extit, const int maxl0, const i
 
 	//TODO: check for malloc fails here...
 	sp = (l_spp *) malloc(sizeof(l_spp));
-	sp->S=(char *) malloc(maxl0+1*sizeof(char));
+	sp->S=(char *) malloc((maxl0+1)*sizeof(char));
 
 	memset(sp->S,0,maxl0*sizeof(char));
 
@@ -111,6 +111,8 @@ l_spp * SMspp::make_spp_from_string(char *S, int extit, const int maxl0, const i
 		for(lsp = species; lsp != NULL; lsp = lsp->next){
 			if(lsp->spp == spno){
 				printf("ERROR: species %d already exists! string is: %s\n",lsp->spp,lsp->S);
+        free(sp->S);
+				free(sp);
 				return NULL; //todo handle the error more gracefully!
 			}
 		}

@@ -65,10 +65,8 @@ const int MAXSTR = 5000;
 int main(int argc, char*argv[]){
 
 	char * output;
-
 	char 	*string1,//[] = "ADFAERQEDAGADGAERQEWRQERDFSDFASDFERQEW",
 			*string2;//[] = "DSFASDFAFQEREWASDFASDFAREQRQWEFDSFAEQWR";
-
 	char *data;
 
 	string1 = (char *) malloc(MAXSTR*sizeof(char));
@@ -126,6 +124,4 @@ int main(int argc, char*argv[]){
 	free(string2);
 
 	return 0;
-
-
 }

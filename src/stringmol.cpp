@@ -187,7 +187,9 @@ void add_spp(const int nag, stringPM *A, char *label, char symbol){
 	s_ag *pag;
 
 	for(i=0;i<nag;i++){
-	l_spp *species;
+	    l_spp *species;
+        //TODO: species isn't defined before it is used when i==0, but we need to check that the next line doesn't cause issues: 
+        species = NULL;
 
 		pag = A->make_ag(symbol);//,1);
 
@@ -330,6 +332,8 @@ int random_config(stringPM *A, char *fout, const int nnew,const int nag){
 
 		for(i=0;i<nag;i++){
 			l_spp *s;
+            //TODO: cppcheck says s must be initialised - becuase when i==0 it isn't assigned before it is initialised: check this!
+            s = NULL;
 
 			pag = A->make_ag('A'+j);//,1);
 
@@ -889,7 +893,7 @@ int comass_AlifeXII(int argc, char *argv[]){
 	//counter for max no. symbols at any time step.
 	int *maxcode;
 
-
+  maxcode=NULL;
 	for(unsigned int rr=0;rr<rlim;rr++){
 
 		FILE *mc;
@@ -925,7 +929,6 @@ int comass_AlifeXII(int argc, char *argv[]){
 			A.comass_make_next();
 			A.update();
 
-
 			if(!(i%1000)){
 				A.print_spp_count(stdout,0,-1);
 				A.extit=i;//dummy line for breakpoint
@@ -940,7 +943,6 @@ int comass_AlifeXII(int argc, char *argv[]){
 					printf("Unable to write to %s\n",fn);
 				}
 			}
-
 
 			if(!(i%1000)){
 				setmaxcode(&A,maxcode);
@@ -1030,13 +1032,17 @@ float EAqnn_summary(int rr){
 	float score = 0;
 	FILE *fp;
 	char cp[256];
+  int sval = 0;
 
 	sprintf(cp,"cp popdy%03d.dat popdy.dat",rr);
-	system(cp);
+	sval = system(cp);
+  printf("EAqnn_summary: System call 1 returned %d\n",sval);
 
 
 	//printf("Calling R:\n");
-	system("R -q -f file.R");
+	sval = system("R -q -f file.R");
+  printf("EAqnn_summary: System call 2 returned %d\n",sval);
+
 
 	//printf("Calling ls:\n");
 	//system("ls -ltrh");
@@ -1046,12 +1052,19 @@ float EAqnn_summary(int rr){
 
 	fp = fopen("qnn.txt","r");
 
-	fscanf(fp,"%e",&score);
+
+  int fsv;
+	fsv = fscanf(fp,"%e",&score);
+  if(fsv == EOF){
+		printf("WARNING: fcanf retuned EOF in function EAqnn_summary\n");
+	}
+
 	printf("Read qnn, value is %f\n",score);
 	fclose(fp);
 
 	return score;
 }
+
 
 
 
@@ -1067,6 +1080,8 @@ void print_ga(FILE *fp, int n, int i, double *eval, int **params, int np, int li
 }
 
 
+
+
 int * paramsFromFile(char *fn, const int rr, const int N){
 	FILE *fp;
 	fp = fopen(fn,"r");
@@ -1074,9 +1089,14 @@ int * paramsFromFile(char *fn, const int rr, const int N){
 	char *ptr;
 	int *vals;
 	vals = (int *) malloc(N*sizeof(int));
+
 	//grab the line specified by rr
+	char *fgp;
 	for(int i=0;i<=rr;i++){
-		fgets(line,2000,fp);
+		fgp = fgets(line,2000,fp);
+		if(fgp == NULL){
+			printf("WARNING: fgets returned NULL in paramsFromFile\n");
+		}
 	}
 	ptr=strtok(line,"\t");
 	ptr=strtok(NULL,"\t");
@@ -1084,6 +1104,7 @@ int * paramsFromFile(char *fn, const int rr, const int N){
 		sscanf(ptr,"%d",&(vals[i]));
 		ptr=strtok(NULL,"\t");
 	}
+    fclose(fp);
 	return vals;
 }
 
@@ -1095,11 +1116,16 @@ double evalFromFile(char *fn, int rr){
 	int ival;
 	double val;
 	//grab the line specified by rr
+  char *fgp;
 	for(int i=0;i<=rr;i++){
-		fgets(line,2000,fp);
+		fgp=fgets(line,2000,fp);
+		if(fgp == NULL){
+			printf("WARNING: in evalFromFile, fgets returned NULL\n");
+		}
 	}
 
 	sscanf(line,"%d",&ival);
+    fclose(fp);
 	return val=ival;
 
 }
@@ -1219,6 +1245,8 @@ int comass_GA(int argc, char *argv[]){
 
 			mutnet[rr] = randboolarray(A.blosum->N*A.blosum->N);
 			setmutnet(mutnet[rr],A.blosum);
+            //This may cause problems if mutnet[rr] is used below:
+            free(mutnet[rr]);
 
 			A.set_mass(params[rr]);
 			//A.print_agents(stdout,"NOW",0);
@@ -1237,8 +1265,6 @@ int comass_GA(int argc, char *argv[]){
 				eval[rr]=lifetime;
 			}
 
-
-
 		}
 		else{
 			params[rr] = paramsFromFile(argv[3],rr,A.blosum->N);
@@ -1254,6 +1280,8 @@ int comass_GA(int argc, char *argv[]){
 
 		A.clearout();
 	}
+
+    free(mutnet);
 
 	//printf("Seed Evaluations:\n");
 	//for(int e=0;e<POPN;e++){
@@ -1371,7 +1399,6 @@ float *generate_avg_conc(char *fn, int *en){
 			}
 		}
 
-
 		/*Calculate the averages*/
 		const char *opcodes="ABC$DEF%GH^IJK?LMN}OPQ>RST=UVWXYZ";
 		const int nops = strlen(opcodes);
@@ -1380,15 +1407,22 @@ float *generate_avg_conc(char *fn, int *en){
 		avg = (float *) malloc(nops*sizeof(float));
 		memset(avg,0,nops*sizeof(float));
 
-
 		for(int j=0;j<navg;j++){
 			rewind(fp);
 			int l=1;
-			while(l!=line_number[j]){//TODO: Can't quite get this right without the extra fgets after the while - this'll fail - line_number[j]==1 (unlikely)
-				fgets(line,2000,fp);
+
+			// TODO: Can't quite get this right without the extra fgets after the while - 
+			// this'll fail - line_number[j]==1 (unlikely)
+			char *fgr;
+			while(l!=line_number[j]){
+				fgr = fgets(line,2000,fp);
 				l++;
 			}
-			fgets(line,2000,fp);
+			fgr = fgets(line,2000,fp);
+      if(fgr == NULL){
+				printf("WARNING: fgets is NULL in function generate_avg_conc\n");
+			}
+
 			char *lptr,*p;
 			lptr = line;
 			//Tokenize the line
@@ -1861,6 +1895,7 @@ int SmPm_conpop(int argc, char *argv[]){
 	}
 	fprintf(fsumm,"Random seed is %ld\n",rseed);
 	fflush(fsumm);
+    fclose(fsumm);
 
 
 	ftmp = fopen("epochs.dat","w");
@@ -1874,8 +1909,10 @@ int SmPm_conpop(int argc, char *argv[]){
 
 		//A[c]->signal = signal;
 		//A[c]->load(argv[2],NULL,0,1);
-		if(!arg_load(A[c], argc, argv))
+		if(!arg_load(A[c], argc, argv)){
+            free(score);
 			return 0;
+        }
 
 
 		A[c]->biomass=A[c]->bstart = 0;
@@ -2242,6 +2279,7 @@ void swdist(int argc, char *argv[]){
 	}
 	fprintf(fsumm,"Random seed is %ld\n",rseed);
 	fflush(fsumm);
+    fclose(fsumm);
 
 
 	ftmp = fopen("epochs.dat","w");
@@ -2265,8 +2303,6 @@ void swdist(int argc, char *argv[]){
 		fclose(fp);
 	}
 	printf("NTRIALS = %d\n",rlim);
-
-
 
 	//Read nsteps:
 	unsigned int maxnsteps=0;
@@ -2304,42 +2340,34 @@ void swdist(int argc, char *argv[]){
 			printf("error opening %s",ofn);
 		}
 
-		fgets(line,A.maxl,fin);
-		printf("%s\n",line);
-		fprintf(outfile,"%s\n", line);
+		if((fgets(line,A.maxl,fin))!=NULL){
+			printf("%s\n",line);
+			fprintf(outfile,"%s\n", line);
 
-		while((fgets(line,A.maxl,fin))!=NULL){
+			while((fgets(line,A.maxl,fin))!=NULL){
 
-			sscanf(line,"%*s\t%*s\t%*s\t%s\t%s",(char *) &s1, (char *) &s2);
+				sscanf(line,"%*s\t%*s\t%*s\t%s\t%s",(char *) &s1, (char *) &s2);
+				printf("read %s and %s\n",s1,s2);
+				SmithWatermanV2(s1,s2,&sw,A.blosum,0);
 
-			printf("read %s and %s\n",s1,s2);
+				int l = strlen(line);
+				line[l-1]='\0';
 
-			SmithWatermanV2(s1,s2,&sw,A.blosum,0);
+				printf("sw score is %f\n",sw.score);
+				fprintf(outfile,"%s\t%f\t%d\t%d\n", line, sw.score,(int) strlen(s1), (int) strlen(s2));
+				fflush(outfile);
 
+				fprintf(stdout,"%s\t%f\t%d\t%d\n", line, sw.score,(int) strlen(s1),(int) strlen(s2));
+				fflush(stdout);
+			}
+    }
 
-			int l = strlen(line);
-			line[l-1]='\0';
-
-
-			printf("sw score is %f\n",sw.score);
-			fprintf(outfile,"%s\t%f\t%d\t%d\n", line, sw.score,(int) strlen(s1), (int) strlen(s2));
-			fflush(outfile);
-
-			fprintf(stdout,"%s\t%f\t%d\t%d\n", line, sw.score,(int) strlen(s1),(int) strlen(s2));
-			fflush(stdout);
-
-		}
-
-
-		fclose(fin);
-		fclose(outfile);
+	fclose(fin);
+	fclose(outfile);
 	}
 	else{
 		printf("Couldn't open file %s",argv[2]);
 	}
-
-
-
 }
 
 
@@ -2354,6 +2382,8 @@ int speigpipette(stringPM *A, const int nmols, const int nrep, char *repstring, 
 	for(int i=0;i<nrep;i++){
 
 		l_spp *s;
+        //TODO: cppcheck says s must be initialised - becuase when i==0 it isn't assigned before it is initialised: check this!
+        s = NULL;
 
 		pag = A->make_ag('R');//,1);
 
@@ -2500,6 +2530,8 @@ int speigmonst(int argc, char *argv[]){
 
 	char *repstring;
 	repstring = (char*)malloc(A.maxl0 * sizeof(char));
+
+  maxcode = NULL;
 	for(unsigned int rr=0;rr<rlim;rr++){
 
 		FILE *mc;
@@ -2563,7 +2595,6 @@ int speigmonst(int argc, char *argv[]){
 				}
 			}
 
-
 			if(!(i%1000)){
 				setmaxcode(&A,maxcode);
 				printf("%03d At  time %d e=%d,div=%d\n",rr,i,(int)A.energy,div);
@@ -2578,9 +2609,7 @@ int speigmonst(int argc, char *argv[]){
 				}
 			}
 
-
 			thisepoch = A.get_ecosystem();
-
 
 			if(!(i%1000)){
 				if(thisepoch != lastepoch){
@@ -2639,20 +2668,20 @@ int speigmonst(int argc, char *argv[]){
 		printmaxcode(mc,maxcode,&A);
 		fclose(mc);
 
-
 		//A.clearout();
 	}
 
 	A.print_propensity(fsumm);
 
 	fclose(fsumm);
+    free(repstring);
 	return 0;
 }
 
 
+
+
 int test_config(){
-
-
 
 	return 0;
 

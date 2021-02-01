@@ -294,8 +294,11 @@ int stringPM::load_table_matrix(const char *fn){
 	char *p;
 	int i,j;
 	printf("File name is %s",fn);
+  char *fr=NULL;
 	if((fp=fopen(fn,"r"))!=NULL){
-		fgets(line,maxl,fp);
+		fr=fgets(line,maxl,fp);
+    if(fr==NULL)
+			printf("WARNING: error returned using fgets in stringPM::load_table_matrix\n");
 		memset(label,0,maxl);
 		sscanf(line,"%s",label);
 
@@ -312,7 +315,7 @@ int stringPM::load_table_matrix(const char *fn){
 		}
 
 		for(i=0;i<blosum->N+1;i++){
-			fgets(line,maxl,fp);
+			fr = fgets(line,maxl,fp);
 			p=strtok(line,", \t");
 			for(j=0;j<blosum->N;j++){
 				sscanf(p,"%f",&(blosum->T[i][j]));
@@ -325,7 +328,7 @@ int stringPM::load_table_matrix(const char *fn){
 			blosum->adj[i] = (int *) malloc(blosum->N * sizeof(int));
 		}
 		for(i=0;i<blosum->N;i++){
-			fgets(line,maxl,fp);
+			fr = fgets(line,maxl,fp);
 			p=strtok(line,", \t");
 			for(j=0;j<blosum->N;j++){
 				sscanf(p,"%d",&(blosum->adj[i][j]));
@@ -412,8 +415,8 @@ int stringPM::load_table(const char *fn){
 						return 0;
 					}
 				}
+				fclose(fp2);
 				if(!found2){
-					fclose(fp2);
 					printf("No MIS string found in MIS file\n");
 					return 2;
 				}
@@ -439,7 +442,6 @@ int stringPM::load_table(const char *fn){
 		return 4;
 
 	return 5;
-
 
 }
 
@@ -649,6 +651,7 @@ int stringPM::load_reactions(const char *fn, char *fntab, int test, int verbose)
 				append_ag(&nowhead,bag);
 			}
 		}
+		fclose(fp);
 	}
 	return 0;
 }
@@ -915,6 +918,9 @@ int stringPM::load_replicable(const char *fn){
 	s_ag **agarray;
 	int *parray;
 	int pidx;
+
+  agarray = NULL;
+  parray = NULL;
 
 	if((fp = fopen(fn,"r"))!=NULL){
 
@@ -1724,6 +1730,8 @@ void stringPM::print_agents(FILE *fp, const char *spec, int verbose){
 
 	s_ag *pag;
 
+  pag = NULL;
+
 	if(!strncmp("NOW",spec,strlen("NOW"))){
 		pag = nowhead;
 	}
@@ -1993,17 +2001,17 @@ float stringPM::get_bprob(align *sw){
 	return bprob;
 }
 
-
+/* NB: swa commented out as it slows down computation instead of speeding it up in long runs */
 float stringPM::get_sw(s_ag *a1, s_ag *a2, align *sw){
 
 	float bprob;
 	char *comp;
-	s_sw *swa;
+	//s_sw *swa;
 
-	//SUGGEST: pass in pointer to the species - not its index
-	swa = read_sw(swlist,a1->spp->spp,a2->spp->spp);
+	////SUGGEST: pass in pointer to the species - not its index
+	//swa = read_sw(swlist,a1->spp->spp,a2->spp->spp);
 
-	if(swa==NULL){
+	//if(swa==NULL){
 
 		//get_string_comp(a1);
 		comp = string_comp(a1->S);
@@ -2019,12 +2027,12 @@ float stringPM::get_sw(s_ag *a1, s_ag *a2, align *sw){
 
 		bprob = SmithWatermanV2(a1->S,a2->S,&sw2,blosum,0);
 
-		//TODO: SUGGEST: pass in pointer to the species - not its index
-		store_sw(&swlist,sw,a1->spp->spp,a2->spp->spp);
-	}
-	else{
-		load_sw(swa,sw);
-	}
+	//	//TODO: SUGGEST: pass in pointer to the species - not its index
+	//	store_sw(&swlist,sw,a1->spp->spp,a2->spp->spp);
+	//}
+	//else{
+	//	load_sw(swa,sw);
+	//}
 
 	bprob = get_bprob(sw);
 
@@ -2229,6 +2237,9 @@ int stringPM::h_pos(s_ag *pag, char head){
 
 	char *ph;
 	char *ps;
+
+  ph=NULL;
+  ps=NULL;
 
 	if(pag->status != B_ACTIVE)
 		printf("ERROR: attempting head position for inactive string");
@@ -2894,16 +2905,8 @@ void stringPM::make_next(){
 				fflush(stdout);
 		}
 
-		/*
-		if(pag->idx == 354 || pag->idx == 214){
-			printf("%d ",(int) extit);
-			if(print_agent_idx(stdout,1,354))
-				fflush(stdout);
-			if(print_agent_idx(stdout,1,214))
-				fflush(stdout);
-		}*/
-
 		int dc = testdecay(pag);
+
 		if(dc){//we must check what else needs to be destroyed...
 			if(bag!=NULL){
 				free_ag(bag);
@@ -2913,23 +2916,17 @@ void stringPM::make_next(){
 			if(energy>0){
 				switch(pag->status){
 				case B_UNBOUND:
-					//seek binding partner, set binding states.
 					changed = testbind(pag);
-					//if(!changed)
-					//	changed = testdecay(pag);
-
 					break;
+
 				case B_PASSIVE:
-
-					//extract_ag(&nowhead,pag->exec);
 					changed = exec_step(pag->exec,pag);
-
 					break;
-				case B_ACTIVE:
 
-					//extract_ag(&nowhead,pag->pass);
+				case B_ACTIVE:
 					changed = exec_step(pag,pag->pass);
 					break;
+
 				default:
 					printf("ERROR: agent with unknown state encountered!\n");
 				}
@@ -4216,27 +4213,8 @@ void stringPM::free_lspp(l_spp *sp){
 	free(sp);
 }
 
-/*
-int stringPM::append_lspp(l_spp *sp){
 
-	l_spp *p;
-	//printf("appending: list = %p, ag = %p\n",*list,ag);
-	if(species==NULL){
-		species=sp;
-		//printf("appended: list = %p, ag = %p\n",*list,ag);
-	}
-	else{
-		p = species;
-		while(p->next != NULL){
-			p = p->next;
-		}
-		p->next = sp;
-	}
-	return 0;
-}
-*/
-
-
+/* Attempt to build ancestry */
 //This is called from CLEAVE, otherwise we can't tell if its in the middle of being constructed....
 int stringPM::update_lineage(s_ag *p, char sptype, int add, l_spp *paspp, l_spp * ppspp, int mass){
 
@@ -4999,6 +4977,7 @@ int stringPM::share_agents(s_ag **hp){
 	tmphead = *hp;
 	pa = tmphead;
 	*hp = NULL;
+	aa = NULL;
 
 	while(pa !=NULL){
 		ntot++;
@@ -5399,7 +5378,7 @@ int stringPM::print_conf(FILE *fp){
 		//No mutation rate needs to be set: the hard-wired alife values will be loaded.
 	}
 
-	fprintf(fp,"\n%%% REPORTING PARAMETERS %%%\n");
+	fprintf(fp,"\n%%%%%% REPORTING PARAMETERS %%%%%%\n");
 	fprintf(fp,"REPORTEVERY %d\n",(int) report_every);
 	fprintf(fp,"IMAGEEVERY	%d\n",(int) image_every);
 

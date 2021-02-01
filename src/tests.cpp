@@ -50,54 +50,9 @@
 #include "tests.h"
 
 
-
-/*Test the random number generator. It must:
- *
- * 1: give the same sequence from a seed
- * 2: give the current position so that we can re-seed
- */
-int test_rand(int verbose){
-
-	int failed = 0;
-	int rin = 436;
-
-	if(verbose)printf("Testing seeding using dev/rand... \n");fflush(stdout);
-	int rout = initmyrand(-1);
-	if(rout == rin){
-		printf("FAILED - requested seed from dev/random, but got -1\n");
-	}
-	else
-		if(verbose)printf("PASSED - init set seed as %d (%u)\n",rout,(unsigned int) rout);
-
-	if(verbose)printf("Testing seeding using dev/rand again... \n");fflush(stdout);
-	rout = rout - initmyrand(-1);
-	if(rout == 0 ){
-		printf("FAILED - requested new seed from dev/random, but got same one\n");
-	}
-	else
-		if(verbose)printf("PASSED - init set seed as %d\n",rout);
-
-	if(verbose)printf("Testing seeding using ingeter %d... \n",rin);fflush(stdout);
-	rout = initmyrand(rin);
-	if(rout != rin){
-		printf("FAILED - seed not set - different seed used\n");
-	}
-	else
-		if(verbose)printf("PASSED - init set seed as %d\n",rout);
-
-
-	if(verbose)printf("Testing re-setting mt index... \n");fflush(stdout);
-	int pos = 22;
-	set_mti(pos);
-	pos = get_mti();
-
-
-
-
-	if(!failed)
-		printf("ALL RNG TESTS PASSED\n\n");
-	return failed;
-}
+/*OBSOLTE FILE/APPROACH - TESTS ARE NOW IN ../tests/ SUBDIR
+    TESTS NOW AVAILABLE IN ../tests/ ARE COMMENTED OUT
+*/
 
 
 
@@ -255,7 +210,8 @@ int test_loadsave(int argc, char *argv[]){
 
 	csc = compare_config(A,C);
 
-
+    for(int c=0;c<argc;c++) free(argv2[c]);
+    free(argv2);
 	return csc;
 }
 
@@ -269,8 +225,9 @@ int test_all(int argc, char *argv[]){
 
 	int failed = 0;
 
-	printf("Testing rng\n");
-	failed = test_rand(0);
+    /* These are now implementd in tests directory */
+	//printf("Testing rng\n");
+	//failed = test_rand(0);
 
 
 	failed = test_loadsave(argc,argv);

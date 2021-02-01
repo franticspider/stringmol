@@ -202,7 +202,7 @@ int load_mt(const char *fn){
 	FILE *fp;
 	const int maxl = 128;
 	char line[maxl];
-	int mtival,args_read=0,ii;
+	int mtival,args_read=0,ii=-1;
 	enum load_mt_errcode errcode = load_mt_success;
 	unsigned long mtval;
 

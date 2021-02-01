@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
 
 	printf("Hello spatial stringmol world\n");
 
-	int rtype = atoi(argv[1]);
+	//int rtype = atoi(argv[1]);
 
 	SMspp		SP;
 	stringPM	A(&SP);
@@ -155,7 +155,7 @@ int main(int argc, char *argv[]) {
 			//printf("Step %ld done, number of molecules is %d, nbound = %d\n",A.extit,ct,bt);
 
 			FILE *fpp;
-			sprintf(fn,"out1_%05ld.conf",A.extit);
+			sprintf(fn,"out1_%05d.conf",A.extit);
 			fpp = fopen(fn,"w");
 			A.print_conf(fpp);
 			fclose(fpp);
@@ -182,8 +182,8 @@ int main(int argc, char *argv[]) {
 		std::vector<unsigned char> image;
 		image.resize(run->gridx * run->gridy * 4);
 
-
-	    pictype tp = pic_len;
+#ifdef USE_SDL
+    pictype tp = pic_len;
 		int x,y,val;
 		for(x=0;x<run->gridx;++x){
 			for (y=0;y<run->gridy;++y) {
@@ -200,23 +200,8 @@ int main(int argc, char *argv[]) {
 						val=strlen(run->grid[x][y]->spp->S) * 50;
 						break;
 					}
-					/*
-					switch(run->grid[x][y]->status){
-					case B_UNBOUND:
-						val = 100;
-						break;
-					case B_PASSIVE:
-						val = 150;
-						break;
-					case B_ACTIVE:
-						val = 200;
-						break;
-					default:
-						val = 50;
-					}*/
 				}
 
-#ifdef USE_SDL
 				((uint8_t *)screen->pixels)[y + (x * sdlPitch)] = val;//getColor(grid[x][y]);
 
 				if(!(A.extit%10)){
@@ -231,9 +216,9 @@ int main(int argc, char *argv[]) {
 					image[4 * run->gridx * y + 4 * x + 2] = b;//x | y;
 					image[4 * run->gridx * y + 4 * x + 3] = 255;
 				}
-#endif
 			}
 		}
+#endif
 
 
 #ifdef USE_SDL
@@ -242,8 +227,6 @@ int main(int argc, char *argv[]) {
 			sprintf(filename,"frame%07d.png",A.extit);
 			encodeOneStep(filename, image, run->gridx, run->gridy);
 		}
-
-
 
 		while (SDL_PollEvent(&sdlEvent)) {
 			if (sdlEvent.type == SDL_QUIT) {

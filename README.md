@@ -207,6 +207,14 @@ A list of species that the simulations have created is printed every 10000 time 
 The second line (e.g. "Count:	198	222	214	181") indicates the total number of molecules in each container.
 
 
+# Issues
+
+There are a number of issues that need to be addressed to improve stringmol. These features all currently work 99% of the time, but for longer simulations, the reacions explore edge-cases in the stringmol language that aren't fully explored/documented/understood. Consequences are: 
+
+- **Repeatibility:** Although we are recording the system state and the state of the RNG, restarts in deeper runs do not appear to be repeatable
+- **Logging:** Species lists are fairly comprehensive, but if a molecule is created just before a run terminates, its origins may be lost 
+- **Zero percent binds:** in deeper runs, a situation emerges where a small percentage of reactions (typically about 0.1%) have zero probability of binding
+- **`SOFT_SEARCH` poorly defined** `HSearch` appears *not* to be stochastic at present
 
 
 

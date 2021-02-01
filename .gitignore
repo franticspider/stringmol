@@ -16,3 +16,6 @@ release/stringmol
 #Eclipse stuff:
 .project
 .cproject
+
+#Doxygen stuff: 
+docs/**/*

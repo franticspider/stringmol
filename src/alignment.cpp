@@ -833,6 +833,7 @@ int tab_idx(char X, swt *T){
 
 float score_sw(char *s1, char *s2, swt *swT){
 	align A;
+  A.score = 0;
 	//SmithWatermanV2(char *s1, char *s2, align *A, swt *swT, int verbose)
 	SmithWatermanV2(s1,s2,&A,swT,0);
 	return A.score;

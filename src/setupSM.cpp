@@ -498,6 +498,7 @@ void print_swdt(FILE *fp, float **dt,  stringPM * A, stringPM * B){
 		}
 		fprintf(fp,"\n");
 	}
+	free(found);
 }
 
 
@@ -867,7 +868,7 @@ s_ag * pick_partner(stringPM *A, smsprun *run,int x, int y){
 						if(run->status[xx][yy] == G_NOW){
 							if(count==it)
 								run->status[xx][yy] = G_NEXT;
-								return run->grid[xx][yy];
+						  return run->grid[xx][yy]; //TODO: should this be guarded by the if?
 							count++;
 						}
 					}
@@ -1296,6 +1297,7 @@ int spatial_testdecay(stringPM *A, smsprun *run, s_ag *pag){
 
 
 		s_ag *bag;
+    bag = NULL;
 		switch(pag->status){
 		case B_UNBOUND:
 			bag = NULL;
@@ -1445,6 +1447,7 @@ unsigned long init_randseed(char *fn, int printrandseed=0){
 					print_mt(rfp);
 					fclose(rfp);
 				}
+				fclose(fprng);
 			}
 			else{
 				printf("ERROR reading Random Number Generator config %s\n",rngfn);
@@ -1647,7 +1650,6 @@ int smspatial_step(stringPM *A, smsprun *run){
 
 	A->update();
 	update_grid(run);
-
 
 
 	//#ifdef DEBUG
