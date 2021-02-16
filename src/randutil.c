@@ -65,7 +65,9 @@ int initmyrand(int seed){
 #endif
 	}
 
+#ifdef VERBOSE
 	printf("in initmyrand, seed is %d (%u)\n",seed,seed);
+#endif
 
 #ifdef USING_MT
 	sgenrand(seed);

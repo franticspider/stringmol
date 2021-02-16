@@ -88,31 +88,41 @@ TEST_CASE("resetting Mersenne Twister index"){
 }
 
 
+TEST_CASE("save and load RNG to/from file"){
+    FILE *mtf;
+    int runf = 7919; //the 1000th prime
+    const int nrand = 20;
+    char fn[] = "rng.txt";
+    float rnos1[nrand], rnos2[nrand];
 
+    initmyrand(-1);
+    //Run the RNG forward a couple of thousand times
+    for(int cc=0;cc<runf;cc++){
+        rand0to1();
+    }
 
-/*
-TEST_CASE("Triangle Constructor Throws Exception When One Side Is Negative", "[Triangle]") {
-	REQUIRE_THROWS(Triangle(-10.0f, 10.0f, 10.0f));
+	if((mtf = fopen(fn,"w"))!=NULL){
+        //Save the RNG
+		print_mt(mtf);
+		fclose(mtf);
+	}
+	else{
+		printf("Failed to record RNG state to file %s\n",fn);
+        FAIL();
+	}
+
+    //Run the RNG forward into array1
+    for(int cc=0;cc<nrand;cc++){
+        rnos1[cc] = rand0to1();
+    }
+
+    //Restore the RNG
+    load_mt(fn);
+
+    //Run the RNG forward into array2 and test
+    for(int rr=0;rr<nrand;rr++){
+        rnos2[rr] = rand0to1();
+        REQUIRE(rnos1[rr] == rnos2[rr]);
+    }    
+    
 }
-
-TEST_CASE("Triangle Constructor Throws Exception When Not A Valid Triangle", "[Triangle]") {
-	REQUIRE_THROWS(Triangle(10.0f, 10.0f, 25.0f));
-}
-
-TEST_CASE("Triangle Constructor Works When Valid Data Is Used", "[Triangle]") {
-	REQUIRE_NOTHROW(Triangle(10.0f, 15.0f, 20.0f));
-}
-
-TEST_CASE("Triangle Area Is Computed Correctly", "[Triangle]") {
-	Triangle Triangle(10.0f, 15.0f, 20.0f);
-	float RoundedArea = roundf(Triangle.GetArea() * 100) / 100;
-
-	REQUIRE(RoundedArea == 72.62f);
-}
-
-TEST_CASE("Triangle Perimiter Is Computed Correctly", "[Triangle]") {
-	Triangle Triangle(10.0f, 15.0f, 20.0f);
-	float Perimiter = Triangle.GetPerimiter();
-
-	REQUIRE(Perimiter == 45.0f);
-}*/

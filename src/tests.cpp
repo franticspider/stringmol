@@ -56,7 +56,6 @@
 
 
 
-//stringPM * test_config_settings( int argc, char *argv[], int return_SM){
 stringPM * test_config_settings( int argc, char *argv[], int return_SM){
 	/** The idea here is to report the default values of the parameters, then parse the config and report them again. */
 
@@ -70,13 +69,10 @@ stringPM * test_config_settings( int argc, char *argv[], int return_SM){
 	print_params(A,ntrials,nsteps);
 	printf("..c'est ca!\n\n");
 
-	//int readordef_param_int(char *fn, const char *label, int *val, const int defaultvalue, const int verbose)
 	readordef_param_int(argv[2], "NTRIALS", &ntrials, 1, 1);
 	int nns = readordef_param_int(argv[2], "NSTEPS", &nsteps, -1, 1);
 
 	A->load(argv[2],NULL,0,1);
-	//if(!arg_load(A, argc, argv, 0))
-	//	return NULL;
 
 	printf("\n\nAFTER loading the config, params are:\n");
 	print_params(A,ntrials,nsteps);
@@ -218,6 +214,7 @@ int test_loadsave(int argc, char *argv[]){
 
 
 
+
 /* Refactoring practice demands that tests are written whilst writing code!
  * This function tests that each stringmol configuration works
  */
@@ -225,21 +222,14 @@ int test_all(int argc, char *argv[]){
 
 	int failed = 0;
 
-    /* These are now implementd in tests directory */
-	//printf("Testing rng\n");
-	//failed = test_rand(0);
-
-
 	failed = test_loadsave(argc,argv);
-
-
-
 	printf("Check config test\n");
-
-
 
 	return failed;
 }
+
+
+
 
 
 void test_rand_config(int argc, char *argv[]){

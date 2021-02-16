@@ -5,8 +5,29 @@
 #./travis_gcc_cpp98
 #cppcheck --quiet --error-exitcode=1 main.cpp
 
+echo "Should compile now, but.. it's a TODO!"
 
 
+
+
+echo "============================"
+echo "Checking with cppcheck"
+cd src
+# the --check-config argument seems to find standard library headers
+#cppcheck --error-exitcode=1 --force --check-config --enable=all *.cpp
+echo "----------------------------"
+echo "Checking config with cppcheck"
+cppcheck --error-exitcode=1 --force --check-config --suppress=missingIncludeSystem *.cpp
+echo "----------------------------"
+echo "Checking code with cppcheck"
+cppcheck --error-exitcode=1 --force --enable=all *.cpp
+cd ../
+echo ""
+
+
+
+
+echo "============================"
 echo "Running Tests.  Please Wait."
 #g++ -Wall Shapes-Catch-Testing-Example/Source/Shapes-Catch-Testing-Example.cpp Shapes-Catch-Testing-Example/Source/Implementation/*.cpp -o main
 #g++ -Wall Shapes-Catch-Testing-Example/Test/*.cpp Shapes-Catch-Testing-Example/Source/Implementation/*.cpp -o test
@@ -17,3 +38,7 @@ cd ..
 echo ""
 echo "  now testing.."
 ./tests/test
+
+
+echo "  cleaning up.."
+rm -f rng.txt
