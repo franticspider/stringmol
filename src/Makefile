@@ -112,7 +112,6 @@ CPPOBJECTS = $(OUTPUT_DIR)/lodepng.o \
 		$(OUTPUT_DIR)/instructions.o \
 		$(OUTPUT_DIR)/rules.o \
 		$(OUTPUT_DIR)/setupSM.o \
-		$(OUTPUT_DIR)/signalSM.o \
 		$(OUTPUT_DIR)/SMspp.o \
 		$(OUTPUT_DIR)/stringmanip.o \
 		$(OUTPUT_DIR)/stringPM.o \
@@ -149,12 +148,8 @@ $(OUTPUT_DIR)/rules.o:	rules.cpp rules.h memoryutil.h
 
 $(OUTPUT_DIR)/setupSM.o:	setupSM.cpp setupSM.h \
 			randutil.h	alignment.h \
-			rules.h agents_base.h SMspp.h stringPM.h signalSM.h lodepng.h
+			rules.h agents_base.h SMspp.h stringPM.h lodepng.h
 	$(CC) -c setupSM.cpp -o $(OUTPUT_DIR)/setupSM.o
-			
-
-$(OUTPUT_DIR)/signalSM.o: 	signalSM.cpp signalSM.h
-	$(CC) -c signalSM.cpp -o $(OUTPUT_DIR)/signalSM.o
 
 $(OUTPUT_DIR)/SMspp.o:	SMspp.cpp SMspp.h
 	$(CC) -c SMspp.cpp -o $(OUTPUT_DIR)/SMspp.o
@@ -204,18 +199,18 @@ $(OUTPUT_DIR)/stringmol: 	$(OUTPUT_DIR)/stringmol.o \
 ###########################################################
 # stringmol web api			
 			
-bind: 	webapi_bind.o webapi_util.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
+bind: 	webapi_bind.o webapi_util.o stringPM.o agents_base.o rules.o SMspp.o setupSM.o \
 			$(COBJECTS) \
 			stringmanip.o	alignment.o	instructions.o tests.o lodepng.o
-	$(CC) -o webapi_bind.cgi -lm webapi_bind.o webapi_util.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
+	$(CC) -o webapi_bind.cgi -lm webapi_bind.o webapi_util.o stringPM.o agents_base.o rules.o SMspp.o setupSM.o \
 			$(COBJECTS) \
 			stringmanip.o	alignment.o	instructions.o tests.o lodepng.o
 			
 			
-step: 	webapi_step.o webapi_util.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
+step: 	webapi_step.o webapi_util.o stringPM.o agents_base.o rules.o SMspp.o setupSM.o \
 			$(COBJECTS) \
 			stringmanip.o	alignment.o	instructions.o tests.o  lodepng.o
-	$(CC) -o webapi_step.cgi -lm webapi_step.o webapi_util.o stringPM.o agents_base.o rules.o SMspp.o signalSM.o setupSM.o \
+	$(CC) -o webapi_step.cgi -lm webapi_step.o webapi_util.o stringPM.o agents_base.o rules.o SMspp.o setupSM.o \
 			$(COBJECTS) \
 			stringmanip.o	alignment.o	instructions.o tests.o	 lodepng.o		
 		
@@ -242,7 +237,7 @@ $(OUTPUT_DIR)/smspatial.o:  	smspatial.cpp \
 
 webapi_util.o:	webapi_util.cpp webapi_util.h stringPM.h \
 		randutil.h	params.h hsort.h\
-        alignment.h	signalSM.h	setupSM.h\
+        alignment.h	setupSM.h\
 		rules.h	agents_base.h	SMspp.h 
 	$(CC) -c webapi_util.cpp
 	
@@ -250,13 +245,13 @@ webapi_util.o:	webapi_util.cpp webapi_util.h stringPM.h \
 	
 webapi_bind.o:  webapi_bind.cpp webapi_util.h\
 			randutil.h	alignment.h \
-			rules.h agents_base.h SMspp.h stringPM.h signalSM.h \
+			rules.h agents_base.h SMspp.h stringPM.h \
 			tests.h webapi_util.h
 	$(CC) -c webapi_bind.cpp 
 
 webapi_step.o:  webapi_step.cpp webapi_util.h\
 			randutil.h	alignment.h \
-			rules.h agents_base.h SMspp.h stringPM.h signalSM.h \
+			rules.h agents_base.h SMspp.h stringPM.h \
 			tests.h webapi_util.h
 	$(CC) -c webapi_step.cpp 		
 

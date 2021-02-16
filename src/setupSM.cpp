@@ -2356,6 +2356,7 @@ void find_parents(anc_node *aa, int timestep, int depth, char * ofn, int *found_
 /**Strategy is to create a text file containing the ancestry. We'll write an R or graphviz script to
  * parse this and generate figures.
  */
+//OBSOLETE: This analysis is now carried out in Rstringmol
 int smspatial_ancestry(int argc, char *argv[]){
 
 
@@ -2402,49 +2403,7 @@ int smspatial_ancestry(int argc, char *argv[]){
 
 	find_parents(aa,timestep,0,ofn,found_spp);
 
-
-	/*
-	while(!found_luca){
-
-
-
-
-		sprintf(fn,"splist%d.dat",timestep);
-		if((fp=fopen(fn,"r"))==NULL){
-			printf("Cannot open file %s so cannot proceed\n",fn);
-			exit(341);
-		}
-		else{
-
-			printf("Successfully opened file %s\nNow looking for species %d\n", fn, spno);
-			while((fgets(line,llen,fp)) != NULL){
-
-				//56189,-1,-1,1,EK$OYHOJLRWEK$BLUBO^>C$=?>D$BLUB}B$=?$$$BLBLUB}OYYHKOBLBLUB}OYYHKO
-				sscanf(line,"%d,%d,%d",&s1,&a1,&p1);
-
-				if(s1 == spno){
-					if(a1==-1 && p1==-1){
-						printf("Ancestors are from earlier run, decrementing timestep\n");
-						timestep -= 100;
-						fclose(fp);
-						break;
-					}
-					else{
-						printf("Ancestors found! Active is %d, Passive is %d\n",a1,p1);
-						break;
-					}
-				}
-			}
-
-			//find the species
-		}
-	}
-	*/
-
-
-	/*Open the splist file and find the entries for the species*/
-
-
+    free(found_spp);
 
 	return 0;
 }

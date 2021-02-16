@@ -17,10 +17,10 @@ cd src
 #cppcheck --error-exitcode=1 --force --check-config --enable=all *.cpp
 echo "----------------------------"
 echo "Checking config with cppcheck"
-cppcheck --error-exitcode=1 --force --check-config --suppress=missingIncludeSystem *.cpp
+cppcheck --error-exitcode=1 --force --check-config --suppress=missingIncludeSystem .
 echo "----------------------------"
 echo "Checking code with cppcheck"
-cppcheck --error-exitcode=1 --force --enable=all *.cpp
+cppcheck --error-exitcode=1 --force --enable=all .
 cd ../
 echo ""
 
@@ -32,7 +32,7 @@ echo "Running Tests.  Please Wait."
 #g++ -Wall Shapes-Catch-Testing-Example/Source/Shapes-Catch-Testing-Example.cpp Shapes-Catch-Testing-Example/Source/Implementation/*.cpp -o main
 #g++ -Wall Shapes-Catch-Testing-Example/Test/*.cpp Shapes-Catch-Testing-Example/Source/Implementation/*.cpp -o test
 cd tests
-echo "compiling..."
+echo "  compiling..."
 g++ -std=gnu++11 -Wall -o test  *.cpp ../release/mt19937-2.o ../release/randutil.o 
 cd ..
 echo ""

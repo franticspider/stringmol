@@ -68,7 +68,7 @@ typedef enum td_pic{
 
 
 
-
+/* TODO: This 'main' is obsolete - even smspatial is now run from stringmol.cpp main */
 int main(int argc, char *argv[]) {
 //	int smspatial(int argc, char *argv[]) {
 
@@ -246,6 +246,12 @@ int main(int argc, char *argv[]) {
 #endif
 
 	}
+
+
+	for(int i=0;i<run->gridx;i++)
+		free(grid[i]);
+	free(grid);
+
 
 	printf("FINISHED smspatial\n");
 //	fflush(stdout);

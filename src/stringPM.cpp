@@ -156,41 +156,6 @@ int stringPM::load(char *fn){
 */
 
 
-void stringPM::testprop(){
-
-	int i,j,k,found;
-	float x1,y1,x2,y2;
-	float dist,rad = 400-(9.9*2);
-
-
-	memset(bct,0,bmax*sizeof(int));
-	memset(bpp,0,bmax*sizeof(int));
-
-	for(i=0;i<bmax;i++){
-		printf("Doing %d\n",i);
-		for(j=0;j<100000;j++){
-			if(!(j%10000)){
-				printf("*");fflush(stdout);
-			}
-			found=0;
-			rand_in_rad(rad,&x1,&y1);
-			for(k=0;k<i;k++){
-				rand_in_rad(rad,&x2,&y2);
-				dist = sqrt(pow(x1-x2,2)+pow(y1-y2,2));
-				if(dist<9.9){
-					found = 1;
-				}
-			}
-			note_propensity(i,found);
-		}
-		printf("\n");
-	}
-
-	print_propensity(stdout);
-
-
-}
-
 /* Make sure the masseage memory is freed - so you can't do printf("%s",parse_error(1)); - the memory will not be freed.
  *
  */
@@ -1222,7 +1187,7 @@ int stringPM::load_agents(const char *fn, char *fntab, int test, int verbose){
 
 					//make the agents
 					for(i=0;i<nag;i++){
-						l_spp *s;
+						l_spp *s = NULL;
 
 
 						pag = make_ag(code);//,1);
@@ -1468,6 +1433,9 @@ void stringPM::get_spp_count(int state){
 		}
 	}
 
+    free(done);
+    free(spno);
+    free(spct);
 
 }
 
@@ -1503,9 +1471,9 @@ int stringPM::countcomp(char E, char P){
 	}
 
 	return count;
-
-
 }
+
+
 
 
 int stringPM::append_ag(s_ag **list, s_ag *ag){
@@ -2944,136 +2912,8 @@ void stringPM::make_next(){
 
 
 
-int stringPM::speig_hcopy(s_ag *act){
-
-	//s_ag *pass;
-	//pass = act->pass;
-	int cidx;
-	float rno;
-	int safe = 1;// this gets set to zero if any of the tests fail..
-
-	if(!domut){
-		indelrate = subrate =0;
-	}
-
-	act->len = strlen(act->S);
-	act->pass->len = strlen(act->pass->S);
-
-	int p;
-	if( (p = h_pos(act,'w'))>=(int) maxl){
-		printf("Write head out of bounds: %d\n",p);
-		//just to make sure no damage is done:
-		if(act->wt)
-			act->S[maxl]='\0';
-		else
-			act->pass->S[maxl]='\0';
-
-		act->i[act->it]++;
-		safe = 0;
-		return -1;
-	}
-	if(h_pos(act,'r')>=(int) maxl){
-		printf("Read head out of bounds\n");
-		act->i[act->it]++;
-		safe = 0;
-		return -2;
-	}
-
-
-
-
-	if(*(act->r[act->rt]) == 0){
-		//possibly return a negative value and initiate a b
-		safe = 0;
-		//return -3;
-	}
-
-	if(safe){
-
-		//see if we are overwriting or not:
-		int rm,wm=-1;
-		if(*(act->w[act->wt])){
-			wm=tab_idx(*(act->w[act->wt]),blosum);
-		}
-
-		const float speig_idrate = 0.001;
-		float winc=rand0to1();
-		float rinc=rand0to1();
-
-		//todo: make sure no increments happen if the symbol (or mutant) is not available
-
-		rno=rand0to1();
-		if(rno<subrate){//INCREMENTAL MUTATION
-
-			cidx = sym_from_adj(*(act->r[act->rt]),blosum);
-			rm = tab_idx(cidx,blosum);
-			if(mass[rm]){
-				*(act->w[act->wt])=cidx;
-				if(winc>speig_idrate)
-					act->w[act->wt]++;
-
-				if(rinc>speig_idrate)
-					act->r[act->rt]++;//possible deletion here...
-
-				if(!(wm<0)){
-					mass[wm]++;
-				}
-				mass[rm]--;
-			}
-		}
-		else{//NO MUTATION (but possible sub via comass effects)
-			//cidx = sym_from_adj(*(act->r[act->rt]),blosum);
-			rm = tab_idx(*(act->r[act->rt]),blosum);
-			if(mass[rm]){
-				*(act->w[act->wt])=*(act->r[act->rt]);
-
-				if(winc>speig_idrate)
-					act->w[act->wt]++;
-
-				if(rinc>speig_idrate)
-					act->r[act->rt]++;
-
-				if(!(wm<0)){
-					mass[wm]++;
-				}
-				mass[rm]--;
-			}
-			else{
-				cidx = sym_from_adj(*(act->r[act->rt]),blosum);
-				rm = tab_idx(cidx,blosum);
-				if(mass[rm]){
-					if(winc>speig_idrate)
-						act->w[act->wt]++;
-
-					if(rinc>speig_idrate)
-						act->r[act->rt]++;
-
-					act->w[act->wt]++;
-					if(!(wm<0)){
-						mass[wm]++;
-					}
-					mass[rm]--;
-				}
-			}
-		}
-
-	}
-	//update lengths
-	act->len = strlen(act->S);
-	act->pass->len = strlen(act->pass->S);
-	act->i[act->it]++;
-
-#ifdef VERBOSE
-	if(mut)
-	printf("Mutant event %d. new string is:\n%s\n\n",mut,act->wt?act->S:act->pass->S);
-#endif
-	act->biomass++;
-	biomass++;
-	return 0;
-}
-
-
 /////////////////////////////////////////////////////////start of comass stuff
+
 
 
 
@@ -4960,13 +4800,6 @@ void stringPM::get_spp_network(char *fn){
 }
 
 
-void stringPM::set_epochs(){
-
-	lastepoch=get_ecosystem();
-	thisepoch=lastepoch;
-	nepochs=1;
-}
-
 
 int stringPM::share_agents(s_ag **hp){
 
@@ -5024,81 +4857,6 @@ int stringPM::share_agents(s_ag **hp){
 	return 1;
 }
 
-
-
-//A[c]->copy_agents(A[c2]->nowhead);
-//int stringPM::copy_agents(s_ag **head){
-
-//	s_ag *aa,*pa,*tmp;
-//	float rno;int ntot=0, ncop=0;
-
-//	pa=*head;
-//	while(pa!=NULL){
-
-		/*
-		aa = make_ag(pa->label,-324);
-		aa->S =(char *) malloc(maxl0*sizeof(char));
-		memset(aa->S,0,maxl0*sizeof(char));
-		strncpy(aa->S,pa->S,strlen(pa->S));
-		aa->len = strlen(aa->S);
-		append_ag(&nowhead,aa);
-		*/
-
-	/*
-		//It is actually EASIER to copy 1/2 the cell contents, since then we can just move stuff rather than
-		//restructure all the reactive environments. More realistic too!
-		ntot++;
-		if((rno = rand0to1()) < 0.5){
-			ncop++;
-			tmp=pa->next;
-			switch(pa->status){
-			case B_ACTIVE:
-
-				aa = pa->pass;
-				//make up for moving two across
-				//tmp=tmp->next;
-				//make sure tmp isn't about to be extracted
-				if(tmp==aa)
-					tmp=tmp->next;
-				extract_ag(head,pa);
-				append_ag(&nowhead,pa);
-				extract_ag(head,aa);
-				append_ag(&nowhead,aa);
-				ncop++;
-
-				break;
-			case B_PASSIVE:
-
-				aa = pa->exec;
-				//make up for moving two across
-				//tmp=tmp->next;
-				//make sure tmp isn't about to be extracted
-				if(tmp==aa)
-					tmp=tmp->next;
-				extract_ag(head,pa);
-				append_ag(&nowhead,pa);
-				extract_ag(head,aa);
-				append_ag(&nowhead,aa);
-				ncop++;
-
-				break;
-			case B_UNBOUND:
-				extract_ag(head,pa);
-				append_ag(&nowhead,pa);
-				break;
-			}
-			pa=tmp;
-		}
-		else{
-
-			pa = pa->next;
-		}
-
-	}
-	printf("Copied %d agents out of %d\n",ncop,ntot);
-	return 1;
-}
-*/
 
 
 void stringPM::print_agent_cfg(FILE *fp, s_ag *pa, const int pass_index = 0){

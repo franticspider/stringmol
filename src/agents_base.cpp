@@ -38,9 +38,6 @@ extern "C" {
 #include "agents_base.h"
 
 
-void agents_base::test2(){
-	printf("Bollocks\n");
-}
 
 int agents_base::eqn_prop(const int n){
 
@@ -704,41 +701,6 @@ void agents_base::clearout(int verbose){
 		free(ixp);
 		ixp=ixp2;
 	}
-
-
-	/* These are never allocated in stringmol - so they shouldn't be part of agents_base!
-	int i;
-	for(i=0;i<ntt;i++){
-		if(com!=NULL)
-			if(com[i]!=NULL)
-				free(com[i]);
-		if(dcom!=NULL)
-			if(dcom[i]!=NULL)
-				free(dcom[i]);
-	}
-	if(com!=NULL)	free(com);
-	if(dcom!=NULL)	free(dcom);
-
-
-	if(adc!=NULL){
-		free(adc);
-		adc=NULL;
-	}
-	if(aro!=NULL){
-		free(aro);
-		aro=NULL;
-	}
-	if(aat!=NULL){
-		free(aat);
-		aat=NULL;
-	}
-	if(aac!=NULL){
-		free(aac);
-		aac=NULL;
-	}
-	*/
-
-
 
 	preset();
 

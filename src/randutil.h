@@ -38,7 +38,7 @@
 
 		//functions to get and set the Mersenne Twister index
 		int get_mti();
-		void set_mti(int val);
+		//void set_mti(int val);
 
 #endif /*RANDUTIL_H_*/
 

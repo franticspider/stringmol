@@ -57,7 +57,7 @@ TEST_CASE("reseeding with initmyrand(-1) resets the rng and a different sequence
     }
 }
 	
-    
+/*    
 TEST_CASE("resetting Mersenne Twister index"){
     int pos2,pos = 22;
     int rout,rin = 444;
@@ -85,7 +85,7 @@ TEST_CASE("resetting Mersenne Twister index"){
         REQUIRE(rnos1[rr] == rnos2[rr]);
     }    
 
-}
+}*/
 
 
 TEST_CASE("save and load RNG to/from file"){

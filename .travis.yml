@@ -15,10 +15,11 @@ install:
 script:
 # TODO: It'd be better if all this was in RunAllTests.sh because then we could run it locally!
 # cppcheck
-- cd src
-- echo "Running cppcheck. Please Wait."
-- cppcheck --quiet --force --error-exitcode=1 .
+# - cd src
+# - echo "Running cppcheck. Please Wait."
+# - cppcheck --quiet --force --error-exitcode=1 .
 # build
+- cd src
 - echo "Checking src compiles. Please Wait."
 - echo "  compiling.."
 - make clean

@@ -215,12 +215,13 @@ int get_mti(){
 #endif
 }
 
+/* Only used in tests...see load_mt() in mt19937-2.c
 void set_mti(int val){
 #ifdef USING_MT
 	mt_set_mti(val);
 #else
 	printf("NOT USING MERSENNE TWISTER - CAN'T SET MTI!!\n");
 #endif
-}
+}*/
 
 

@@ -277,9 +277,6 @@ public:
 	int 		Network_cleave(s_ag *act);
 	int 		Network_exec_step(s_ag *act, s_ag *pass);
 
-	//Epoch recording
-	void 		set_epochs();
-
 	//Container functions
 	int 		share_agents(s_ag **head); //Copies a set of agents onto nowhead;
 
