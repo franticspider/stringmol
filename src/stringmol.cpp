@@ -41,9 +41,6 @@
 #include "SMspp.h"
 #include "stringPM.h"
 
-//signal
-#include "signalSM.h"
-
 //TODO: Sort out this dependency nightmare!
 // Writing PNGs
 #include "lodepng.h"

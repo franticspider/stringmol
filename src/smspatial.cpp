@@ -248,10 +248,11 @@ int main(int argc, char *argv[]) {
 	}
 
 
+#ifdef USE_SDL
 	for(int i=0;i<run->gridx;i++)
 		free(grid[i]);
 	free(grid);
-
+#endif
 
 	printf("FINISHED smspatial\n");
 //	fflush(stdout);
