@@ -43,7 +43,7 @@
 #include "stringPM.h"
 
 //signal
-#include "signalSM.h"
+//#include "signalSM.h"
 
 //setup
 // Writing PNGs
@@ -59,7 +59,7 @@
 
 //#define DEBUG
 
-const int MAXSTR = 5000;
+#define MAXSTR (5000);
 
 
 int main(int argc, char*argv[]){
@@ -104,7 +104,7 @@ int main(int argc, char*argv[]){
 
 	/*Read the query string into string1 and string2, checking for data errors */
 	if(data!=NULL){
-		if(sscanf(data,"string1=(%[^)])&string2=(%[^)])",string1,string2)!=2){
+		if(sscanf(data,"string1=(%MAXSTR[^)])&string2=(%MAXSTR[^)])",string1,string2)!=2){
 				printf("<P>Error! Invalid data. Data must be numeric.</p>");
 				sprintf(string1,"ASDFADFASDFASDFASDFASDFASDFASDF");
 				sprintf(string2,"QWERQWERQWERQWERQWERQWERQWERQWER");

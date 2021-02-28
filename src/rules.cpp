@@ -130,31 +130,6 @@ int rules::getrule(const char *side,int l1, int l2){
 
 
 
-//Count the number of rules on the lhs (if 2, bonding rule, if 1, only decay or dissocn
-//maxl = rset->maxlhs(pag->label)
-int rules::maxlhs(int label){
-	int i,maxcount,count;
-	maxcount = 0;
-	for(i=0;i<nr;i++){
-		count = 0;
-		if(rset[i][0]==label){
-			if(rset[i][1]!='*'){
-				count = 2;
-			}
-			else count = 1;
-		}
-		else if(rset[i][1]==label){
-			if(rset[i][0]!='*'){
-				count = 2;
-			}
-			else count =1;
-		}
-		if(count>maxcount)
-			maxcount=count;
-	}
-	return maxcount;
-}
-
 
 
 rules::~rules(){
@@ -162,40 +137,3 @@ rules::~rules(){
 }
 
 
-void rules::printasint(){
-	for(int i=0;i<nr;i++){
-		printf("int RULE: ");
-		for(int j= 0;j<4;j++){
-			printf("%d ",rset[i][j]);
-		}
-		printf("\n");
-	}
-}
-
-
-void rules::printrulesfor(const char * side, int rule){
-
-	int os,found=0;
-	if(!strncmp(side,"lhs",3)){
-		found=1;
-		os = 0;
-	}
-	if(!strncmp(side,"rhs",3)){
-		found=1;
-		os = 2;
-	}
-
-	if(!found)
-		printf("Unspecified side");
-	else{
-		found = 0;
-		for(int i=0;i<nr;i++){
-			if(rset[i][os+0]==rule || rset[i][os+1]==rule){
-				found = 1;
-				printf("RULE %c + %c -> %c + %c\n",rset[i][0],rset[i][1],rset[i][2],rset[i][3]);
-			}
-		}
-		if(!found)
-			printf("No rules found containing %c on %s",rule,side);
-	}
-}

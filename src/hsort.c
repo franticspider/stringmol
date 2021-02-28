@@ -63,15 +63,3 @@ void idx_hsort_int(int a[], int idx[], const int N){
 	    sift_int(a, idx, 0, e--);
 	}
 }
-
-
-
-void print_hsort_data(int a[], int idx[], const int N, FILE *out){
-	int i;
-	printf("i\tidx[i]\ta[idx[i]]\ta[i]\n");
-	for(i=0;i<N;i++){
-		printf("%d\t%d\t%d\t\t%d\n",i,idx[i],a[idx[i]],a[i]);
-	}
-}
-
-

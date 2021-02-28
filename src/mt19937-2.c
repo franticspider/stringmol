@@ -153,11 +153,6 @@ int mt_get_mti(){
 	return mti;
 }
 
-void mt_set_mti(int val){
-	mti = val;
-}
-
-
 /*RECORDING FUNCTION*/
 void print_mt(FILE *fp){
 	int i=0;

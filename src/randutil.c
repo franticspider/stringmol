@@ -74,28 +74,9 @@ int initmyrand(int seed){
 #else
 	srand(seed);
 #endif
-
 	return seed;
 }
 
-
-
-
-
-/* UNSIGNED LONG VERSIONS */
-unsigned long longdevrandomseed(){
-
-	int randomData = open("/dev/random", O_RDONLY);
-	long sjhRandomInteger;
-  ssize_t rs;
-	rs=read(randomData, &sjhRandomInteger, sizeof sjhRandomInteger);
-	if(rs < 0) printf("Error reading randomData in longdevrandomseed\n");
-	// you now have a random integer!
-	close(randomData);
-
-	printf("in devrandomseed, seed is %ld (%lu)\n",sjhRandomInteger,(unsigned long int) sjhRandomInteger);
-	return sjhRandomInteger;
-}
 
 
 
@@ -114,7 +95,6 @@ unsigned long longinitmyrand(unsigned long *inseed){
 	else{
 		seed = *inseed;
 	}
-
 #ifdef USING_MT
 	sgenrand(seed);
 #else
@@ -123,13 +103,6 @@ unsigned long longinitmyrand(unsigned long *inseed){
 
 	return seed;
 }
-
-
-
-
-
-
-
 
 
 
@@ -160,25 +133,6 @@ unsigned long randint(){
 
 
 
-int rand_in_rad(const float rad, float *x, float *y){
-
-	int found=0;
-	float tx,ty;
-	do{
-		  tx =  2 * rad * (rand0to1()-0.5);
-		  ty =  2 * rad * (rand0to1()-0.5);
-
-		  if( rad > sqrt( pow(tx,2) + pow(ty,2) ) ){
-			  found = 1;
-		  }
-
-	}while(!found);
-
-	*x = tx;
-	*y = ty;
-	return 0;
-}
-
 /* Create an array of random integers between the range [min,max) */
 int * randintarray(const int size,const int Min,const int max){
 	int i, * array;
@@ -187,6 +141,8 @@ int * randintarray(const int size,const int Min,const int max){
 		array[i] = Min + floor((double)max*rand0to1());
 	return array;
 }
+
+
 
 
 /* Create an array of random integers between the range [min,max) */

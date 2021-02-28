@@ -89,7 +89,7 @@ int mutate_int (int val, int min, int max) {
 /**
  * Microbial GA step.
  */
-//void step() {
+// cppcheck-suppress unusedFunction
 int ga_step(double **pop, double *eval, const int POPSIZE, const int PARAMETERS){
 	int w;
 	int l;
@@ -157,56 +157,6 @@ int ga_step_int(int **pop, double *eval, const int POPSIZE, const int PARAMETERS
 		*wn = winner;
 	return loser;
 }
-
-void recmut_bool(int **pop, const int winner, const int loser, const int L){
-	int p;
-	for(p=0;p<L;p++){
-		//recombine
-		if (((randint()%1000)/1000.0)<REC) {
-			pop[loser][p]=pop[winner][p];
-		}
-		//mutate
-		if ((randint()%1000)/1000.0<MUT) {
-			pop[loser][p]=1-pop[loser][p];
-		}
-	}
-}
-
-
-
-
-
-
-
-
-
-
-/**
- * (returns euclidian distance to goal point)
- */
-double evaluate(int i) {
-	//do things with Player Stage
-	return 0.;
-}
-
-
-int * randinitint(const int N,const int min,const int upto){
-
-	int i,*A;
-	A = (int *) malloc(N*sizeof(int));
-
-	for(i=0;i<N;i++){
-		A[i] = min + (upto*rand0to1());
-	}
-
-	return A;
-
-}
-
-
-
-
-
 
 
 

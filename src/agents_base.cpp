@@ -66,23 +66,7 @@ int agents_base::eqn_prop(const int n){
 }
 
 
-int agents_base::proper_prop(const int n){
-	int k;
-	float x1,y1,x2,y2;
-	float dist,rad = (float) vcellrad-(move * 2);//400-(9.9*2);
 
-
-	//rad = 400-(9.9*2);
-	rand_in_rad(rad,&x1,&y1);
-	for(k=0;k<n;k++){
-		rand_in_rad(rad,&x2,&y2);
-		dist = sqrt(pow(x1-x2,2)+pow(y1-y2,2));
-		if(dist<agrad){
-			return 1;
-		}
-	}
-	return 0;
-}
 
 //creators and destructors
 agents_base::agents_base(){
@@ -206,56 +190,6 @@ void agents_base::load(const char *fn, char *fninput, int test=0, int verbose=0)
 }
 
 
-/*
-void agents_base::load(char *fn, int test, int verbose){
-
-	load_params(fn,test,verbose);
-	load_influx(fn);
-
-	load_agents(fn,test,verbose);
-}*/
-
-//also make fr
-void agents_base::makefr(int nr){
-	if(fr==NULL){
-		fr = (int *) malloc(nr * sizeof(int));
-		memset(fr,0,nr * sizeof(int));
-		tr = (int *) malloc(nr * sizeof(int));
-		memset(tr,0,nr * sizeof(int));
-
-		s_ix *px;
-		px = ifxhead;
-		ict = 0;
-		while(px!=NULL){
-			ict++;
-			px = px->next;
-		}
-		irt = (int *) malloc(ict * sizeof(int));
-		memset(irt,0,ict * sizeof(int));
-		irf = (int *) malloc(ict * sizeof(int));
-		memset(irf,0,ict * sizeof(int));
-		irl = (int *) malloc(ict * sizeof(int));
-		px = ifxhead;
-		int i=0;
-		while(px!=NULL){
-			irl[i++]=px->label;
-			px = px->next;
-		}
-	}
-}
-
-void agents_base::printfr(FILE *fp, rules *rset){
-	int i;
-
-	fprintf(fp,"\nINFLUX FIRINGS:\n");
-	for(i=0;i<ict;i++){
-		fprintf(fp,"%02d:\t%c:\t%d\t%d\t%f\n",i,irl[i],irt[i],irf[i],(float)irf[i]/irt[i]);
-	}
-	fprintf(fp,"\nRULE FIRINGS:\n");
-	for(int i=0;i<rset->nr;i++){
-		fprintf(fp,"%02d:\t%c+%c->%c+%c:\t%d\t%d\t%f\n",i,rset->rset[i][0],rset->rset[i][1],rset->rset[i][2],rset->rset[i][3],tr[i],fr[i],(float)fr[i]/tr[i]);
-	}
-}
 
 
 
@@ -564,129 +498,6 @@ s_ix * agents_base::make_influx(int lab, int n, float prob, int start, int stop)
 }
 
 
-
-/*
-void agents_base::print_agents_header(FILE *fp){
-	fprintf(fp,"#");
-	for(int a=0;a<ntt;a++)
-		fprintf(fp,"\t%c",aat[a]);
-	fprintf(fp,"\n");
-	fflush(fp);
-}
-*/
-
-/*
-void agents_base::print_agents_count(FILE *fp){
-	//MUST EXPLICITLY UPDATE NOW!!
-	for(int a=0;a<ntt;a++)
-		fprintf(fp,"\t%d",aac[a]);
-	fprintf(fp,"\n");
-	fflush(fp);
-}
-*/
-
-
-/*
-int agents_base::aac_count(int lab){
-	int i,val=-1;
-	for(i=0;i<ntt;i++){
-		if(aat[i]==lab)
-			val = aac[i];
-	}
-	return val;
-}
-*/
-
-/*
-int agents_base::divide_conditions(int time){
-
-	//if we are using time to set division...
-
-	int i,met = 1;
-
-	if (divtime){
-		if(time<divtime)
-			met = 0;
-			return met;
-	}
-	//int sum = 0;
-	//for(i=0;i<ntt;i++)
-	//	//if(aat[i]=='P'||aat[i]=='K'||aat[i]=='Q'||aat[i]=='f'||aat[i]=='w'||aat[i]=='M'||aat[i]=='T'||aat[i]=='g'||aat[i]=='a')
-	//	if(aat[i]=='P'  ||             aat[i]=='Q'||aat[i]=='f'                          ||aat[i]=='T'||aat[i]=='g'             )
-	//		sum += aac[i];
-
-	/for(i=0;i<ntt;i++){
-	//	if(aat[i]=='P' && sum<adc[i])
-	//		met = 0;
-	//}
-
-	int j,count;
-
-    float radsum = 0, radmaxsum = 0;
-
-	for(i=0;i<ntt;i++){
-		if(aro[i]>-1){
-			//count operons
-			count=0;
-			if(adc[i]){
-				for(j=0;j<ntt;j++){
-					if(dcom[i][j]){
-						//for debugging
-						//printf("for %c count, adc[%d]= %d, dcom[%d][%d] = %d, adding %c=%d, count =%d\n",aat[i],i,adc[i],i,j,dcom[i][j],aat[j],aac[j],count);fflush(stdout);
-						count+=aac[j];
-					}
-				}
-				radmaxsum += adc[i];
-				radsum += count;
-
-				if(count<adc[i]){
-					met=0;
-				}
-			}
-		}
-	}
-
-	//Set the Cell radius:
-	vcellrad = cellrad * radsum / radmaxsum;
-	return met;
-}*/
-
-
-
-int agents_base::hasdied(){
-
-
-	if(energy<1)
-		return 1;
-
-
-	/*
-	int i;
-	int sum=0;
-
-	//NOTE: This is hard coded!
-	for(i=0;i<ntt;i++)
-		if(aat[i]=='P'||aat[i]=='K'||aat[i]=='Q'||aat[i]=='f'||aat[i]=='w'||aat[i]=='M'||aat[i]=='T'||aat[i]=='g'||aat[i]=='a')
-			sum += aac[i];
-
-	if(!sum)
-		return 1;
-
-	if(energy<200 && sum<3)
-		return 1;
-
-
-	for(i=0;i<ntt;i++)
-		if(aat[i]=='B')
-			sum = aac[i];
-
-	if(energy<200 && !sum)
-		return 1;
-	*/
-
-	//Trap death in lactose via no lac enzyme
-	return 0;
-}
 
 
 void agents_base::clearout(int verbose){

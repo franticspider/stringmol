@@ -20,12 +20,12 @@ echo "Checking config with cppcheck"
 cppcheck --error-exitcode=1 --force --check-config --suppress=missingIncludeSystem .
 echo "----------------------------"
 echo "Checking code with cppcheck"
-cppcheck --error-exitcode=1 --force --enable=all .
+cppcheck --error-exitcode=1 --force --enable=all --inline-suppr .
 cd ../
 echo ""
 
-
-
+# NB: use "// cppcheck-suppress unusedFunction" before functions to suppress warnings
+#           //cppcheck-suppress invalidscanf_libc"
 
 echo "============================"
 echo "Running Tests.  Please Wait."

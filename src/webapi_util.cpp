@@ -43,7 +43,7 @@
 #include "stringPM.h"
 
 //signal
-#include "signalSM.h"
+//#include "signalSM.h"
 
 //setup
 // Writing PNGs
@@ -240,6 +240,7 @@ char * generate_bind_data(char * string1, char * string2){
 'readToggle=('+$(".readToggle", currentState).html()+')&'+
 'writeToggle=('+$(".writeToggle", currentState).html()+')',
 */
+// cppcheck-suppress unusedFunction
 char * generate_step_data(char * string1, char * string2, int instr1, int instr2, int flow1, int flow2, int read1, int read2, int write1, int write2, int instrToggle, int flowToggle, int readToggle, int writeToggle){
 
 	char * output;

@@ -20,6 +20,13 @@ Plan is to have iterations through the following:
 - Document dependencies
 - Write tests
 
+## File by file
+
+### `stringmol.cpp`
+
+There's a *huge* amount of redundancy in this - many functions are minor tweaks of other functions and it isn't clear which ones were ever used. As an example, look for repetition of the variable `divct` in various functions... so a big refactor of the major code blocks within these functions is in order. 
+
+
 # Background
 
 ## Raw Twitter comments

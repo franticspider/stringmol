@@ -56,22 +56,6 @@
 //extern const int maxl0 = maxl+1; //allow room for a terminating 0
 
 
-void print_status(FILE *fp,s_bind st){
-	switch(st){
-	case B_UNBOUND:
-		fprintf(fp,"UNBOUND");
-		break;
-	case B_ACTIVE:
-		fprintf(fp,"ACTIVE");
-		break;
-	case B_PASSIVE:
-		fprintf(fp,"PASSIVE");
-		break;
-	default:
-		fprintf(fp,"UNDEFINED STATUS");
-	}
-	fflush(fp);
-}
 
 
 stringPM::stringPM(SMspp * pSP){
@@ -259,53 +243,58 @@ int stringPM::load_table_matrix(const char *fn){
 	char *p;
 	int i,j;
 	printf("File name is %s",fn);
-  char *fr=NULL;
+    char *fr=NULL;
+
 	if((fp=fopen(fn,"r"))!=NULL){
 		fr=fgets(line,maxl,fp);
-    if(fr==NULL)
-			printf("WARNING: error returned using fgets in stringPM::load_table_matrix\n");
-		memset(label,0,maxl);
-		sscanf(line,"%s",label);
+        if(fr==NULL)
+			    printf("WARNING: error returned using fgets in stringPM::load_table_matrix\n");
+	    memset(label,0,maxl);
+	    sscanf(line,"%2000s",label);
 
-		//Set N and key:
-		blosum->N = strlen(label);
-		blosum->key = (char *)malloc((blosum->N+1) * sizeof(char));
-		memset(blosum->key,0,(blosum->N+1)*sizeof(char));
-		strncpy(blosum->key,label,blosum->N);
+	    //Set N and key:
+	    blosum->N = strlen(label);
+	    blosum->key = (char *)malloc((blosum->N+1) * sizeof(char));
+	    memset(blosum->key,0,(blosum->N+1)*sizeof(char));
+	    strncpy(blosum->key,label,blosum->N);
 
-		//Set up the data structure
-		blosum->T = (float **) malloc((blosum->N +1) * sizeof(float *));
-		for(i=0;i<blosum->N+1;i++){
-			blosum->T[i] = (float *) malloc(blosum->N * sizeof(float));
-		}
+	    //Set up the data structure
+	    blosum->T = (float **) malloc((blosum->N +1) * sizeof(float *));
+	    for(i=0;i<blosum->N+1;i++){
+		    blosum->T[i] = (float *) malloc(blosum->N * sizeof(float));
+	    }
 
-		for(i=0;i<blosum->N+1;i++){
-			fr = fgets(line,maxl,fp);
-			p=strtok(line,", \t");
-			for(j=0;j<blosum->N;j++){
-				sscanf(p,"%f",&(blosum->T[i][j]));
-				p = strtok(NULL,", \t");
-			}
-		}
+	    for(i=0;i<blosum->N+1;i++){
+		    fr = fgets(line,maxl,fp);
+            if(fr==NULL)
+			        printf("WARNING: error returned using fgets in stringPM::load_table_matrix\n");
+		    p=strtok(line,", \t");
+		    for(j=0;j<blosum->N;j++){
+			    sscanf(p,"%f",&(blosum->T[i][j]));
+			    p = strtok(NULL,", \t");
+		    }
+	    }
 
-		blosum->adj = (int **) malloc((blosum->N) * sizeof(int *));
-		for(i=0;i<blosum->N;i++){
-			blosum->adj[i] = (int *) malloc(blosum->N * sizeof(int));
-		}
-		for(i=0;i<blosum->N;i++){
-			fr = fgets(line,maxl,fp);
-			p=strtok(line,", \t");
-			for(j=0;j<blosum->N;j++){
-				sscanf(p,"%d",&(blosum->adj[i][j]));
-				p = strtok(NULL,", \t");
-			}
-		}
+	    blosum->adj = (int **) malloc((blosum->N) * sizeof(int *));
+	    for(i=0;i<blosum->N;i++){
+		    blosum->adj[i] = (int *) malloc(blosum->N * sizeof(int));
+	    }
+	    for(i=0;i<blosum->N;i++){
+		    fr = fgets(line,maxl,fp);
+            if(fr==NULL)
+			        printf("WARNING: error returned using fgets in stringPM::load_table_matrix\n");
+		    p=strtok(line,", \t");
+		    for(j=0;j<blosum->N;j++){
+			    sscanf(p,"%d",&(blosum->adj[i][j]));
+			    p = strtok(NULL,", \t");
+		    }
+	    }
 
-		fclose(fp);
-		return 0;
-	}
-	else
-		return 60;
+	    fclose(fp);
+	    return 0;
+    }
+    else
+	    return 60;
 }
 
 
@@ -324,16 +313,16 @@ int stringPM::load_table(const char *fn){
 		found = 0;
 		while((fgets(line,maxl,fp))!=NULL){
 			memset(label,0,maxl);
-			sscanf(line,"%s",label);
+			sscanf(line,"%2000s",label);
 			//printf("line = %s",line);
 			if(!strncmp(line,"USING",5)){
-				sscanf(line,"%*s %s",fn2);
+				sscanf(line,"%*s %2000s",fn2);
 				strcpy(swt_fn,fn2);
 				found = 1;
 				break;
 			}
 			if(!strncmp(line,"SUBMAT",6)){
-				sscanf(line,"%*s %s",fn2);
+				sscanf(line,"%*s %2000s",fn2);
 				strcpy(swt_fn,fn2);
 				found = 2;
 				break;
@@ -357,10 +346,10 @@ int stringPM::load_table(const char *fn){
 				rewind(fp2);
 				while((fgets(line,maxl,fp2))!=NULL){
 					memset(label,0,maxl);
-					sscanf(line,"%s",label);
+					sscanf(line,"%2000s",label);
 					//printf("line = %s",line);
 					if(!strncmp(line,"SET",3)){
-						sscanf(line,"%*s %s",fn2); //using fn2 to temporarily hold the alphabet...
+						sscanf(line,"%*s %2000s",fn2); //using fn2 to temporarily hold the alphabet...
 						blosum->N = strlen(fn2);
 						blosum->key = (char *)malloc((blosum->N+1) * sizeof(char));
 						memset(blosum->key,0,(blosum->N+1)*sizeof(char));
@@ -421,7 +410,7 @@ int stringPM::load_splist(const char *fn,int verbose){
 	if((fp=fopen(fn,"r"))!=NULL){
 		while((fgets(line,llen,fp))!=NULL){
 			memset(label,0,llen);
-			sscanf(line,"%s",label);
+			sscanf(line,"%2000s",label);
 			//printf("line = %s",line);
 			if(!strncmp(line,"SPECIES",6)){
 				nspp++;
@@ -436,13 +425,13 @@ int stringPM::load_splist(const char *fn,int verbose){
 
 		while((fgets(line,llen,fp))!=NULL){
 			memset(label,0,llen);
-			sscanf(line,"%s",label);
+			sscanf(line,"%2000s",label);
 			//printf("line = %s",line);
 			if(!strncmp(line,"SPECIES",6)){
 
 				//Scan the line for sequence and number...
 				memset(label,0,llen);
-				sscanf(line,"%*s %d %s",&spno,label);
+				sscanf(line,"%*s %d %2000s",&spno,label);
 				//TODO: make sure extit is set at this point
 				spl->getspp_from_string(label,extit,maxl0,spno);
 			}
@@ -507,7 +496,7 @@ int stringPM::load_reactions(const char *fn, char *fntab, int test, int verbose)
 			memset(active_string,0,llen);
 			memset(passive_string,0,llen);
 			memset(passive_spp_string,0,llen);
-			sscanf(line,"%s",active_spp_string);
+			sscanf(line,"%2000s",active_spp_string);
 			//printf("line = %s",line);
 			if(!strncmp(line,"REACTION",8)){
 				/* We have a multi-line definition to deal with now... hold tight... */
@@ -515,7 +504,7 @@ int stringPM::load_reactions(const char *fn, char *fntab, int test, int verbose)
 				/* First line is the species of the active molecule */
 				if((fgets(line,llen,fp))!=NULL){
 					linecount++;
-					sscanf(line,"%*s %d %s",&aspno, active_spp_string);
+					sscanf(line,"%*s %d %2000s",&aspno, active_spp_string);
 					//TODO: check that the species number and sequence are identical
 				}
 				else{
@@ -527,7 +516,7 @@ int stringPM::load_reactions(const char *fn, char *fntab, int test, int verbose)
 				if((fgets(line,llen,fp))!=NULL){
 					linecount++;
 					gx = gy = -1;
-					sscanf(line,"%*s %d %s irwf: %d %d %d %d %d %d %d %d %d %d %d %d grid: %d %d",&ano, active_string,
+					sscanf(line,"%*s %d %2000s irwf: %d %d %d %d %d %d %d %d %d %d %d %d grid: %d %d",&ano, active_string,
 							&it,&iap,&ipp,&rt,&rap,&rpp,&wt,&wap,&wpp,&ft,&fap,&fpp,
 							&gx,&gy);
 				}
@@ -551,7 +540,7 @@ int stringPM::load_reactions(const char *fn, char *fntab, int test, int verbose)
 				if((fgets(line,llen,fp))!=NULL){
 					linecount++;
 					gx = gy = -1;
-					sscanf(line,"%*s %d %s grid: %d %d",&pno, passive_string, &gx, &gy);
+					sscanf(line,"%*s %d %2000s grid: %d %d",&pno, passive_string, &gx, &gy);
 				}
 				else{
 					printf("ERROR READING REACTION (passive state) at line %d\n",linecount+1);
@@ -571,7 +560,7 @@ int stringPM::load_reactions(const char *fn, char *fntab, int test, int verbose)
 				/* Fourth line is the species of the passive molecule */
 				if((fgets(line,llen,fp))!=NULL){
 					linecount++;
-					sscanf(line,"%*s %d %s",&pspno, passive_spp_string);
+					sscanf(line,"%*s %d %2000s",&pspno, passive_spp_string);
 					//TODO: check that the species number and sequence are identical
 				}
 				else{
@@ -636,9 +625,7 @@ s_ag * stringPM::read_unbound_agent(FILE **fp, char line[], const int llen){
 
 
 	memset(label,0,llen);
-	sscanf(line,"%*s %s %d %c",label,&nag,&code);
-
-	bool getgridinfo = true;
+	sscanf(line,"%*s %2000s %d %c",label,&nag,&code);
 
 	//make the agent
 	//for(i=0;i<nag;i++){
@@ -663,13 +650,10 @@ s_ag * stringPM::read_unbound_agent(FILE **fp, char line[], const int llen){
 	 *
 	 *
 	 * */
-	if(grid && getgridinfo){
+	if(grid){
 		if((fgets(line,llen,*fp))!=NULL){//sscanf(line,"%s",label);
 			if(!strncmp(line,"GRIDPOS",7)){
-				sscanf(line,"%*s %d %d ",&(pag->x),&(pag->y));
-			}
-			else{
-				getgridinfo = false;
+				sscanf(line,"%*s %d %d ",&(pag->x),&(pag->y)); 
 			}
 		}
 	}
@@ -678,14 +662,11 @@ s_ag * stringPM::read_unbound_agent(FILE **fp, char line[], const int llen){
 	//No parents for these initial agents!
 	pag->pp = spl->make_parents(NULL,NULL);
 
-	//if(!i){
-
-	//int stringPM::update_lineage(s_ag *p, char sptype, int add, l_spp *paspp, l_spp * ppspp)
 	update_lineage(pag,'I',1,NULL,NULL,0);
 	s = spl->getspp(pag,extit,maxl0);
+
 	//TODO: tidy up handling of seed species, but for now:
 	s->tspp = 0;
-	//}
 
 	//Record that the replicase copies itself
 	pag->spp=s; //TODO: is this true for non-replicase agents..?
@@ -716,7 +697,7 @@ s_ag * stringPM::read_active_agent(FILE **fp, char line[], const int llen, int &
 	/* First line is the species of the active molecule */
 	if((fgets(line,llen,*fp))!=NULL){
 		linecount++;
-		sscanf(line,"%*s %d %s",&aspno, active_spp_string);
+		sscanf(line,"%*s %d %2000s",&aspno, active_spp_string);
 		//TODO: check that the species number and sequence are identical
 	}
 	else{
@@ -728,7 +709,7 @@ s_ag * stringPM::read_active_agent(FILE **fp, char line[], const int llen, int &
 	if((fgets(line,llen,*fp))!=NULL){
 		linecount++;
 		gx = gy = -1;
-		sscanf(line,"%*s %d %s irwf: %d %d %d %d %d %d %d %d %d %d %d %d grid: %d %d  pass_index: %d",
+		sscanf(line,"%*s %d %2000s irwf: %d %d %d %d %d %d %d %d %d %d %d %d grid: %d %d  pass_index: %d",
 				&ano, active_string,
 				&it,&iap,&ipp,&rt,&rap,&rpp,&wt,&wap,&wpp,&ft,&fap,&fpp,
 				&gx,&gy,
@@ -793,7 +774,7 @@ s_ag * stringPM::read_passive_agent(FILE **fp, char line[], const int llen){
 	if((fgets(line,llen,*fp))!=NULL){
 		linecount++;
 		gx = gy = -1;
-		sscanf(line,"%*s %d %s grid: %d %d",&pno, passive_string, &gx, &gy);
+		sscanf(line,"%*s %d %2000s grid: %d %d",&pno, passive_string, &gx, &gy);
 	}
 	else{
 		printf("ERROR READING REACTION (passive state) at line %d\n",linecount+1);
@@ -803,7 +784,7 @@ s_ag * stringPM::read_passive_agent(FILE **fp, char line[], const int llen){
 	/* Fourth line is the species of the passive molecule */
 	if((fgets(line,llen,*fp))!=NULL){
 		linecount++;
-		sscanf(line,"%*s %d %s",&pspno, passive_spp_string);
+		sscanf(line,"%*s %d %2000s",&pspno, passive_spp_string);
 		//TODO: check that the species number and sequence are identical
 	}
 	else{
@@ -892,7 +873,7 @@ int stringPM::load_replicable(const char *fn){
 
 		while((fgets(line,llen,fp))!=NULL){
 			memset(label,0,llen);
-			sscanf(line,"%s",label);
+			sscanf(line,"%2256s",label);
 			if(!strncmp(line,"NUMAGENTS",9)){
 				sscanf(line,"NUMAGENTS %d",&nag);
 				break;
@@ -919,7 +900,7 @@ int stringPM::load_replicable(const char *fn){
 
 		while((fgets(line,llen,fp))!=NULL){
 			memset(label,0,llen);
-			sscanf(line,"%s",label);
+			sscanf(line,"%2256s",label);
 
 			//Work out the bind state - different load methods for each.
 			s_bind bs;
@@ -1073,7 +1054,6 @@ int stringPM::load_agents(const char *fn, char *fntab, int test, int verbose){
 	char code;
 	int i,nag;
 	s_ag *pag;
-	int ntt = 0;
 
 
 
@@ -1132,8 +1112,6 @@ int stringPM::load_agents(const char *fn, char *fntab, int test, int verbose){
 	}
 
 
-	ntt = 0;
-
 	/* READ THE SPECIES LISTS (IF ANY)*
 	 * Important to do this first, so that if there any agents that aren't on the list, it isn't cocked up
 	 * Important also to maintaint the species numbering - will save a *lot* of hassle later!
@@ -1157,14 +1135,6 @@ int stringPM::load_agents(const char *fn, char *fntab, int test, int verbose){
 
 		//TODO: this is the actual agent-loading part of the function... rename / refactor needed....
 		if((fp=fopen(fn,"r"))!=NULL){
-			while((fgets(line,llen,fp))!=NULL){
-				memset(label,0,llen);
-				sscanf(line,"%s",label);
-				//printf("line = %s",line);
-				if(!strncmp(line,"AGENT",5)){
-					ntt++;
-				}
-			}
 
 			rewind(fp);
 
@@ -1173,11 +1143,11 @@ int stringPM::load_agents(const char *fn, char *fntab, int test, int verbose){
 			while((fgets(line,llen,fp))!=NULL){
 
 				memset(label,0,llen);
-				sscanf(line,"%s",label);
+				sscanf(line,"%2256s",label);
 				if(!strncmp(line,"AGENT",5)){
 
 					memset(label,0,llen);
-					sscanf(line,"%*s %s %d %c",label,&nag,&code);
+					sscanf(line,"%*s %2256s %d %c",label,&nag,&code);
 
 					if(test){//todo -is this still necessary?
 						nag=1;
@@ -1445,37 +1415,6 @@ void stringPM::get_spp_count(int state){
 
 
 
-
-
-
-
-
-
-
-int stringPM::countcomp(char E, char P){
-
-	int count = 0;
-	s_ag *pag;
-	pag = nowhead;
-	while(pag!=NULL){
-		switch(pag->status){
-		case B_ACTIVE:
-			if(pag->label == E)
-				if(pag->pass->label==P)
-					count++;
-			break;
-		default:
-			break;
-		}
-		pag = pag->next;
-	}
-
-	return count;
-}
-
-
-
-
 int stringPM::append_ag(s_ag **list, s_ag *ag){
 	s_ag *pag;
 
@@ -1531,7 +1470,8 @@ int stringPM::extract_ag(s_ag **list, s_ag *ag){
 	return 0;
 }
 
-
+/* TODO: NEVER USED, BUT POTENTIALLY USEFUL - WRITE TEST*/
+// cppcheck-suppress unusedFunction
 int stringPM::hasdied(){
 
 	if(nowhead == NULL)
@@ -1541,35 +1481,6 @@ int stringPM::hasdied(){
 }
 
 
-
-/*
-void stringPM::move_ag(s_ag *a1){
-
-	float rad = sqrt(pow(a1->x,2) + pow(a1->y,2));
-	float phi;
-	float edge = cellrad-(move*2);
-	if (rad<edge){
-		phi = rand0to1()*pi()*2;
-	}
-	else{
-	    phi = atan2(a1->x,a1->y) + (pi()/2.);
-	}
-
-
-	a1->x = a1->x + (move * cos(phi));
-	a1->y = a1->y - (move * sin(phi));
-
-	//Now check if we've moved outside
-	rad = sqrt(pow(a1->x,2) + pow(a1->y,2));
-
-	if(rad>edge){
-		float x,y;
-		rand_in_rad(cellrad-(move*2),&x,&y);
-		a1->x = x;
-		a1->y = y;
-	}
-}
-*/
 
 
 int stringPM::free_ag(s_ag *pag){
@@ -1807,6 +1718,10 @@ int stringPM::aspatial_coverage(int n){
 }
 
 
+
+
+// Aspatial (i.e. "well mixed") bind protocol - used for all pre-2016 papers
+// cppcheck-suppress unusedFunction
 int stringPM::aspbind(rules *rset, s_ag *pag){
 
 	int found=0;
@@ -1914,15 +1829,6 @@ int stringPM::testdecay(s_ag *pag){
 		return 0;
 }
 
-void stringPM::get_string_comp(s_ag *pag){
-/*
-	if(pag->comp != NULL){
-		free(pag->comp);
-		pag->comp = NULL;
-	}
-	pag->comp = string_comp(pag->S);
-	*/
-}
 
 
 
@@ -3340,10 +3246,11 @@ int stringPM::comass_testdecay(s_ag *pag){
 		return 0;
 }
 
-void stringPM::comass_make_next(){
-	s_ag *pag,*bag;
 
-	int changed;
+
+
+//TODO: integrate with make_next()
+void stringPM::comass_make_next(){
 
 	//SUGGEST: write function to count what's around (saves rechecking every time)
 	//countstates();
@@ -3358,21 +3265,10 @@ void stringPM::comass_make_next(){
 
 	while(nowhead!=NULL){
 
+	    s_ag *pag,*bag;
 		pag = rand_ag(nowhead,-1);
 		extract_ag(&nowhead,pag);
-		changed = 0;
-
-		//if(0){//extit>=10){
-		//	if(pag->status==B_PASSIVE)
-		//		//if(pag->exec->idx==1041){
-		//			print_exec(stdout,pag->exec,pag);
-		//		//}
-		//	if(pag->status==B_ACTIVE){
-		//		//if(pag->idx==1041)
-		//			print_exec(stdout,pag,pag->pass);
-		//	}
-		//	fflush(stdout);
-		//}
+		int changed = 0;
 
 		//extract any partner:
 		bag = NULL;
@@ -3454,7 +3350,6 @@ int stringPM::energetic_exec_step(s_ag *act, s_ag *pass){//pset *p,char *s1, swt
 
 	int finished=0;
 	char *tmp;
-	int dac=0;
 	int safe_append=1;
 
 	if(energy>0){
@@ -3549,7 +3444,7 @@ int stringPM::energetic_exec_step(s_ag *act, s_ag *pass){//pset *p,char *s1, swt
 				 *  CLEAVE  *
 				 ************/
 				case '%':
-						if((dac = cleave(act))){
+						if((int dac = cleave(act))){
 							finished = 1;
 							safe_append=0;	//extract_ag(&nowhead,p);
 						}
@@ -3606,11 +3501,8 @@ int stringPM::energetic_testbind(s_ag *pag){
 	int found=0;
 	int count=0;
 	const int nrglim = 3000;
-	float
-		rno;
 	s_ag *bag;
 	align sw;
-	float bprob =0.;
 
 	bag=nowhead;
 
@@ -3622,6 +3514,7 @@ int stringPM::energetic_testbind(s_ag *pag){
 	}
 
 	if(found){
+	    float bprob,rno;
 		bag = rand_ag(nowhead,B_UNBOUND);
 #ifndef BIND_ALL
 		bprob = get_sw(pag,bag,&sw);
@@ -3658,14 +3551,13 @@ int stringPM::energetic_testbind(s_ag *pag){
 }
 
 
+/* TODO Identify common features of this an make_next() */
 void stringPM::energetic_make_next(){
-	s_ag *pag,*bag;
-	int changed;
 	while(nowhead!=NULL){
 
+	    s_ag *pag,*bag;
 		pag = rand_ag(nowhead,-1);
 		extract_ag(&nowhead,pag);
-		changed = 0;
 
 		//extract any partner:
 		bag = NULL;
@@ -3698,6 +3590,7 @@ void stringPM::energetic_make_next(){
 		else{
 
 
+		    int changed = 0;
 			switch(pag->status){
 			case B_UNBOUND:
 				if(energy>0){
@@ -3761,164 +3654,31 @@ void stringPM::update(){
 
 
 
-/*
-//INFLUX STUFF
-void stringPM::influx(int t){
-
-	s_ix *pix;
-	s_ag *pag;
-	float rno;
-
-	int irx=0;
-
-	pix = ifxhead;
-
-	while(pix!=NULL){
-
-		if(t>=pix->start && t<=pix->stop){
-			for(int i=0;i<pix->n;i++){
-				rno = rand0to1();
-				irt[irx]++;
-				if(rno<pix->prob){
-					irf[irx]++;
-					//pag = make_ag(pix->label,1);
-
-					pag = make_ag(pix->label,0);
-					//SUGGEST: load and write the string for the influx'd dudes
-
-					append_ag(&nowhead,pag);
-				}
-			}
-		}
-		pix=pix->next;
-	}
-	update_aac();
-}
-
-
-void stringPM::influx_special(int t){
-
-	//These are the variables we tinker with!
-	int step = 3.* log(0.5)/log(1-0.00004);//100000;
-	float gprob = 0.02;
-	float lprob = 0.0225;
-	s_ag *pag;
-	float prob;
-	int lab;
-
-
-	if((t/step)%2){
-		lab='I'; //may as well be something we can detect!
-
-		//starvation:
-		//prob=0;
-
-		//lactose
-		prob=lprob;
-		//lab='I';
-	}
-	else{
-		//glucose
-		prob=gprob;
-		lab='A';
-	}
-
-	float rno = rand0to1();
-	//int ct = aac_count(lab);
-	if(rno<prob){//&& ct<500){
-		//pag = make_ag(lab,1);
-
-
-		pag = make_ag(lab,0);
-
-		append_ag(&nowhead,pag);
-	}
-}
-
-
-
-void stringPM::replenish_operons(){
-	int i;
-	s_ag *pag;
-	pag=nowhead;
-
-	int Jc,Oc,qc,dc;
-	Jc=Oc=qc=dc=0;
-	int count,a,j;
-	update_aac();
-	for(i=0;i<ntt;i++){
-		if(aro[i]>-1){
-			//count operons
-			count=0;
-			for(j=0;j<ntt;j++)
-				if(com[i][j])
-					count+=aac[j];
-			if(aro[i]>count){
-				for(a=0;a<aro[i]-count;a++){
-					pag = make_ag(aat[i],1);
-					append_ag(&nowhead,pag);
-				}
-				//aac[i]+=aro[i]-count;
-			}
-		}
-	}
-
-	update_aac();
-}
-
-void stringPM::divide(){
-
-	float rand;
-	s_ag *pag,*pag2;
-	pag=nowhead;
-	while(pag!=NULL){
-		rand = rand0to1();
-		if(rand<0.5){//Delete it.
-			pag2=pag;
-			pag=pag->next;
-			extract_ag(&nowhead,pag2);
-			free_ag(pag2);
-		}
-		else{
-			//rand_in_rad(cellrad,&(pag->x),&(pag->y));
-			pag=pag->next;
-		}
-	}
-	printf("After div: ");
-	update_aac();
-	print_agents_count(stdout);
-	replenish_operons();
-	energy = energy/2.;
-}
-*/
 
 void stringPM::free_swt(swt *pSWT, int verbose){
 
 
 	//print for debug.
-	int i,j;
 	if(verbose){
 		printf("   ");
-		for(i=0;i<pSWT->N;i++)
+		for(int i=0;i<pSWT->N;i++)
 			printf("%c   ",pSWT->key[i]);
 		printf("\n");
-		for(i=0;i<pSWT->N;i++){
+		for(int i=0;i<pSWT->N;i++){
 			printf("%c  ",pSWT->key[i]);
-			for(j=0;j<pSWT->N;j++){
+			for(int j=0;j<pSWT->N;j++){
 				printf("%0.2f ",pSWT->T[i][j]);
 			}
 			printf("\n");
 		}
 		//Print the indel value
 		printf("-   ");
-		for(i=0;i<pSWT->N;i++){
+		for(int i=0;i<pSWT->N;i++){
 			printf("%02d ",(int) pSWT->T[pSWT->N][i]);
 		}
 		fflush(stdout);
 	}
 
-	float *pT;
-	int *pI;
 
 	//Free elements of pSWT
 	if(pSWT->T != NULL){
@@ -3926,6 +3686,7 @@ void stringPM::free_swt(swt *pSWT, int verbose){
 		pSWT->key= NULL;
 		int i;
 		for(i=0;i<pSWT->N+1;i++){
+	        float *pT;
 			pT = pSWT->T[i];
 			free(pT);
 		}
@@ -3933,6 +3694,7 @@ void stringPM::free_swt(swt *pSWT, int verbose){
 		pSWT->T=NULL;
 
 		for(i=0;i<pSWT->N;i++){
+	        int *pI;
 			pI = pSWT->adj[i];
 			free(pI);
 		}
@@ -3996,62 +3758,7 @@ void stringPM::clearout(int verbose){
 }
 
 
-void stringPM::sanity_check(){
-	s_ag *pag;
-	pag = nowhead;
-	while(pag!=NULL){
-
-		if(pag->S[maxl]!=0){
-			printf("Problem with string %d, status ",pag->idx);
-			printf(" out of range: %s", pag->S);
-
-		}
-
-		pag=pag->next;
-
-	}
-}
-
 //SPECIES ANALYSIS FUNCTIONS
-
-/*
-l_spp * stringPM::make_lspp(s_ag *a,fixthis){
-
-	l_spp *sp;
-
-	//printf("Spatial make_ag called\n");fflush(stdout);
-
-	if((sp = (l_spp *) mymalloc(1,sizeof(l_spp)))!=NULL){
-
-	    sp->sp = splist->getspp(a);//, a->pp);//->pa, a->pp->pp );
-
-	    // THE FOLLOWING ARE NOW IN THE SMspp CLASS
-		//sp->S=(char *) malloc(maxl0+1*sizeof(char));
-		//memset(sp->S,0,maxl0*sizeof(char));
-		//l = strlen(a->S);
-		//strncpy(sp->S,a->S,l);
-		//sp->paspp = a->paspp;
-		//sp->ppspp = a->ppspp;
-		//sp->spp=spp_count++;
-		//sp->sptype=0;
-
-		sp->count=0;
-		sp->first=-1;
-		sp->next=NULL;
-		sp->tspp=extit;
-		return sp;
-	}
-	else{
-		printf("Error allocating in make_spp\n");
-		return NULL;
-	}
-}
-*/
-
-void stringPM::free_lspp(l_spp *sp){
-	//free(sp->S);
-	free(sp);
-}
 
 
 /* Attempt to build ancestry */
@@ -4384,8 +4091,8 @@ void stringPM::print_spp_strings(FILE *fp){
 
 int stringPM::Network_cleave(s_ag *act){
 
-	int dac = 0,cpy;
-	s_ag *c,*pass,*csite;
+	int dac = 0;
+	s_ag *pass,*csite;
 
 	pass = act->pass;
 
@@ -4393,47 +4100,37 @@ int stringPM::Network_cleave(s_ag *act){
 	csite = act->ft?act:pass;
 
 	if(act->f[act->ft]-csite->S < csite->len){
+        s_ag *cc;
 
 		//1: MAKE THE NEW MOLECULE FROM THE CLEAVE POINT
 
 		//Can't really say what the label is easily - for ECAL, it's always pass
-		c = make_ag(pass->label);//,1);
-
-
-		//if(c->idx>2375){
-		//		fflush(stdout);
-		//}
+		cc = make_ag(pass->label);//,1);
 
 		//Copy the cleaved string to the agent
 
 		char *cs;
 
-		c->S =(char *) malloc(maxl0*sizeof(char));
+		cc->S =(char *) malloc(maxl0*sizeof(char));
 		memset(c->S,0,maxl0*sizeof(char));
 
 		cs = csite->S;
-		cpy = strlen(cs);
+		int cpy = strlen(cs);
 		cpy -= act->f[act->ft]-cs;
 		if(!cpy){
 			printf("WARNING - zero length copy being created\n");
 		}
 
-		strncpy(c->S,act->f[act->ft],cpy);
-		c->len = strlen(c->S);
+		strncpy(cc->S,act->f[act->ft],cpy);
+		cc->len = strlen(cc->S);
 #ifdef VERBOSE
-		printf("String %d created:\n%s\n",c->idx,c->S);
+		printf("String %d created:\n%s\n",cc->idx,cc->S);
 #endif
 
-		//Filling in the birth certificate is now done in update_lineage
-		//c->pp = splist->get_parents(c->spp,act->spp,pass->spp);
-		//c->paspp = act->spp;
-		//c->ppspp = pass->spp;
-
 		//append the agent to nexthead
-		update_lineage(c,'C',0,act->spp,pass->spp,act->biomass);
+		update_lineage(cc,'C',0,act->spp,pass->spp,act->biomass);
 
-		free_ag(c);
-		//append_ag(&nexthead,c);
+		free_ag(cc);
 
 		//2: HEAL THE PARENT
 
@@ -4628,10 +4325,12 @@ int stringPM::Network_exec_step(s_ag *act, s_ag *pass){
 	return finished;
 }
 
+
+// TODO: check that this works and is useful...
+// cppcheck-suppress unusedFunction
 void stringPM::get_spp_network(char *fn){
 
 	float bprob;
-	char *comp;
 	align sw;
 	l_spp *sp1,*sp2;
 	s_ag *pag,*bag,*act,*pas,tmp;
@@ -4669,6 +4368,7 @@ void stringPM::get_spp_network(char *fn){
 
 	sp1 = spl->species;
 	while (sp1!=NULL){
+	    char *comp;
 		sp2=spl->species;
 		comp = string_comp(sp1->S);
 		while (sp2!=NULL){
@@ -4712,14 +4412,13 @@ void stringPM::get_spp_network(char *fn){
 
 					int nsteps=0;
 					while(act->status==B_ACTIVE && nsteps < 100000){
-						int found;
 						//Commenting out to debug:
 
 						if( *(act->i[act->it])=='%'){//A cleave
 							memset(tmp.S,0,maxl0*sizeof(char));
 							//strcpy(tmp.S,act->i[act->it]);
 							strcpy(tmp.S,act->f[act->ft]);
-							found = update_lineage(&tmp,'X',0,act->spp, pas-> spp, 0);
+							int found = update_lineage(&tmp,'X',0,act->spp, pas-> spp, 0);
 							fprintf(fp,"r%d -%f>  ",rno,1./(float) nsteps);
 
 							if(!found){
@@ -4805,7 +4504,6 @@ int stringPM::share_agents(s_ag **hp){
 
 	s_ag *pa,**head,*tmp,*aa,*tmphead;
 	int ntot=0,herect=0,therect=0;
-	float rno;
 
 	tmphead = *hp;
 	pa = tmphead;
@@ -4813,6 +4511,7 @@ int stringPM::share_agents(s_ag **hp){
 	aa = NULL;
 
 	while(pa !=NULL){
+	    float rno;
 		ntot++;
 
 		//Work out where it's going:
@@ -5231,98 +4930,7 @@ int stringPM::print_conf(FILE *fp){
 	free(extant);
 	free(lextant);
 
-/*
-
-
-	s_ag *spp,*pa;
-	int spc,count;
-	int finished = 0;
-	int nag,*done;
-	int i,found;
-
-	nag = nagents(nowhead,-1);
-
-	done = (int *) malloc(nag*sizeof(int));
-	memset(done,0,nag*sizeof(int));
-
-	do{
-		i = 0;
-		found=0;
-		finished = 1;
-		for(i=0,pa=nowhead;i<nag;i++,pa=pa->next){
-			if(!done[i]){
-				if(!found){
-					done[i]=1;
-					count=1;
-					finished=0;
-					found=1;
-					spp = pa;
-					spc = pa->spp->spp;
-				}
-				else{
-					if(pa->spp->spp==spc){
-						done[i]=1;
-						count++;
-					}
-				}
-			}
-		}
-
-
-		//% Basic seed replicase should look something like:
-		//AGENT OOGEOLHHHRLUEUOBBBRBXUUUDYGRHBLROORE$BLUBO^B>C$=?>$$BLUBO%}OYHOB 150 Q
-
-		//Write to file
-		if(!finished){
-			fprintf(fp,"\%\%\%\%\%\% UNBOUND SPECIES %d\n",spp->spp->spp);
-			fprintf(fp,"AGENT\t%s\t%d\tQ\n\n",spp->spp->S,count);
-		}
-
-	}while(!finished);
-
-	//Now write the reacting molecules (could be a bit tricky this)
-
-	int nreactions = 0;
-	for(i=0,pa=nowhead;i<nag;i++,pa=pa->next){
-		if(pa->status == B_ACTIVE){
-			fprintf(fp,"\%\%\%\%\%\% REACTION %d\nREACTION\n",++nreactions);
-			print_agent_cfg(fp, pa);
-			print_agent_cfg(fp,pa->pass);
-		}
-	}
-	free(done);
-*/
-
-
-
 	return 0;
-
-}
-
-
-void stringPM::print_grid(FILE *fp){
-
-	for(int j = 0; j< grid->gridy; j++){
-		for(int i=0;i<grid->gridx;i++){
-			if(grid->grid[i][j] == NULL)
-				fprintf(fp," ");
-			else{
-				switch(grid->grid[i][j]->status){
-				case B_UNBOUND:
-					fprintf(fp,"~");
-					break;
-				case B_ACTIVE:
-					fprintf(fp,"@");
-					break;
-				case B_PASSIVE:
-					fprintf(fp,"*");
-					break;
-				}
-			}
-		}
-		fprintf(fp,"|\n");
-	}
-
 
 }
 

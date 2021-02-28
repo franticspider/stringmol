@@ -144,6 +144,9 @@ int compare_config(stringPM *A, stringPM *B){
 }
 
 
+
+
+//TODO: check this does what it says it does - then move/migrate to tests folder..
 /* Test loading and saving of configs..
  * STRATEGY:
  * 		1: Load a file with known settings - see if we've got the right number.
@@ -157,7 +160,6 @@ int test_loadsave(int argc, char *argv[]){
 
 	/*TODO: test arguments */
 	stringPM *A;
-	stringPM *B;
 	stringPM *C;
 	const int fnlen =200;
 	FILE *fp;
@@ -182,9 +184,12 @@ int test_loadsave(int argc, char *argv[]){
 	sprintf(argv2[2],"%s",fn);
 
 	//Load the simulation and test that the config settings are correct
-	B = test_config_settings(argc,argv2,1);
+    // B unused here
+	//stringPM *B;
+	//B = test_config_settings(argc,argv2,1);
 
-	int csc = compare_config(A,B);
+    //csc unused here...
+	//int csc = compare_config(A,B);
 
 	//Run the Trial forward
 
@@ -204,7 +209,7 @@ int test_loadsave(int argc, char *argv[]){
 	C = test_config_settings(argc,argv2,1);
 
 
-	csc = compare_config(A,C);
+	int csc = compare_config(A,C);
 
     for(int c=0;c<argc;c++) free(argv2[c]);
     free(argv2);
