@@ -161,12 +161,10 @@ float stringPM::load_mut(const char *fn, int verbose){
 
 	FILE *fp;
 	float mut;
-	char *emsg;
-	int finderr=1;
 
 	if((fp=fopen(fn,"r"))!=NULL){
 
-		finderr=read_param_float(fp,"MUTATE",&mut,verbose);
+		int finderr=read_param_float(fp,"MUTATE",&mut,verbose);
 		fclose(fp);
 
 		switch(finderr){
@@ -188,6 +186,7 @@ float stringPM::load_mut(const char *fn, int verbose){
 			return 0;
 			break;
 		default: //Some other error
+	        char *emsg;
 			printf("Error %d(%s) in loading mutation scheme\n",finderr,emsg=parse_error(finderr));
 			free(emsg);
 			return 1;
@@ -205,11 +204,10 @@ float stringPM::load_decay(const char *fn, int verbose){
 
 	FILE *fp;
 	float dec;
-	int finderr=1;
 
 	if((fp=fopen(fn,"r"))!=NULL){
 
-		finderr=read_param_float(fp,"DECAY",&dec,verbose);
+		int finderr=read_param_float(fp,"DECAY",&dec,verbose);
 		fclose(fp);
 
 		switch(finderr){
@@ -238,14 +236,12 @@ float stringPM::load_decay(const char *fn, int verbose){
 //TODO: This should be in alignment.cpp
 int stringPM::load_table_matrix(const char *fn){
 	FILE *fp;
-	char line[maxl];
-	char label[maxl];
-	char *p;
-	int i,j;
 	printf("File name is %s",fn);
     char *fr=NULL;
 
 	if((fp=fopen(fn,"r"))!=NULL){
+	    char line[maxl];
+	    char label[maxl];
 		fr=fgets(line,maxl,fp);
         if(fr==NULL)
 			    printf("WARNING: error returned using fgets in stringPM::load_table_matrix\n");
@@ -260,33 +256,37 @@ int stringPM::load_table_matrix(const char *fn){
 
 	    //Set up the data structure
 	    blosum->T = (float **) malloc((blosum->N +1) * sizeof(float *));
-	    for(i=0;i<blosum->N+1;i++){
-		    blosum->T[i] = (float *) malloc(blosum->N * sizeof(float));
+	    for(int ii=0;ii<blosum->N+1;ii++){
+		    blosum->T[ii] = (float *) malloc(blosum->N * sizeof(float));
 	    }
 
-	    for(i=0;i<blosum->N+1;i++){
+	    for(int ii=0;ii<blosum->N+1;ii++){
 		    fr = fgets(line,maxl,fp);
             if(fr==NULL)
 			        printf("WARNING: error returned using fgets in stringPM::load_table_matrix\n");
-		    p=strtok(line,", \t");
-		    for(j=0;j<blosum->N;j++){
-			    sscanf(p,"%f",&(blosum->T[i][j]));
-			    p = strtok(NULL,", \t");
+		    
+	        char *pp;
+            pp=strtok(line,", \t");
+		    for(int jj=0;jj<blosum->N;jj++){
+			    sscanf(pp,"%f",&(blosum->T[ii][jj]));
+			    pp = strtok(NULL,", \t");
 		    }
 	    }
 
 	    blosum->adj = (int **) malloc((blosum->N) * sizeof(int *));
-	    for(i=0;i<blosum->N;i++){
-		    blosum->adj[i] = (int *) malloc(blosum->N * sizeof(int));
+	    for(int ii=0;ii<blosum->N;ii++){
+		    blosum->adj[ii] = (int *) malloc(blosum->N * sizeof(int));
 	    }
-	    for(i=0;i<blosum->N;i++){
+	    for(int ii=0;ii<blosum->N;ii++){
 		    fr = fgets(line,maxl,fp);
             if(fr==NULL)
 			        printf("WARNING: error returned using fgets in stringPM::load_table_matrix\n");
-		    p=strtok(line,", \t");
-		    for(j=0;j<blosum->N;j++){
-			    sscanf(p,"%d",&(blosum->adj[i][j]));
-			    p = strtok(NULL,", \t");
+
+	        char *pp;
+            pp=strtok(line,", \t");
+		    for(int jj=0;jj<blosum->N;jj++){
+			    sscanf(pp,"%d",&(blosum->adj[ii][jj]));
+			    pp = strtok(NULL,", \t");
 		    }
 	    }
 
@@ -300,17 +300,15 @@ int stringPM::load_table_matrix(const char *fn){
 
 int stringPM::load_table(const char *fn){
 
-
 	//const int maxl=256;
-	FILE *fp,*fp2;
-	char fn2[maxl];
-	char line[maxl];
-	char label[maxl];
-	int i,found,found2;
-
+	FILE *fp;
 
 	if((fp=fopen(fn,"r"))!=NULL){
-		found = 0;
+		int found = 0;
+    	char label[maxl];
+	    char line[maxl];
+	    char fn2[maxl];
+
 		while((fgets(line,maxl,fp))!=NULL){
 			memset(label,0,maxl);
 			sscanf(line,"%2000s",label);
@@ -335,29 +333,32 @@ int stringPM::load_table(const char *fn){
 			found = 3;
 		}
 
-
 		switch(found){
 
 		case 1:
+            FILE *fp2;
 			if((fp2=fopen(fn2,"r"))!=NULL){
-				found2 = 0;
-				//BUG: For some reason, when we open this again, we aren't at the beginning of the file..
-				//can't understand why this is suddenly happening, but let's put a rewind in to fix it for now!
+				int found2 = 0;
+				//BUG: For some reason, when we open this again, 
+                //we aren't at the beginning of the file..
+				//can't understand why this is suddenly happening, 
+                //but let's put a rewind in to fix it for now!
 				rewind(fp2);
 				while((fgets(line,maxl,fp2))!=NULL){
 					memset(label,0,maxl);
 					sscanf(line,"%2000s",label);
 					//printf("line = %s",line);
 					if(!strncmp(line,"SET",3)){
-						sscanf(line,"%*s %2000s",fn2); //using fn2 to temporarily hold the alphabet...
+						sscanf(line,"%*s %2000s",fn2); //using fn2 to temporarily
+                                                       // hold the alphabet...
 						blosum->N = strlen(fn2);
 						blosum->key = (char *)malloc((blosum->N+1) * sizeof(char));
 						memset(blosum->key,0,(blosum->N+1)*sizeof(char));
 						strncpy(blosum->key,fn2,blosum->N);
 
 						blosum->T = (float **) malloc((blosum->N +1) * sizeof(float *));
-						for(i=0;i<blosum->N+1;i++){
-							blosum->T[i] = (float *) malloc(blosum->N * sizeof(float));
+						for(int ii=0;ii<blosum->N+1;ii++){
+							blosum->T[ii] = (float *) malloc(blosum->N * sizeof(float));
 						}
 
 						table_from_string(blosum->T,blosum->key,blosum->N);
@@ -383,12 +384,9 @@ int stringPM::load_table(const char *fn){
 			break;
 		case 2:
 			return load_table_matrix(swt_fn);
-			return 0;
-			break;
 		case 3:
 			blosum =  default_table();
 			return 0;
-			break;
 		}
 		print_swt(stdout,blosum);
 	}
@@ -466,11 +464,6 @@ int stringPM::load_reactions(const char *fn, char *fntab, int test, int verbose)
 	const int llen = maxl0 + 256;
 	FILE *fp;
 	char line[llen];
-	char active_spp_string[llen];
-	char passive_spp_string[llen];
-	char active_string[llen];
-	char passive_string[llen];
-	int linecount = 0;
 
 	s_ag *pag,*bag;
 
@@ -478,8 +471,6 @@ int stringPM::load_reactions(const char *fn, char *fntab, int test, int verbose)
 	int it,iap,ipp,rt,rap,rpp,wt,wap,wpp,ft,fap,fpp, gx, gy;
 
 	//First, let's see what format the reactions are in - look for the keyword "NUMAGENTS"
-
-
 	if((fp=fopen(fn,"r"))!=NULL){
 		while((fgets(line,llen,fp))!=NULL){
 
@@ -487,10 +478,14 @@ int stringPM::load_reactions(const char *fn, char *fntab, int test, int verbose)
 		fclose(fp);
 	}
 
-
-
 	if((fp=fopen(fn,"r"))!=NULL){
+	    int linecount = 0;
 		while((fgets(line,llen,fp))!=NULL){
+	        char active_string[llen];
+	        char passive_string[llen];
+	        char active_spp_string[llen];
+	        char passive_spp_string[llen];
+
 			linecount++;
 			memset(active_spp_string,0,llen);
 			memset(active_string,0,llen);
@@ -843,7 +838,8 @@ smsprun * stringPM::init_smprun(const int gridx, const int gridy){
 
 	for(int i=0;i<grid->gridx;i++){
 		grid->grid[i] = (s_ag **) malloc(grid->gridy*sizeof(s_ag *));
-		grid->status[i] = (s_gstatus *) malloc(grid->gridy*sizeof(s_gstatus));
+		grid->status[i] = static_cast<s_gstatus *>( malloc(grid->gridy*sizeof(s_gstatus)) );
+
 
 		for(int j=0;j<grid->gridy;j++){
 			grid->grid[i][j]=NULL;
@@ -858,18 +854,17 @@ smsprun * stringPM::init_smprun(const int gridx, const int gridy){
 int stringPM::load_replicable(const char *fn){
 	int nag=0;
 	const int llen = maxl0 + 256;
-	char line[llen];
-	char label[llen];
 	FILE *fp;
 	s_ag **agarray;
 	int *parray;
-	int pidx;
 
   agarray = NULL;
   parray = NULL;
 
 	if((fp = fopen(fn,"r"))!=NULL){
 
+	    char line[llen];
+	    char label[llen];
 
 		while((fgets(line,llen,fp))!=NULL){
 			memset(label,0,llen);
@@ -929,6 +924,7 @@ int stringPM::load_replicable(const char *fn){
 					pag->status = B_UNBOUND;
 					break;
 				case B_ACTIVE:
+	                int pidx;
 					pag = read_active_agent(&fp, line, llen, pidx);
 					pag->status = B_ACTIVE;
 					parray[seenag] = pidx;
@@ -1048,11 +1044,8 @@ int stringPM::load_agents(const char *fn, char *fntab, int test, int verbose){
 
 
 	const int llen = maxl0 + 256;
-	FILE *fp;
-	char line[llen];
-	char label[llen];
 	char code;
-	int i,nag;
+	int nag;
 	s_ag *pag;
 
 
@@ -1104,7 +1097,7 @@ int stringPM::load_agents(const char *fn, char *fntab, int test, int verbose){
 				exit(0);
 			}
 			if(gridy==0){
-				printf("ERROR: GRIDX is %d, but GRIDY is 0\n",gridx);
+				printf("ERROR: GRIDX is %u, but GRIDY is 0\n",gridx);
 				exit(0);
 			}
 			init_smprun(gridx,gridy);
@@ -1132,15 +1125,18 @@ int stringPM::load_agents(const char *fn, char *fntab, int test, int verbose){
 
 	/* This will only be called if we've reverted to the old method (or set it elsewhere) */
 	if(loadtype == L_EVOEVO){/*Only used for evoevo 2016 runs: */
+	    FILE *fp;
 
 		//TODO: this is the actual agent-loading part of the function... rename / refactor needed....
 		if((fp=fopen(fn,"r"))!=NULL){
+        	char line[llen];
 
 			rewind(fp);
 
 			bool getgridinfo;
 
 			while((fgets(line,llen,fp))!=NULL){
+	            char label[llen];
 
 				memset(label,0,llen);
 				sscanf(line,"%2256s",label);
@@ -1156,9 +1152,8 @@ int stringPM::load_agents(const char *fn, char *fntab, int test, int verbose){
 					getgridinfo = true;
 
 					//make the agents
-					for(i=0;i<nag;i++){
+					for(int ii=0;ii<nag;ii++){
 						l_spp *s = NULL;
-
 
 						pag = make_ag(code);//,1);
 
@@ -1193,7 +1188,7 @@ int stringPM::load_agents(const char *fn, char *fntab, int test, int verbose){
 						//No parents for these initial agents!
 						pag->pp = spl->make_parents(NULL,NULL);
 
-						if(!i){
+						if(!ii){
 
 							//int stringPM::update_lineage(s_ag *p, char sptype, int add, l_spp *paspp, l_spp * ppspp)
 							update_lineage(pag,'I',1,NULL,NULL,0);
@@ -1234,7 +1229,7 @@ int stringPM::load_agents(const char *fn, char *fntab, int test, int verbose){
 
 
 int stringPM::count_spp(){
-	int i,found,finished;
+	int finished;
 	int nag, *done;
 	s_ag *pa;
 	int spc;
@@ -1245,8 +1240,8 @@ int stringPM::count_spp(){
 	memset(done,0,nag*sizeof(int));
 
 	do{
-		i = 0;
-		found=0;
+		int i = 0;
+		int found=0;
 		finished = 1;
 		for(i=0,pa=nowhead;i<nag;i++,pa=pa->next){
 			if(!done[i]){
@@ -1280,7 +1275,7 @@ void stringPM::print_spp_count(FILE *fp,int style, int state){
 	s_ag *pa;
 	int finished = 0;
 	int nag,*done;
-	int i,found;
+	int i;
 	int *spno, *spct, nspp = count_spp();
 
 	nag = nagents(nowhead,-1);
@@ -1296,7 +1291,7 @@ void stringPM::print_spp_count(FILE *fp,int style, int state){
 
 	do{
 		i = 0;
-		found=0;
+		int found=0;
 		finished = 1;
 		for(i=0,pa=nowhead;i<nag;i++,pa=pa->next){
 			if(state==-1 || pa->status == state){
@@ -1576,11 +1571,14 @@ s_ag * stringPM::rand_ag(s_ag *head, int state){
  */
 s_ag * stringPM::make_ag(int alab){
 
-	s_ag *ag;
+	//s_ag *ag;
 
 	//printf("Spatial make_ag called\n");fflush(stdout);
 
-	if((ag = (s_ag *) mymalloc(1,sizeof(s_ag)))!=NULL){
+	//if((ag = (s_ag *) mymalloc(1,sizeof(s_ag)))!=NULL){
+    s_ag *ag = static_cast<s_ag *>(malloc(sizeof(s_ag)));
+	
+    if((ag)!=NULL){
 		ag->label=alab;
 		ag->next = NULL;
 		ag->prev = NULL;
@@ -1726,11 +1724,7 @@ int stringPM::aspbind(rules *rset, s_ag *pag){
 
 	int found=0;
 	int count=0;
-	int
-		frule,
-		rule = -1;
-	float
-		rno;
+	int	rule = -1;
 	s_ag *bag,*pag2;
 
 	bag=nowhead;
@@ -1749,14 +1743,14 @@ int stringPM::aspbind(rules *rset, s_ag *pag){
 	note_propensity(count,found);
 
 	float prno = rand0to1();
-	int pr2=0,
-		r2 = floor(count * 0.9999 * prno);
+	int r2 = floor(count * 0.9999 * prno);
 	if(found){
-		frule = -1;
+		int frule = -1;
 		pag2 = nowhead;
 		while(pag2!=NULL){
-
+            //TODO: understand this!
 			if((rule = rset->getrule("lhs",pag2->label,pag->label))>-1){
+                int pr2 = 0;
 				if(pr2==r2){
 					frule = rule;
 					break;
@@ -1768,9 +1762,9 @@ int stringPM::aspbind(rules *rset, s_ag *pag){
 		}
 
 		if(frule ==-1){
-			printf("Fucked up!\n");
+			printf("ERROR! frule == -1\n");
 		}
-		rno = rand0to1();
+		float rno = rand0to1();
 		tr[frule]++;
 
 		//printf("rno = %0.6f\tfrp=%0.6f\t",rno,rset->rval[frule] );
@@ -1875,6 +1869,10 @@ float stringPM::get_bprob(align *sw){
 	return bprob;
 }
 
+
+
+
+//TODO: might have swa method as an option
 /* NB: swa commented out as it slows down computation instead of speeding it up in long runs */
 float stringPM::get_sw(s_ag *a1, s_ag *a2, align *sw){
 
@@ -1892,14 +1890,14 @@ float stringPM::get_sw(s_ag *a1, s_ag *a2, align *sw){
 
 		//
 
-		bprob = SmithWatermanV2(comp,a2->S,sw,blosum,0);
+		SmithWatermanV2(comp,a2->S,sw,blosum,0);
 		//bprob = SmithWaterman(comp,a2->S,sw,blosum,0);
 
 		free(comp);
 
 		align sw2;
 
-		bprob = SmithWatermanV2(a1->S,a2->S,&sw2,blosum,0);
+		SmithWatermanV2(a1->S,a2->S,&sw2,blosum,0);
 
 	//	//TODO: SUGGEST: pass in pointer to the species - not its index
 	//	store_sw(&swlist,sw,a1->spp->spp,a2->spp->spp);
@@ -2052,11 +2050,9 @@ int stringPM::testbind(s_ag *pag){
 
 	int found=0;
 	int count=0;
-	float
-		rno;
+
 	s_ag *bag;
 	align sw;
-	float bprob =0.;
 
 	bag=nowhead;
 
@@ -2068,6 +2064,7 @@ int stringPM::testbind(s_ag *pag){
 	}
 
 	if(found){
+	    float bprob;
 		bag = rand_ag(nowhead,B_UNBOUND);
 #ifndef BIND_ALL
 		bprob = get_sw(pag,bag,&sw);
@@ -2081,7 +2078,7 @@ int stringPM::testbind(s_ag *pag){
 		sw.s2=0;			// start of the match in string 2
 		sw.e2=1;			// end of the match in string 2
 #endif
-		rno = rand0to1();
+		float rno = rand0to1();
 		if(rno<bprob){//Binding success!
 			//figure out which is the executing string:
 			set_exec(pag,bag,&sw);
@@ -2278,8 +2275,6 @@ int stringPM::hcopy(s_ag *act){
 
 	//s_ag *pass;
 	//pass = act->pass;
-	int cidx;
-	float rno;
 	int safe = 1;// this gets set to zero if any of the tests fail..
 
 
@@ -2342,7 +2337,8 @@ int stringPM::hcopy(s_ag *act){
 	//}
 
 	if(safe){
-		rno=rand0to1();
+		float rno=rand0to1();
+	    int cidx;
 		if(rno<indelrate){//INDEL
 
 			//should follow the blosum table for this....
@@ -2408,8 +2404,8 @@ int stringPM::hcopy(s_ag *act){
 
 int stringPM::cleave(s_ag *act){
 
-	int dac = 0,cpy;
-	s_ag *c,*pass,*csite;
+	int dac = 0;
+	s_ag *pass,*csite;
 
 	pass = act->pass;
 
@@ -2417,20 +2413,21 @@ int stringPM::cleave(s_ag *act){
 	csite = act->ft?act:pass;
 
 	if(act->f[act->ft]-csite->S < csite->len){
+        s_ag *cc;
 
 		//1: MAKE THE NEW MOLECULE FROM THE CLEAVE POINT
 
 		//Can't really say what the label is easily - for ECAL, it's always pass
-		c = make_ag(pass->label);//,1);
+		cc = make_ag(pass->label);//,1);
 
 		//Copy the cleaved string to the agent
 		char *cs;
 
-		c->S =(char *) malloc(maxl0*sizeof(char));
-		memset(c->S,0,maxl0*sizeof(char));
+		cc->S =(char *) malloc(maxl0*sizeof(char));
+		memset(cc->S,0,maxl0*sizeof(char));
 
 		cs = csite->S;
-		cpy = strlen(cs);
+		int cpy = strlen(cs);
 		//Check that we aren't creating a zero-length molecule:
 		if(!cpy){
 			printf("WARNING: Zero length molecule being created!\n");
@@ -2441,10 +2438,10 @@ int stringPM::cleave(s_ag *act){
 
 		cpy -= act->f[act->ft]-cs;
 
-		strncpy(c->S,act->f[act->ft],cpy);
-		c->len = strlen(c->S);
+		strncpy(cc->S,act->f[act->ft],cpy);
+		cc->len = strlen(cc->S);
 #ifdef VERBOSE
-		printf("String %d created:\n%s\n",c->idx,c->S);
+		printf("String %d created:\n%s\n",cc->idx,cc->S);
 #endif
 
 		//ALL DONE NOW IN update_lineage
@@ -2454,11 +2451,11 @@ int stringPM::cleave(s_ag *act){
 		//c->ppspp = pass->spp;
 
 		//Check the lineage
-		update_lineage(c,'C',1,act->spp,pass->spp,act->biomass);
+		update_lineage(cc,'C',1,act->spp,pass->spp,act->biomass);
 		act->biomass=0; //reset this; we might continue to make stuff!
 
 		//append the agent to nexthead
-		append_ag(&nexthead,c);
+		append_ag(&nexthead,cc);
 
 		//2: HEAL THE PARENT
 
@@ -2722,8 +2719,6 @@ int stringPM::exec_step(s_ag *act, s_ag *pass){
  */
 //A make_next that doesn't use the "rules" class
 void stringPM::make_next(){
-	s_ag *pag,*bag;
-	int changed;
 
 	//SUGGEST: write function to count what's around (saves rechecking every time)
 	//countstates();
@@ -2734,13 +2729,15 @@ void stringPM::make_next(){
 	//if(nowhead != NULL){
 	//	pag = nowhead;
 	//	append_ag(pag); //check that pag->next is also appended
-	// NB: will have to have a different scheme for decay, since that doesn't require energy - sample from a binomial?
+	// NB: will have to have a different scheme for decay, 
+    // since that doesn't require energy - sample from a binomial?
 
 	while(nowhead!=NULL){
 
+	    s_ag *pag,*bag;
+
 		pag = rand_ag(nowhead,-1);
 		extract_ag(&nowhead,pag);
-		changed = 0;
 
 		//TODO: This is a debug option:
 		//if(0){//extit>=10){
@@ -2787,6 +2784,7 @@ void stringPM::make_next(){
 			}
 		}
 		else{
+		    int changed = 0;
 			if(energy>0){
 				switch(pag->status){
 				case B_UNBOUND:
@@ -2825,22 +2823,18 @@ void stringPM::make_next(){
 
 int stringPM::comass_hcopy(s_ag *act){
 
-	//s_ag *pass;
-	//pass = act->pass;
-	int cidx;
-	float rno;
 	int safe = 1;// this gets set to zero if any of the tests fail..
 
 
 	//MUTATION RATES:
 	//THESE ARE HARD-CODED FOR NOW - THEY SHOULD BE DERIVED FROM THE BLOSUM SOMEHOW...
-	//const float indelrate = 0.0005,subrate=0.375;//0.0749/2
-	//const float indelrate = 0.0000306125,subrate=0.01;//0.02
-	//const float indelrate = 0.00006125,subrate=0.05;//0.02
-	//const float indelrate = 0.000125,subrate=0.1;//0.02
-	//const float indelrate = 0.000005,subrate=0.0375;//0.0749/2
+	//const float indelrate = 0.0005,       subrate=0.375;  //0.0749/2
+	//const float indelrate = 0.0000306125, subrate=0.01;   //0.02
+	//const float indelrate = 0.00006125,   subrate=0.05;   //0.02
+	//const float indelrate = 0.000125,     subrate=0.1;    //0.02
+	//const float indelrate = 0.000005,     subrate=0.0375; //0.0749/2
 
-	//const float indelrate = 0., 		subrate = 0.;
+	//const float indelrate = 0., 		    subrate = 0.;
 
 	if(!domut){
 		indelrate = subrate =0;
@@ -2889,7 +2883,7 @@ int stringPM::comass_hcopy(s_ag *act){
 		}
 
 
-		rno=rand0to1();
+		float rno=rand0to1();
 		if(rno<indelrate){//INDEL - we should never be doing this in comass!
 
 			//should follow the blosum table for this....
@@ -2923,6 +2917,7 @@ int stringPM::comass_hcopy(s_ag *act){
 			//act->i[act->it]++;
 		}
 		else{
+	        int cidx;
 			if(rno<subrate+indelrate){//INCREMENTAL MUTATION - we should never be doing this either
 
 				cidx = sym_from_adj(*(act->r[act->rt]),blosum);
@@ -3132,23 +3127,20 @@ int stringPM::comass_exec_step(s_ag *act, s_ag *pass){
 int stringPM::load_comass(const char *fn, int verbose){
 	//int massval = 2000;
 	FILE *fp;
-	int finderr=0;
-	int i;
 	unsigned int massval;
 
 	mass = (int*) malloc(blosum->N * sizeof(int));
 
 	if((fp=fopen(fn,"r"))!=NULL){
 
-		finderr=read_param_int(fp,"MASS",&massval,verbose);
+		int finderr=read_param_int(fp,"MASS",&massval,verbose);
 
 		report_param_error(finderr, 1);
 
-
 		fclose(fp);
 		//Load the massvalue into the mass table;
-		for(i=0;i<blosum->N;i++){
-			mass[i]=massval;
+		for(int ii=0;ii<blosum->N;ii++){
+			mass[ii]=massval;
 		}
 		s_ag *pag;
 		for(pag=nowhead;pag!=NULL;pag=pag->next){
@@ -3184,14 +3176,14 @@ int stringPM::set_mass(int *param){
 
 
 int stringPM::update_mass(char *S, int len, int val, const int doconcat){
-	int c;
+	
 	int updated=0;
 	for(int i=0;i<len;i++){
-		c = tab_idx(S[i],blosum);
-		mass[c] += val;
+		int cc = tab_idx(S[i],blosum);
+		mass[cc] += val;
 		//Strategy: if there isn't the mass available for the string, delete the code
-		if(doconcat && mass[c]<0){
-			mass[c] -= val;
+		if(doconcat && mass[cc]<0){
+			mass[cc] -= val;
 			for(int j = i+1; j< len; j++){
 				S[j-1] = S[j];
 			}
@@ -3268,7 +3260,6 @@ void stringPM::comass_make_next(){
 	    s_ag *pag,*bag;
 		pag = rand_ag(nowhead,-1);
 		extract_ag(&nowhead,pag);
-		int changed = 0;
 
 		//extract any partner:
 		bag = NULL;
@@ -3300,13 +3291,12 @@ void stringPM::comass_make_next(){
 			}
 		}
 		else{
+		    int changed = 0;
 			if(energy>0){
 				switch(pag->status){
 				case B_UNBOUND:
 					//seek binding partner, set binding states.
 					changed = testbind(pag);
-					//if(!changed)
-					//	changed = testdecay(pag);
 
 					break;
 				case B_PASSIVE:
@@ -3444,7 +3434,8 @@ int stringPM::energetic_exec_step(s_ag *act, s_ag *pass){//pset *p,char *s1, swt
 				 *  CLEAVE  *
 				 ************/
 				case '%':
-						if((int dac = cleave(act))){
+                        int dac;
+						if((dac = cleave(act))){
 							finished = 1;
 							safe_append=0;	//extract_ag(&nowhead,p);
 						}
@@ -4108,12 +4099,10 @@ int stringPM::Network_cleave(s_ag *act){
 		cc = make_ag(pass->label);//,1);
 
 		//Copy the cleaved string to the agent
+		cc->S =(char *) malloc(maxl0*sizeof(char));
+		memset(cc->S,0,maxl0*sizeof(char));
 
 		char *cs;
-
-		cc->S =(char *) malloc(maxl0*sizeof(char));
-		memset(c->S,0,maxl0*sizeof(char));
-
 		cs = csite->S;
 		int cpy = strlen(cs);
 		cpy -= act->f[act->ft]-cs;

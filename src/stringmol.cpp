@@ -770,6 +770,8 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 
 		//printf("Printing species list\n");
 		sprintf(fn,"splist%d%02d.dat",proc,A.run_number);
+        
+        FILE *fp;
 		if((fp = fopen(fn,"w"))!=NULL){
 			SP.print_spp_list(fp);
 			fclose(fp);

@@ -20,6 +20,13 @@ Plan is to have iterations through the following:
 - Document dependencies
 - Write tests
 
+## Features to add/fix
+
+- stringmol 1 on 1 needs to work for any pair of molcules, not just 2 copies of the same one. 
+- Resume via logfiles needs to be thoroughly tested
+- zero-probability bind issue needs to be addressed
+
+
 ## File by file
 
 ### `stringmol.cpp`
@@ -50,6 +57,20 @@ https://en.wikipedia.org/wiki/Facade_pattern
 - ED: Low effort: Document the dependencies! Write down any assumptions you're making about how stuff is set up. Make sure there's enough info that you could get it running again a year from now.
 - ED: Medium effort: Document the expected output of the code under various circumstances. Write a script that runs the code and confirms that it produces that output. Ta-da you've got basic regression tests!
 - ED: Low effort (once you've done the above step and assuming your code is already shared on github or similar): Set up continuous integration (e.g. @travisci) to automatically run  the tests when you make changes. That way you'll know if you do anything that changes behavior.
+
+## Jerry Swan's email
+
+0. Have some regression tests, so that you can be sure that refactoring doesn't break anything. Run them very often (hence prefer that refactorings are small).
+
+1. Most importantly: the integrity of a program is inversely proportional to the amount of mutable state in scope. Hence, see what can readily be done to reduce the visibility of variables, starting with globals, then file-scope statics etc. There's a section on this in the attached.
+
+2. Following on from 1.: prefer to encapsulate data within classes - don't let outside entities tweak class attributes individually via 'setter' methods. Instead, the class should instead be providing higher level services via its methods, and not just be 'a dumb bucket of bits' to be pushed around by the rest of the program. Use const on methods and parameters wherever possible.
+
+3. Start trying to get more help from the compiler, by 'programming in the vocabulary of the problem domain' (again, see attached). Essentially, this comes down using the type system to distinguish between incompatible types: if Speed and Length are incomensurate but are both currently represented as int, then at least use typedefs to explicitly distinguish them, and maybe even make them different types.  
+
+4. When passing arguments by reference in C++, prefer references to pointers wherever possible: barring 'fraud' (deliberately dereferencing a potentially null pointer to make a reference) there is no such thing as a 'null reference'.
+
+5. Start to build integrity into the program via 'design by contract' (see attached), particularly class invariants. This a) affords greater code coverage than unit tests and b) forces one to be very clear about what concept a class actually represents.
 
 ## Status before writing this document
 
