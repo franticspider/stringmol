@@ -15,7 +15,8 @@ cd src
 make clean 
 make all
 mkdir -p ../exe
-mv stringmol ../exe/stringmol
+# mv stringmol ../exe/stringmol
+mv ../release/stringmol ../exe/stringmol
 cd ..
 
 
