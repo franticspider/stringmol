@@ -30,48 +30,46 @@ rules::rules(char *fn){
 
 	const int maxl = 128;
 	FILE *fp;
-	char line[maxl];
-	char label[maxl];
-	int rulecount = 0;
 
-		if((fp=fopen(fn,"r"))!=NULL){
-				while((fgets(line,maxl,fp))!=NULL){
-					memset(label,0,maxl);
-					sscanf(line,"%s",label);
-					printf("line = %s",line);
-					if(!strncmp(label,"RULE",4))
-						rulecount++;
-				}
-				printf("\nfinished scanning - %d rules - rewinding\n",rulecount);
-				//allocate memory for the rules now
-				nr = rulecount;
-				rset = (int **) arr2alloc(nr,4,sizeof(int));
-				rval = (float *) mymalloc(nr,sizeof(float));
-				re = (float *) mymalloc(nr,sizeof(float));
-
-				//fill the rule array
-				rewind(fp);
-				rulecount = 0;
-				while((fgets(line,maxl,fp))!=NULL){
-					memset(label,0,maxl);
-					sscanf(line,"%s",label);
-					if(!strncmp(label,"RULE",4)){//fill the rule data
-						sscanf(line,"%*s %c %c %c %c %f %f",(char * )&(rset[rulecount][0]),(char * )&(rset[rulecount][1]),(char * )&(rset[rulecount][2]),(char * )&(rset[rulecount][3]),&(rval[rulecount]),&(re[rulecount]));
-						printf("RULE: %c %c %c %c %f %f\n",(rset[rulecount][0]),(rset[rulecount][1]),(rset[rulecount][2]),(rset[rulecount][3]),(rval[rulecount]),(re[rulecount]));
-						rulecount++;
-					}
-				}
-
-
-
-			//close
-			fclose(fp);
-
+	if((fp=fopen(fn,"r"))!=NULL){
+	    char line[maxl];
+	    char label[maxl];
+	    int rulecount = 0;
+		while((fgets(line,maxl,fp))!=NULL){
+			memset(label,0,maxl);
+			sscanf(line,"%2000s",label);
+			printf("line = %s",line);
+			if(!strncmp(label,"RULE",4))
+				rulecount++;
 		}
-		else{
-			printf("Unable to open file %s\n",fn);
-			fflush(stdout);
+		printf("\nfinished scanning - %d rules - rewinding\n",rulecount);
+		//allocate memory for the rules now
+		nr = rulecount;
+		rset = (int **) arr2alloc(nr,4,sizeof(int));
+		rval = (float *) mymalloc(nr,sizeof(float));
+		re = (float *) mymalloc(nr,sizeof(float));
+
+		//fill the rule array
+		rewind(fp);
+		rulecount = 0;
+		while((fgets(line,maxl,fp))!=NULL){
+			memset(label,0,maxl);
+			sscanf(line,"%2000s",label);
+			if(!strncmp(label,"RULE",4)){//fill the rule data
+				sscanf(line,"%*s %c %c %c %c %f %f",(char * )&(rset[rulecount][0]),(char * )&(rset[rulecount][1]),(char * )&(rset[rulecount][2]),(char * )&(rset[rulecount][3]),&(rval[rulecount]),&(re[rulecount]));
+				printf("RULE: %c %c %c %c %f %f\n",(rset[rulecount][0]),(rset[rulecount][1]),(rset[rulecount][2]),(rset[rulecount][3]),(rval[rulecount]),(re[rulecount]));
+					rulecount++;
+			}
 		}
+
+		//close
+		fclose(fp);
+
+	}
+	else{
+		printf("Unable to open file %s\n",fn);
+		fflush(stdout);
+	}
 }
 
 int rules::findinrange(int row, int min, int max, int label){
@@ -111,10 +109,10 @@ int rules::found(const char *side, int label){
 
 
 int rules::getrule(const char *side,int l1, int l2){
-	int i,sidecheck = 0;
+	int sidecheck = 0;
 	if(!strncmp(side,"lhs",3)){
 		sidecheck = 1;
-		for(i=0;i<nr;i++){
+		for(int i=0;i<nr;i++){
 			if(rset[i][0]==l1 && rset[i][1]==l2)
 				return i;
 			else if (rset[i][1]==l1 && rset[i][0]==l2)

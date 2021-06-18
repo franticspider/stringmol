@@ -1,0 +1,24 @@
+q# Object files
+*.o
+
+# Executable:
+src/stringmol
+src/stringmol_dbg
+src/smspatial
+src/smspatial_dbg
+*.cgi
+debug/stringmol
+release/stringmol
+
+# gedit backups
+*~
+
+#Eclipse stuff:
+.project
+.cproject
+
+#Doxygen stuff: 
+docs/**/*
+
+#Test stuff: 
+tests/test

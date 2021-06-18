@@ -60,9 +60,9 @@ int read_param_int(FILE *fp,const char *label, unsigned int *val, int verbose){
 	while((fgets(line,maxl,fp))!=NULL){
 		if(!strncmp(label,line,strlen(label))){
 			if(!found){
-				sscanf(line,"%*s %d",val);
+				sscanf(line,"%*s %u",val);
 				if(verbose)
-					printf("%s = %d\n",label,*val);
+					printf("%s = %u\n",label,*val);
 				found = 1;
 				err = 0;
 			}
@@ -126,7 +126,7 @@ char * read_param_string(FILE **pfp,const char *label, int verbose){
 	while(((fgets(line,maxl,fp))!=NULL)&&!found){
 		if(!strncmp(label,line,strlen(label))){
 			if(!found){
-				sscanf(line,"%*s %s",(char *) &st);
+				sscanf(line,"%*s %2000s",(char *) &st);
 				if(verbose)
 					printf("%s = %s\n",label,st);
 				found = 1;
@@ -147,19 +147,19 @@ char * read_param_string(FILE **pfp,const char *label, int verbose){
 
 
 int readordef_param_int(const char *fn, const char *label, unsigned int *val, const int defaultvalue, const int verbose){
-	int rerr=1;
+
 	int errcode = 3;
 	FILE *fp;
 
 	if((fp=fopen(fn,"r"))!=NULL){
-		rerr = read_param_int(fp,label,val,0);
+		int rerr = read_param_int(fp,label,val,0);
 		switch(rerr){
 		case 2:
 			printf("Multiple instances of %s specified. Check config file\n",label);
 			getchar();
 			exit(0);
 		case 0:
-			if(verbose)printf("Setting %s to %d\n",label,*val);
+			if(verbose)printf("Setting %s to %u\n",label,*val);
 			errcode = 0;
 			break;
 		default:
@@ -169,13 +169,13 @@ int readordef_param_int(const char *fn, const char *label, unsigned int *val, co
 			else{
 				*val = defaultvalue;
 				errcode = 0;
-				if(verbose)printf("%s not specified;\nSetting %s to %d\n",label,label,*val);
+				if(verbose)printf("%s not specified;\nSetting %s to %u\n",label,label,*val);
 			}
 			break;
 		}
 		fclose(fp);
 	}
-	if(verbose)printf("%s = %d\n",label,*val);
+	if(verbose)printf("%s = %u\n",label,*val);
 
 	return errcode;
 }

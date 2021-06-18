@@ -62,7 +62,7 @@ char * HSearch(char *iptr, char *sp, swt *T, int *itog, int *ftog,const int maxl
 	int i,len=0;
 	align A;
 
-	memset(tmp,0,maxl*sizeof(char));
+	//memset(tmp,0,maxl*sizeof(char));
 
 	/*NOTE: We are currently searching from the start of the string with the active flow pointer.
 	Perhaps we should start AT the flow pointer, and "loop around" to the beginning of the string if
@@ -90,7 +90,7 @@ char * HSearch(char *iptr, char *sp, swt *T, int *itog, int *ftog,const int maxl
 	*/
 	len = LabLength(ip, maxl);
 	tp = iptr+len;
-	ip=iptr+1;
+	//ip=iptr+1;
 
 	if(!len){
 		//Ensure that the toggles are set:

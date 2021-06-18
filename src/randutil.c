@@ -47,7 +47,7 @@ int devrandomseed(){
 	// you now have a random integer!
 	close(randomData);
 
-	printf("in devrandomseed, seed is %d (%u)\n",sjhRandomInteger,sjhRandomInteger);
+	printf("in devrandomseed, seed is %d (%u)\n",sjhRandomInteger,(unsigned int) sjhRandomInteger);
 	return sjhRandomInteger;
 }
 
@@ -66,7 +66,7 @@ int initmyrand(int seed){
 	}
 
 #ifdef VERBOSE
-	printf("in initmyrand, seed is %d (%u)\n",seed,seed);
+	printf("in initmyrand, seed is %d (%u)\n",seed,(unsigned int) seed);
 #endif
 
 #ifdef USING_MT
@@ -147,11 +147,11 @@ int * randintarray(const int size,const int Min,const int max){
 
 /* Create an array of random integers between the range [min,max) */
 int * randboolarray(const int size){
-	int i, * array;
-	float v;
+	int * array;
+
 	array = (int *) malloc(size*sizeof(int));
-	for(i=0;i<size;i++){
-		v=rand0to1();
+	for(int i=0;i<size;i++){
+		float v=rand0to1();
 		if(v<0.5)
 			array[i] = 0;
 		else
@@ -159,6 +159,8 @@ int * randboolarray(const int size){
 	}
 	return array;
 }
+
+
 
 
 /*UTILITY FUNCTION FOR RE-SEEDING ON RESTART*/

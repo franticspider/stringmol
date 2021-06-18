@@ -83,10 +83,10 @@ void setupSMol(struct runparams &RunPar, int argc, char *argv[]){
 			getchar();
 			exit(0);
 		case 0:
-			printf("Setting NTRIALS to %d\n",rlim);
+			printf("Setting NTRIALS to %u\n",rlim);
 			break;
 		default:
-			printf("NTRIALS not specified;\nSetting NTRIALS to %d\n",rlim);
+			printf("NTRIALS not specified;\nSetting NTRIALS to %u\n",rlim);
 			break;
 		}
 		fclose(fp);
@@ -101,7 +101,7 @@ void setupSMol(struct runparams &RunPar, int argc, char *argv[]){
 			getchar();
 			exit(0);
 		case 0:
-			printf("Setting NSTEPS to %d\n",RunPar.maxnsteps);
+			printf("Setting NSTEPS to %u\n",RunPar.maxnsteps);
 			RunPar.indefinite=0; //TODO: fix the indefinite thing if NSTEPS is not specified..
 			break;
 		default:
@@ -193,7 +193,6 @@ void printsppct(stringPM *A, int t){
 	int spc,count;
 	int finished = 0;
 	int nag,*done;
-	int i,found;
 
 	nag = A->nagents(A->nowhead,-1);
 
@@ -211,8 +210,8 @@ void printsppct(stringPM *A, int t){
 	fp = fopen(A->popdyfn,"a");
 
 	do{
-		i = 0;
-		found=0;
+		int i = 0;
+		int found=0;
 		finished = 1;
 		for(i=0,pa=A->nowhead;i<nag;i++,pa=pa->next){
 			if(!done[i]){
@@ -372,14 +371,14 @@ float **swdt(stringPM * A, stringPM * B,s_sw **spp_matches, int *mol_class, floa
 	l_spp *pA,*pB;
 	align sw;
 	s_sw * swa;
-	int L,lA,lB;
+	int L,lB;
 
 	dt = (float **) malloc(nA * sizeof(float *));
 
 	for(a=0,pA=A->spl->species;a<nA;a++,pA=pA->next){
 		dt[a]= (float *) malloc(nB * sizeof(float));
 		pB = B->spl->species;
-		lA = strlen(pA->S);
+		int lA = strlen(pA->S);
 		for(b=0,pB=B->spl->species;b<nB;b++,pB=pB->next){
 			if(pA->count && pB->count){
 
@@ -528,8 +527,8 @@ void print_params(stringPM *A, int ntrials, int nsteps){
 		printf("BLOSUM      %d size table loaded\n",A->blosum->N);
 	printf("MUTATE      indelrate = %f; subrate = %f\n",A->indelrate,A->subrate);
 	printf("DECAY       %f\n",A->decayrate);
-	printf("MAXLEN      %d, (maxl0 = %d)\n",A->maxl, A->maxl0);
-	printf("ESTEP       %d\n",A->estep);
+	printf("MAXLEN      %u, (maxl0 = %u)\n",A->maxl, A->maxl0);
+	printf("ESTEP       %u\n",A->estep);
 
 
 }
@@ -558,8 +557,11 @@ void init_randseed_config(int argc, char *argv[]){
 	FILE *fpr;
 	if((fpr=fopen(argv[2],"r"))!=NULL){
 		unsigned int stmp;
-		int rerr = read_param_int(fpr,"RANDSEED",&stmp,1);
 		//TODO: load the full RNG state using load_mt (RNGFILE in config)
+		int rerr = read_param_int(fpr,"RANDSEED",&stmp,1);
+        if(rerr){
+            printf("Error finding randseed: rerr is %d\n",rerr);
+        }
 
 
 		rerr = read_param_int(fpr,"GAQNN",&qnnscoring,1);
@@ -738,8 +740,8 @@ s_ag * pick_partner(stringPM *A, smsprun *run,int x, int y){
 	if(!count)
 		return NULL;
 
+    //Now pick the neighbour
 	int it = count * rand0to1();
-
 
 	//now, let's choose the agents
 	count = 0;
@@ -751,9 +753,13 @@ s_ag * pick_partner(stringPM *A, smsprun *run,int x, int y){
 				if(run->grid[xx][yy]!=NULL){
 					if(run->grid[xx][yy]->status == B_UNBOUND){
 						if(run->status[xx][yy] == G_NOW){
-							if(count==it)
+							if(count==it){
 								run->status[xx][yy] = G_NEXT;
-						  return run->grid[xx][yy]; //TODO: should this be guarded by the if?
+                                //NB! the following line was *outside* this if statement
+                                // in earlier versions - really surprising that this didn't
+                                // cause a crash...
+						        return run->grid[xx][yy]; 
+                            }
 							count++;
 						}
 					}
@@ -868,7 +874,7 @@ s_ag * place_neighbor(stringPM *A, smsprun *run,s_ag *c,int x,int y){
 
 int spatial_cleave(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 
-	int dac = 0,cpy;
+	int dac = 0;
 	s_ag *c,*pass,*csite;
 	c = NULL;
 	pass = act->pass;
@@ -886,7 +892,7 @@ int spatial_cleave(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 		c->S =(char *) malloc(A->maxl0*sizeof(char));
 		memset(c->S,0,A->maxl0*sizeof(char));
 		cs = csite->S;
-		cpy = strlen(cs);
+		int cpy = strlen(cs);
 
 		//Check that we aren't creating a zero-length molecule:
 		if(!cpy){
@@ -897,7 +903,7 @@ int spatial_cleave(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 
 		if(!cpy){
 			printf("ERROR: Zero length molecule definitely being created!\nbail..\n");
-			A->free_ag(c);
+			A->free_ag(&c);
 		}
 		else{
 
@@ -918,7 +924,7 @@ int spatial_cleave(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 				A->append_ag(&(A->nexthead),c);
 			}
 			else{
-				A->free_ag(c);
+				A->free_ag(&c);
 			}
 		}
 		//TODO: check string lens of act and pass?
@@ -952,7 +958,7 @@ int spatial_cleave(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 				run->grid[act->x][act->y]=NULL;
 				run->status[act->x][act->y]=G_EMPTY;
 
-				A->free_ag(act);
+				A->free_ag(&act);
 
 				break;
 			case 2://Destroy passive - only append active
@@ -966,14 +972,14 @@ int spatial_cleave(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 				run->grid[pass->x][pass->y]=NULL;
 				run->status[pass->x][pass->y]=G_EMPTY;
 
-				A->free_ag(pass);
+				A->free_ag(&pass);
 				break;
 			case 3://Destroy both
 				printf("Destroying both parents after cleave!\nThis should never happen!\n");
 				A->unbind_ag(act,'A',1,act->spp,pass->spp);
 				A->unbind_ag(pass,'P',1,act->spp,pass->spp);
-				A->free_ag(act);
-				A->free_ag(pass);
+				A->free_ag(&act);
+				A->free_ag(&pass);
 				break;
 			default://This can't be right can it?
 				if(act->ft == act->it){
@@ -1200,7 +1206,7 @@ int spatial_testdecay(stringPM *A, smsprun *run, s_ag *pag){
 		run->grid[pag->x][pag->y]=NULL;
 		run->status[pag->x][pag->y]=G_EMPTY;
 
-		A->free_ag(pag);
+		A->free_ag(&pag);
 
 		if(bag!=NULL){
 
@@ -1208,7 +1214,7 @@ int spatial_testdecay(stringPM *A, smsprun *run, s_ag *pag){
 			run->grid[bag->x][bag->y]=NULL;
 			run->status[bag->x][bag->y]=G_EMPTY;
 
-			A->free_ag(bag);
+			A->free_ag(&bag);
 		}
 
 		return 1;
@@ -1223,7 +1229,6 @@ int spatial_testdecay(stringPM *A, smsprun *run, s_ag *pag){
 void get_unused_fn(char *fn){
 
 	int found = 1;
-	FILE * fpr;
 	char *point_pos, *tmp_pos;
 	char tmp[128];
 	char ofn[128];
@@ -1236,6 +1241,8 @@ void get_unused_fn(char *fn){
 	point_pos = strchr(fn,'.');
 
 	while(found){
+
+	    FILE * fpr;
 
 		if((fpr=fopen(ofn,"r"))!=NULL){
 			fclose(fpr);
@@ -1296,12 +1303,11 @@ unsigned long init_randseed(char *fn, int printrandseed=0){
 
 	bool foundrng{true};
 
-	FILE *fpr,*fprng;
+	FILE *fpr;
 	if((fpr=fopen(fn,"r"))!=NULL){
 		//TODO: load the full RNG state using load_mt (RNGFILE in config)
 		char *rngfn,*rngpath;
-		rngfn=NULL;
-		//rngfn = (char *) malloc (256*sizeof(char));
+
 		rngpath = (char *) malloc (512*sizeof(char));
 		memset(rngpath,0,512*sizeof(char));
 		rngfn =  read_param_string(&fpr, "RNGFILE",0);
@@ -1319,6 +1325,8 @@ unsigned long init_randseed(char *fn, int printrandseed=0){
 			char *pp;
 			pp = &(rngpath[l+1]);
 			strcpy(pp,rngfn);
+
+	        FILE *fprng;
 
 			if((fprng=fopen(rngpath,"r"))!=NULL){
 				if(load_mt(rngpath) != load_mt_success){
@@ -1418,8 +1426,7 @@ unsigned long init_randseed(char *fn, int printrandseed=0){
 int smspatial_step(stringPM *A, smsprun *run){
 
 	//again, we follow make_next, but are a little more careful with the binding and uncoupling
-	s_ag *pag,*bag;
-	int changed;
+	s_ag *pag;
 
 	//A->energy += A->estep;
 
@@ -1434,7 +1441,6 @@ int smspatial_step(stringPM *A, smsprun *run){
 
 		pag = A->rand_ag(A->nowhead,-1);
 		A->extract_ag(&A->nowhead,pag);
-		changed = 0;
 
 		//For debugging RNG diffs.
 		if(A->extit == 90001){
@@ -1450,7 +1456,7 @@ int smspatial_step(stringPM *A, smsprun *run){
 		}
 
 
-
+        s_ag *bag;
 		//extract any partner:
 		bag = NULL;
 
@@ -1468,6 +1474,7 @@ int smspatial_step(stringPM *A, smsprun *run){
 		}
 
 		if(!spatial_testdecay(A,run,pag)){
+		    int changed = 0;
 			if(A->energy>0){
 				switch(pag->status){
 				case B_UNBOUND:
@@ -1570,7 +1577,8 @@ int smspatial_init(const char *fn, stringPM *A, smsprun **run, int runno){
 	initpopdyfile(A);
 
 
-	//TODO: It's a little perverse getting this run object out, but we have to decide whether the grid is 'core' stringmol...
+	//TODO: It's a little perverse getting this run object out, 
+    //      but we have to decide whether the grid is 'core' stringmol...
 	*run = A->grid;
 	if(run == NULL){
 		printf("No grid data entered for spatial stringmol!\nexiting...");
@@ -1746,7 +1754,7 @@ int smspatial(int argc, char *argv[]) {
 			fclose(fpp);
 
 			FILE *fp{};
-			sprintf(fn,"splist%d.dat",A.extit);
+			sprintf(fn,"splist%u.dat",A.extit);
 			fp = fopen(fn,"w");
 			SP.print_spp_list(fp);
 			fclose(fp);
@@ -1759,14 +1767,21 @@ int smspatial(int argc, char *argv[]) {
 		smspatial_step(&A,run);
 
 #ifdef DODEBUG
-		printf("Nowhead is %d, Nexthead is %d\n",A.nowhead,A.nexthead);
+		printf("Nowhead is %p, Nexthead is %p\n",(void *) A.nowhead,(void *) A.nexthead);
 		s_ag *p;
 		p=A.nowhead;
 		int mno=0;
 		while(p!=NULL){
 			int x,y;
 			find_ag_gridpos(p,run,&x,&y);
-			printf("%d, %d, [%d,%d]  status: %d, bound to %d / %d, prev = %d, next = %d\n",++mno,p,x,y,p->status,p->exec,p->pass,p->prev,p->next);
+			printf("%d, %p, [%d,%d]  status: %d, bound to %d / %d, prev = %d, next = %d\n",
+                    ++mno,
+                    (void *) p,
+                    x,y,p->status,
+                    (void *) p->exec,
+                    (void *) p->pass,
+                    (void *) p->prev,
+                    (void *) p->next);
 			p = p->next;
 		}
 #endif
@@ -1885,10 +1900,10 @@ int smspatial_pic(stringPM *A, smpic pt){
 	char filename[128];
 	switch(pt){
 	case smpic_len:
-		sprintf(filename,"lenframe%07d.png",A->extit);
+		sprintf(filename,"lenframe%07u.png",A->extit);
 		break;
 	case smpic_spp:
-		sprintf(filename,"sppframe%07d.png",A->extit);
+		sprintf(filename,"sppframe%07u.png",A->extit);
 		break;
 
 	}
@@ -1960,7 +1975,7 @@ int smspatial_lengthpicsfromlogs(int argc, char *argv[]){
 			std::vector<unsigned char> image;
 			image.resize(run->gridx * run->gridy * 4);
 
-			int x,y,val;
+			int x,y;
 
 			if(i==s){
 				for(x=0;x<run->gridx;++x){
@@ -1997,17 +2012,16 @@ int smspatial_lengthpicsfromlogs(int argc, char *argv[]){
 				int rmask = 0b11100000;
 				int gmask = 0b00011100;
 				int bmask = 0b00000011;
-
-				int rbits,gbits,bbits;
+                int val;
 
 				printf("Mask values are r:%d, g:%d, b:%d\n",rmask,gmask,bmask);
 
 				for(y=0;y<run->gridy;++y){
 					val = y;//((x+1) * 5) % 256;
 
-					rbits = (val & rmask);
-					gbits = (val & gmask);
-					bbits = (val & bmask);
+					int rbits = (val & rmask);
+					int gbits = (val & gmask);
+					int bbits = (val & bmask);
 
 					printf("y = %d, val = %d, \tRGB unscaled = r:%d, g:%d, b:%d \t scaled = r:%d g:%d b:%d\n",y,val,rbits,gbits,bbits,rbits>>5,gbits>>2,bbits);
 
@@ -2072,7 +2086,7 @@ int smspatial_lengthpicsfromlogs(int argc, char *argv[]){
 
 
 			char filename[128];
-			sprintf(filename,"lenframe%07d.png",A.extit);
+			sprintf(filename,"lenframe%07u.png",A.extit);
 			encodeOneStep(filename, image, run->gridx, run->gridy);
 
 			A.clearout();
@@ -2105,7 +2119,7 @@ struct anc_node{
 anc_node * alloc_anc_node(){
 	anc_node *node;
 
-	node = (anc_node *) malloc(sizeof(anc_node));
+	node = static_cast<anc_node *> (malloc(sizeof(anc_node)) ) ;
 
 	node->spno=0;
 	node->origintime=0;
@@ -2132,7 +2146,7 @@ anc_node * new_anc_node(int sp, int time){
 
 void find_parents(anc_node *aa, int timestep, int depth, char * ofn, int *found_spp){
 
-	FILE *fp,*ofp;
+	FILE *ofp;
 	const int llen = 3000;
 
 	char fn[128],line[llen],seq[llen];
@@ -2143,6 +2157,7 @@ void find_parents(anc_node *aa, int timestep, int depth, char * ofn, int *found_
 	int found = 0;
 
 	while(!found){
+        FILE *fp;
 		sprintf(fn,"splist%d.dat",timestep);
 		if((fp=fopen(fn,"r"))==NULL){
 			printf("Cannot open file %s so cannot proceed\n",fn);
@@ -2167,7 +2182,7 @@ void find_parents(anc_node *aa, int timestep, int depth, char * ofn, int *found_
 						if(!timestep){
 							printf("Line %d: Made it to the dawn of time!\nLUCA is:\n",lno);
 							//1,-1,-1,1,WWGEWLHHHRLUEUWJJJRJXUUUDYGRHJLRWWRE$BLUBO^B>C$=?>$$BLUBO%}OYHOB
-							sscanf(line,"%*d,%*d,%*d,%*d,%s",&(seq[0]));
+							sscanf(line,"%*d,%*d,%*d,%*d,%2000s",&(seq[0]));
 							printf("depth\ttime\tspp\tact\tpass\tsequence\n");
 							printf("%d\t1\t%d\t%d\t%d\t%s\n",depth,s1,a1,p1,seq);
 
@@ -2186,7 +2201,7 @@ void find_parents(anc_node *aa, int timestep, int depth, char * ofn, int *found_
 					}
 					else{
 						printf("Line %d: Ancestors of spp %d found! Active is %d, Passive is %d\n",lno,s1,a1,p1);
-						sscanf(line,"%*d,%*d,%*d,%*f,%d,%d,%*d,%s",&nr,&t1,&(seq[0]));
+						sscanf(line,"%*d,%*d,%*d,%*f,%d,%d,%*d,%2000s",&nr,&t1,&(seq[0]));
 						found = 1;
 						//fclose(fp);
 
@@ -2307,7 +2322,7 @@ struct comm_node{
 comm_node * alloc_comm_node(){
 	comm_node *node;
 
-	node = (comm_node *) malloc(sizeof(comm_node));
+	node = static_cast<comm_node *>( malloc(sizeof(comm_node)) );
 
 	node->aspno=0;
 	node->pspno=0;

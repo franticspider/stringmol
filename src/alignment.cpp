@@ -133,13 +133,11 @@ int LongestCommonSubsequence(char *s1, char *s2)
 		memset(num[i],0,l2*sizeof(int));
 	}
 
-
-	char letter1;
 	char letter2;
 
 	//Actual algorithm
 	for(i=0;i<l1;i++){
-		letter1 = s1[i];
+		char letter1 = s1[i];
 		for(j=0;j<l2;j++){
 			letter2 = s2[j];
 
@@ -273,7 +271,7 @@ int SmithWaterman(char *s1, char *s2, align *A, swt *T, int verbose){
 	//align *A;
 	int l1,l2;
 	int i,j;
-	int si,sj;
+	int sj;
 	int
 			match,
 		endi=0,
@@ -282,8 +280,6 @@ int SmithWaterman(char *s1, char *s2, align *A, swt *T, int verbose){
 		m,
 		**H,
 		emax = 0;
-	float l,d,t;
-	int action;
 
 	//Set up the structures and test for errors.
 
@@ -300,7 +296,7 @@ int SmithWaterman(char *s1, char *s2, align *A, swt *T, int verbose){
 
 	//Populate H
 	for(i=1;i<=l1;i++){
-		si=i-1;
+		int si=i-1;
 		for(j=1;j<=l2;j++){
 			sj=j-1;
 			//Calculate the three values:
@@ -357,11 +353,11 @@ int SmithWaterman(char *s1, char *s2, align *A, swt *T, int verbose){
 
 
 	while(H[i][j]>0){
-		l=H[i-1][j];
-		d=H[i-1][j-1];
-		t =H[i][j-1];
+		float l=H[i-1][j  ];
+		float d=H[i-1][j-1];
+		float t=H[i  ][j-1];
 
-		action = -1;
+		int action = -1;
 		if(l>=d&&l>=t){
 			action = 0; //LEFT 	(INSERTION)
 		}
@@ -416,7 +412,7 @@ int SmithWatermanV2(char *s1, char *s2, align *A, swt *swT, int verbose){
 	//align *A;
 	int l1,l2;
 	int i,j;
-	int si,sj;
+	int sj;
 	int
 		match,
 		endi=0,
@@ -446,7 +442,7 @@ int SmithWatermanV2(char *s1, char *s2, align *A, swt *swT, int verbose){
 
 	//Populate H
 	for(i=1;i<=l1;i++){
-		si=i-1;
+		int si=i-1;
 		for(j=1;j<=l2;j++){
 			sj=j-1;
 			//Calculate the three values:
@@ -646,10 +642,11 @@ void print_swt(FILE *fp, swt *sss){
 char sym_from_adj(char X, swt *swt){
 
 	int idx = tab_idx(X,swt);
-	int count=0,i;
 	float rno=rand0to1();
 
 	if(idx>-1){
+    	int count=0;
+        int i;
 		for(i=0;i<swt->N;i++)
 			if(swt->adj[idx][i]==1)
 				count++;
@@ -723,24 +720,23 @@ void table_from_string(float **T, char *key, const int N){
 int load_table(char *fn,swt *T){
 
 	const int maxl=256;
-	FILE *fp,*fp2;
-	char fn2[maxl];
-	char line[maxl];
-	char label[maxl];
-	int i,j,found;
+	FILE *fp;
 
 	T->N=0;
 	T->T=NULL;
 	T->key=NULL;
 
 	if((fp=fopen(fn,"r"))!=NULL){
-		found = 0;
+	    char fn2[maxl];
+	    char line[maxl];
+	    char label[maxl];
+		int found = 0;
 		while((fgets(line,maxl,fp))!=NULL){
 			memset(label,0,maxl);
-			sscanf(line,"%s",label);
+			sscanf(line,"%2000s",label);
 			//printf("line = %s",line);
 			if(!strncmp(line,"USING",5)){
-				sscanf(line,"%*s %s",fn2);
+				sscanf(line,"%*s %2000s",fn2);
 				found = 1;
 				fclose(fp);
 				break;
@@ -754,41 +750,42 @@ int load_table(char *fn,swt *T){
 
 
 
+        FILE *fp2;
 		if((fp2=fopen(fn2,"r"))!=NULL){
 			found = 0;
 			while((fgets(line,maxl,fp))!=NULL){
 				memset(label,0,maxl);
-				sscanf(line,"%s",label);
+				sscanf(line,"%2000s",label);
 				//printf("line = %s",line);
 				if(!strncmp(line,"SET",3)){
-					sscanf(line,"%*s %s",fn2); //using fn2 to temporarily hold the alphabet...
+					sscanf(line,"%*s %2000s",fn2); //using fn2 to temporarily hold the alphabet...
 					T->N = strlen(fn2);
 					T->key = (char *)malloc((T->N+1) * sizeof(char));
 					memset(T->key,0,(T->N+1)*sizeof(char));
 					strncpy(T->key,fn2,T->N);
 
 					T->T = (float **) malloc((T->N +1) * sizeof(float *));
-					for(i=0;i<T->N+1;i++)
-						T->T[i] = (float *) malloc(T->N * sizeof(float));
+					for(int ii=0;ii<T->N+1;ii++)
+						T->T[ii] = (float *) malloc(T->N * sizeof(float));
 
 					table_from_string(T->T,T->key,T->N);
 
 					//print for debug.
 					printf("   ");
-					for(i=0;i<T->N;i++)
-						printf("%c   ",T->key[i]);
+					for(int ii=0;ii<T->N;ii++)
+						printf("%c   ",T->key[ii]);
 					printf("\n");
-					for(i=0;i<T->N;i++){
-						printf("%c  ",T->key[i]);
-						for(j=0;j<T->N;j++){
-							printf("%0.2f ",T->T[i][j]);
+					for(int ii=0;ii<T->N;ii++){
+						printf("%c  ",T->key[ii]);
+						for(int jj=0;jj<T->N;jj++){
+							printf("%0.2f ",T->T[ii][jj]);
 						}
 						printf("\n");
 					}
 					//Print the indel value
 					printf("-   ");
-					for(i=0;i<T->N;i++){
-						printf("%02d ",(int) T->T[i][T->N]);
+					for(int ii=0;ii<T->N;ii++){
+						printf("%02d ",(int) T->T[ii][T->N]);
 					}
 					printf("\n");
 
@@ -805,7 +802,7 @@ int load_table(char *fn,swt *T){
 				printf("No MIS string found in MIS file\n");
 				return 2;
 			}
-
+            fclose(fp2);
 		}
 		else{
 			printf("Unable to open MIS file %s",fn2);

@@ -75,10 +75,10 @@ double /* generating reals */
 genrand()
 {
     unsigned long y;
-    static unsigned long mag01[2]={0x0, MATRIX_A};
     /* mag01[x] = x * MATRIX_A  for x=0,1 */
 
     if (mti >= N) { /* generate N words at one time */
+        static unsigned long mag01[2]={0x0, MATRIX_A};
         int kk;
 
         if (mti == N+1)   /* if sgenrand() has not been called, */
@@ -115,10 +115,10 @@ genrand()
 unsigned long genrandint()
 {
     unsigned long y;
-    static unsigned long mag01[2]={0x0, MATRIX_A};
     /* mag01[x] = x * MATRIX_A  for x=0,1 */
 
     if (mti >= N) { /* generate N words at one time */
+        static unsigned long mag01[2]={0x0, MATRIX_A};
         int kk;
 
         if (mti == N+1)   /* if sgenrand() has not been called, */
@@ -196,16 +196,16 @@ int load_mt(const char *fn){
 
 	FILE *fp;
 	const int maxl = 128;
-	char line[maxl];
-	int mtival,args_read=0,ii=-1;
+	int mtival,ii=-1;
 	enum load_mt_errcode errcode = load_mt_success;
 	unsigned long mtval;
 
 	if((fp = fopen(fn,"r"))!=NULL){
+    	char line[maxl];
 
 		//First line gets the position of mti
 		if((fgets(line,maxl,fp))!=NULL){
-			args_read = sscanf(line,"MTI %d",&mtival);
+			int args_read = sscanf(line,"MTI %d",&mtival);
 			if(args_read == 1){
 				mti = mtival;
 				//Now we can read the rest of the data;

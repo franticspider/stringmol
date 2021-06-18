@@ -48,10 +48,9 @@ TEST_CASE("s_ag lifecycle execules correctly (without firing any opcodes)"){
 
 	pag->S =(char *) malloc(spm.maxl0*sizeof(char));
 	memset(pag->S,0,spm.maxl0*sizeof(char));
-
     sprintf(pag->S,sequence,strlen(sequence));
 
-    spm.free_ag(pag);
+    spm.free_ag(&pag);
     REQUIRE(pag == NULL);
 }
 

@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
 
 	smspatial_init(argv[2],&A,&run,1);
 
-	int bt=0,ct=0;
+	int ct=0;
 	ct = A.nagents(A.nowhead,-1);
 	printf("Initialisation done, number of molecules is %d\n",ct);
 
@@ -123,16 +123,25 @@ int main(int argc, char *argv[]) {
 
 		smspatial_step(&A,run);
 		ct = A.nagents(A.nowhead,-1);
-		bt = ct - A.nagents(A.nowhead,B_UNBOUND);
+		int bt = ct - A.nagents(A.nowhead,B_UNBOUND);
 #ifdef DODEBUG
-		printf("Nowhead is %d, Nexthead is %d\n",A.nowhead,A.nexthead);
+		printf("Nowhead is %p, Nexthead is %p\n",(void *) A.nowhead, (void *) A.nexthead);
 		s_ag *p;
 		p=A.nowhead;
 		int mno=0;
 		while(p!=NULL){
 			int x,y;
 			find_ag_gridpos(p,run,&x,&y);
-			printf("%d, %d, [%d,%d]  status: %d, bound to %d / %d, prev = %d, next = %d\n",++mno,p,x,y,p->status,p->exec,p->pass,p->prev,p->next);
+			printf("%d, %p, [%d,%d]  status: %d, bound to %p / %p, prev = %p, next = %p\n",
+                    ++mno,
+                    (void *) p,
+                    x,
+                    y,
+                    p->status,
+                    (void *) p->exec,
+                    (void *) p->pass,
+                    (void *) p->prev,
+                    (void *) p->next);
 			p = p->next;
 		}
 #endif
@@ -145,7 +154,7 @@ int main(int argc, char *argv[]) {
 		if((!(A.extit%100))  ){// ||     A.extit == 66396    ){
 			printf("Step %d done, number of molecules is %d, nbound = %d\n",(int) A.extit,ct,bt);
 			FILE *fp;char fn[128];
-			sprintf(fn,"splist%d.dat",A.extit);
+			sprintf(fn,"splist%u.dat",A.extit);
 			fp = fopen(fn,"w");
 			SP.print_spp_list(fp);
 			fclose(fp);
@@ -155,7 +164,7 @@ int main(int argc, char *argv[]) {
 			//printf("Step %ld done, number of molecules is %d, nbound = %d\n",A.extit,ct,bt);
 
 			FILE *fpp;
-			sprintf(fn,"out1_%05d.conf",A.extit);
+			sprintf(fn,"out1_%05u.conf",A.extit);
 			fpp = fopen(fn,"w");
 			A.print_conf(fpp);
 			fclose(fpp);
@@ -224,7 +233,7 @@ int main(int argc, char *argv[]) {
 #ifdef USE_SDL
 		if(!(A.extit%10)){
 			char filename[128];
-			sprintf(filename,"frame%07d.png",A.extit);
+			sprintf(filename,"frame%07u.png",A.extit);
 			encodeOneStep(filename, image, run->gridx, run->gridy);
 		}
 

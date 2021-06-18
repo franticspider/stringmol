@@ -1478,15 +1478,15 @@ int stringPM::hasdied(){
 
 
 
-int stringPM::free_ag(s_ag *pag){
+int stringPM::free_ag(s_ag **pag){
 
-	if(pag->S != NULL){
+	if((*pag)->S != NULL){
 		//printf("destroying agent %d, code = %s\n",pag->idx,pag->S);
-		free(pag->S);
+		free((*pag)->S);
 	}
 
-	free(pag);
-	pag = NULL;
+	free(*pag);
+	*pag = NULL;
 
 	return 0;
 }
@@ -1785,7 +1785,7 @@ int stringPM::aspbind(rules *rset, s_ag *pag){
 
 			//delete the second agent;
 			extract_ag(&nowhead,pag2);
-			free_ag(pag2);
+			free_ag(&pag2);
 		}
 		else{
 			found=0;
@@ -1816,7 +1816,7 @@ int stringPM::testdecay(s_ag *pag){
 	if(rno<prob && dodecay){
 #endif
 		//unbind_ag(pag);
-		free_ag(pag);
+		free_ag(&pag);
 		return 1;
 	}
 	else
@@ -2468,19 +2468,19 @@ int stringPM::cleave(s_ag *act){
 			case 1://Destroy active - only append passive
 				unbind_ag(pass,'P',1,act->spp,pass->spp);
 				append_ag(&nexthead,pass);
-				free_ag(act);
+				free_ag(&act);
 				break;
 			case 2://Destroy passive - only append active
 				unbind_ag(act,'A',1,act->spp,pass->spp);
 				append_ag(&nexthead,act);
-				free_ag(pass);
+				free_ag(&pass);
 				break;
 			case 3://Destroy both
 				printf("This should never happen\n");
 				unbind_ag(act,'A',1,act->spp,pass->spp);
 				unbind_ag(pass,'P',1,act->spp,pass->spp);
-				free_ag(act);
-				free_ag(pass);
+				free_ag(&act);
+				free_ag(&pass);
 				break;
 			default://This can't be right can it?
 				if(act->ft == act->it){
@@ -2780,7 +2780,7 @@ void stringPM::make_next(){
 
 		if(dc){//we must check what else needs to be destroyed...
 			if(bag!=NULL){
-				free_ag(bag);
+				free_ag(&bag);
 			}
 		}
 		else{
@@ -3196,16 +3196,17 @@ int stringPM::update_mass(char *S, int len, int val, const int doconcat){
 }
 
 
-int stringPM::comass_free_ag(s_ag *pag){
+int stringPM::comass_free_ag(s_ag **pag){
 
-	if(pag->S != NULL){
-		update_mass(pag->S,strlen(pag->S),1,0);//TODO: the last argument specifies whether to concatenate if no mass available, but since we are adding, it'll never be called
+
+	if((*pag)->S != NULL){
+		update_mass((*pag)->S,strlen((*pag)->S),1,0);//TODO: the last argument specifies whether to concatenate if no mass available, but since we are adding, it'll never be called
 		//printf("destroying agent %d, code = %s\n",pag->idx,pag->S);
-		free(pag->S);
+		free((*pag)->S);
 	}
 
-	free(pag);
-	pag = NULL;
+	free(*pag);
+	*pag = NULL;
 
 	return 0;
 }
@@ -3231,7 +3232,7 @@ int stringPM::comass_testdecay(s_ag *pag){
 	if(rno<prob && dodecay){
 #endif
 		//unbind_ag(pag);
-		comass_free_ag(pag);
+		comass_free_ag(&pag);
 		return 1;
 	}
 	else
@@ -3287,7 +3288,7 @@ void stringPM::comass_make_next(){
 		int dc = comass_testdecay(pag);
 		if(dc){//we must check what else needs to be destroyed...
 			if(bag!=NULL){
-				comass_free_ag(bag);
+				comass_free_ag(&bag);
 			}
 		}
 		else{
@@ -3575,7 +3576,7 @@ void stringPM::energetic_make_next(){
 		int dc = testdecay(pag);
 		if(dc){//we must check what else needs to be destroyed...
 			if(bag!=NULL){
-				free_ag(bag);
+				free_ag(&bag);
 			}
 		}
 		else{
@@ -3729,14 +3730,14 @@ void stringPM::clearout(int verbose){
 	agp = nowhead;
 	while(agp!=NULL){
 		agp2=agp->next;
-		free_ag(agp);
+		free_ag(&agp);
 		agp=agp2;
 	}
 
 	agp=nexthead;
 	while(agp!=NULL){
 		agp2=agp->next;
-		free_ag(agp);
+		free_ag(&agp);
 		agp=agp2;
 	}
 
@@ -4119,7 +4120,7 @@ int stringPM::Network_cleave(s_ag *act){
 		//append the agent to nexthead
 		update_lineage(cc,'C',0,act->spp,pass->spp,act->biomass);
 
-		free_ag(cc);
+		free_ag(&cc);
 
 		//2: HEAL THE PARENT
 
@@ -4476,8 +4477,8 @@ void stringPM::get_spp_network(char *fn){
 
 	//Free the strings
 	free(tmp.S);
-	free_ag(pag);
-	free_ag(bag);
+	free_ag(&pag);
+	free_ag(&bag);
 
 	//if(nerr->next != NULL)
 	//	printf("Test agent assigned to real set!\n");

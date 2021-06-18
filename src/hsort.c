@@ -29,10 +29,9 @@ void swap(int idx[], int a, int b){
 
 void sift_int(int a[], int idx[],int s, const int N){
 	int r = s;							//	var int root := start, child
-	int c;
 
 	while(((r*2)+1)<N){					//	while root * 2 + 1 < count {
-		c=(r*2)+1;
+		int c=(r*2)+1;
 		if(	(c<N-1)  &&
 			(a[idx[c]] < a[idx[c+1]])
 			){

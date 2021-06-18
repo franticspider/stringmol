@@ -62,7 +62,6 @@ int mutate_int (int val, int min, int max) {
 
 	int range = max-min;
 	int brange = 1,rpow = 0;
-	int mpow;
 
 	//get the powers of 2 that span the range:
 	while(brange<range){
@@ -72,7 +71,7 @@ int mutate_int (int val, int min, int max) {
 
 	int outofrange=1;
 	while(outofrange){
-		mpow = (float) rpow * rand0to1();
+		int mpow = (float) rpow * rand0to1();
 
 		if (randint()%2 == 0){
 			val = (val + pow(2,mpow));

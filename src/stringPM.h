@@ -122,7 +122,7 @@ public:
 
 
 	//constructor
-	stringPM(SMspp * pSP);
+	explicit stringPM(SMspp * pSP);
 	//destructor
 	~stringPM();
 
@@ -166,7 +166,7 @@ public:
 	int 	extract_ag(s_ag **list, s_ag *ag);
 	int 	nagents(s_ag *head, int state);
 	s_ag * 	rand_ag(s_ag *head, int state);
-	int 	free_ag(s_ag *pag);
+	int 	free_ag(s_ag **pag);
 	bool 	ag_in_list(s_ag *list, s_ag *tag);
 
 	//First version works fine, but no species analysis...
@@ -243,7 +243,7 @@ public:
 	int 	set_mass(int *param);  //load a set of values from an array
 	void 	comass_make_next();
 	int 	comass_testdecay(s_ag *pag);
-	int 	comass_free_ag(s_ag *pag);
+	int 	comass_free_ag(s_ag **pag);
 	int 	update_mass(char *S, int len, int val, const int doconcat);
 	int 	comass_exec_step(s_ag *act, s_ag *pass);
 	int 	comass_hcopy(s_ag *act);
