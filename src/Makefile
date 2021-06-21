@@ -8,13 +8,13 @@ C4C = gcc -O3 -Wall -Wunused
 CC = g++ -O3 -Wall -Wunused -std=c++11
 
 #TODO: Handle profiling better...
-debug: C4C = gcc -O0 -Wall -Wunused -DDEBUG -g 
-debug: CC = g++ -O0 -Wall -Wunused -std=c++11 -DDEBUG -g
+#debug: C4C = gcc -O0 -Wall -Wunused -DDEBUG -g 
+#debug: CC = g++ -O0 -Wall -Wunused -std=c++11 -DDEBUG -g
 
 
 #If you want profiling, comment out the above and replace with: 
-#debug: C4C = gcc -O0 -Wall -Wunused -DDEBUG -g -pg
-#debug: CC = g++ -O0 -Wall -Wunused -std=c++11 -DDEBUG -g -pg
+debug: C4C = gcc -O0 -Wall -Wunused -DDEBUG -g -pg
+debug: CC = g++ -O0 -Wall -Wunused -std=c++11 -DDEBUG -g -pg
 
 
 

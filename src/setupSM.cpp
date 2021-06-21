@@ -1716,14 +1716,18 @@ int smspatial(int argc, char *argv[]) {
 	//reload file: should have identical settings to the input conig:
 	FILE *fpp{};
 	char fn[128]{};
+	//printf(fn,"reload_%05u.conf",A.extit);
 	sprintf(fn,"reload_%05u.conf",A.extit);
+    //sprintf(fn, "reload_TEMP.conf");
 	fpp = fopen(fn,"w");
-	A.print_conf(fpp);
+	A.print_conf(stdout);//fpp);
 	fclose(fpp);
 
 
 	//Graphic to console - sometimes useful..
 	//A.print_grid(stdout);
+
+    printf("Initialisation complete; entering while loop\n");
 
 
 //	while(A.nagents(A.nowhead,-1)){
@@ -1764,7 +1768,9 @@ int smspatial(int argc, char *argv[]) {
 
 		}
 
+        printf("pre step\n");
 		smspatial_step(&A,run);
+        printf("post step\n");
 
 #ifdef DODEBUG
 		printf("Nowhead is %p, Nexthead is %p\n",(void *) A.nowhead,(void *) A.nexthead);

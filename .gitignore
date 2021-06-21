@@ -22,3 +22,6 @@ docs/**/*
 
 #Test stuff: 
 tests/test
+
+#Profiling stuff..? 
+src/gmon.out
