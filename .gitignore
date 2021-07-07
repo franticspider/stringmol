@@ -16,6 +16,7 @@ release/stringmol
 #Eclipse stuff:
 .project
 .cproject
+.settings/language.settings.xml
 
 #Doxygen stuff: 
 docs/**/*

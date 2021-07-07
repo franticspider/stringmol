@@ -4897,13 +4897,22 @@ int stringPM::print_conf(FILE *fp){
 		lextant[ss++]=psp;
 	}
 
+    //Debugging..
+    printf("Finished looking at extant spp\n");
+
 	s_ag *pag;
 
 	int extct=0;
 	for(pag = nowhead; pag != NULL; pag = pag->next){
+        //Debugging
+        printf("extct = %d\n",extct);
+        printf("pag->spp = %d\n",pag->spp);
+        printf("pag->spp->spp = %d\n",pag->spp->spp);
+
 		//TODO: we can't rely on pag->spp->spp for this - we'll have to generate an index...
 		if(!extant[pag->spp->spp]){
 			for(ss=0;ss<spl->spp_count;ss++){
+                printf("inner extct = %d\n",extct);
 				if(lextant[ss]==pag->spp){
 					extant[pag->spp->spp]=1;
 					extct++;
