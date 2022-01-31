@@ -1719,9 +1719,9 @@ int smspatial(int argc, char *argv[]) {
 	//printf(fn,"reload_%05u.conf",A.extit);
 	sprintf(fn,"reload_%05u.conf",A.extit);
     //sprintf(fn, "reload_TEMP.conf");
-	fpp = fopen(fn,"w");
-	A.print_conf(stdout);//fpp);
-	fclose(fpp);
+	//fpp = fopen(fn,"w");
+	//A.print_conf(stdout);//fpp);
+	//fclose(fpp);
 
 
 	//Graphic to console - sometimes useful..
@@ -1768,9 +1768,9 @@ int smspatial(int argc, char *argv[]) {
 
 		}
 
-        printf("pre step\n");
+        //printf("pre step\n");
 		smspatial_step(&A,run);
-        printf("post step\n");
+        //printf("post step\n");
 
 #ifdef DODEBUG
 		printf("Nowhead is %p, Nexthead is %p\n",(void *) A.nowhead,(void *) A.nexthead);

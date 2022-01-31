@@ -17,6 +17,9 @@ release/stringmol
 .project
 .cproject
 .settings/language.settings.xml
+src/.settings
+src/.settings/**
+src/.cproject
 
 #Doxygen stuff: 
 docs/**/*
@@ -26,3 +29,16 @@ tests/test
 
 #Profiling stuff..? 
 src/gmon.out
+
+#stringmol outputs
+release/RNGstate*.txt
+release/popdy*.dat
+release/*.conf
+
+debug/RNGstate*.txt
+debug/popdy*.dat
+
+src/*.png
+src/RNGstate*.txt
+src/*.dat
+src/*.conf

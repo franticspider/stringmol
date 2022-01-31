@@ -59,7 +59,7 @@
 
 //#define DEBUG
 
-#define MAXSTR (5000);
+#define MAXSTR (5000)
 
 
 int main(int argc, char*argv[]){

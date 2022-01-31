@@ -30,7 +30,7 @@ cd src
 #cppcheck --error-exitcode=1 --force --check-config --enable=all *.cpp
 echo "----------------------------"
 echo "Checking config with cppcheck"
-cppcheck --error-exitcode=1 --force --check-config --suppress=missingIncludeSystem .
+cppcheck --error-exitcode=1 --force --check-config --suppress=missingIncludeSystem --xml .
 echo "----------------------------"
 echo "Checking code with cppcheck"
 cppcheck --error-exitcode=1 --force --enable=all --inline-suppr .

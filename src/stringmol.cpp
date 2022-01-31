@@ -373,6 +373,25 @@ int random_config(stringPM *A, char *fout, const int nnew,const int nag){
 }
 
 
+void randseedtofile(char *ftag, long rseed){
+
+	FILE *fsumm;
+
+	if((fsumm=fopen(ftag,"w"))==NULL){
+		printf("Coundln't open %s\n",ftag);
+		getchar();
+	}
+	else{
+		fprintf(fsumm,"Random seed is %ld\n",rseed);
+		fflush(fsumm);
+		fclose(fsumm);
+	}
+
+}
+
+
+
+
 /* This function is intended for experiments with random molecules.
  * The idea is that novel mechanisms will arise if we don't code in the answer
  * STATUS: Experimental / Untested / Unpublished
@@ -389,7 +408,7 @@ int origlife(int argc, char *argv[]){
 	//R.printasint();
 
 	unsigned int nsteps = (int) A.nsteps;
-	FILE *fsumm,*ftmp;
+	FILE *ftmp;
 	char fitfile[128];
 
 	//division values for summary
@@ -398,18 +417,12 @@ int origlife(int argc, char *argv[]){
 	char	fn[128],pfn[128],randfn[128];
 
 	sprintf(fn,"%s.spatial.summary.dat",argv[1]);
-	if((fsumm=fopen(fn,"w"))==NULL){
-		printf("Coundlnt open %s\n",fn);
-		getchar();
-	}
-	fprintf(fsumm,"Random seed is %ld\n",rseed);
-	fflush(fsumm);
-
+	randseedtofile(fn,rseed);
 
 	ftmp = fopen("epochs.dat","w");
 	fclose(ftmp);
 
-	unsigned int rerr=1,rlim=20;
+	unsigned int rerr,rlim=20;
 	if((fp=fopen(argv[2],"r"))!=NULL){
 		rerr = read_param_int(fp,"NTRIALS",&rlim,1);
 		switch(rerr){
@@ -451,8 +464,6 @@ int origlife(int argc, char *argv[]){
 		fclose(fp);
 	}
 	printf("NSTEPS = %u\n",maxnsteps);
-
-
 
 
 
@@ -518,9 +529,7 @@ int origlife(int argc, char *argv[]){
 					else{
 						printf("Unable to write to %s\n",fn);
 					}
-				}
 
-				if(!(i%1000)){
 					printf("%03u At  time %d e=%d,div=%d\n",rr,i,(int)A.energy,div);
 					printsppct(&A,i);
 				}
@@ -540,7 +549,6 @@ int origlife(int argc, char *argv[]){
 					printf("At  time %d e=%d,div=%d\t",i,(int)A.energy,div);
 					//A.print_agents_count(stdout);
 					A.print_spp_count(stdout,0,-1);
-					nsteps=i;
 
 					break;
 				}
@@ -553,8 +561,7 @@ int origlife(int argc, char *argv[]){
 			A.clearout();
 		}
 	}
-	//A.print_propensity(fsumm);
-	fclose(fsumm);
+
 	return 0;
 }
 
@@ -585,13 +592,7 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 	char	fn[128],pfn[128];
 
 	sprintf(fn,"%s.spatial.summary.dat",argv[1]);
-	if((fsumm=fopen(fn,"w"))==NULL){
-		printf("Coundlnt open %s\n",fn);
-		getchar();
-	}
-	fprintf(fsumm,"Random seed is %ld\n",rseed);
-	fflush(fsumm);
-
+	randseedtofile(fn,rseed);
 
 	ftmp = fopen("epochs.dat","w");
 	fclose(ftmp);
@@ -678,10 +679,6 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 			if(!(i%1000)){
 				A.print_spp_count(stdout,0,-1);
 
-			}
-
-			if(!(i%1000)){
-
 				printf("%d%02u At  time %d e=%d,div=%d, mutrate = %0.9f & %0.9f\n",proc,rr,i,(int)A.energy,div,A.subrate,A.indelrate);
 				//A.print_agents_count(stdout);
 
@@ -752,12 +749,15 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 			A.energy += A.estep;
 		}
 
-        //divct is always 0! delete it!		
-        //if(divct)
-		//	fprintf(fsumm,"%d\t%d\t%d\t%f\n",divct,divit,diven,(float) divct/divit);
-		//else
-		fprintf(fsumm,"%d\t%d\t%d\t%f\n",div,i,(int)A.energy,-1.);
-		fflush(fsumm);
+		if((fsumm=fopen(fn,"w"))==NULL){
+			printf("Coundln't open %s\n",fn);
+			getchar();
+		}
+		else{
+			fprintf(fsumm,"%d\t%d\t%d\t%f\n",div,i,(int)A.energy,-1.);
+			fflush(fsumm);
+			fclose(fsumm);
+		}
 
 		//Terminate the printout
 		//fflush(fpo);
@@ -814,32 +814,23 @@ int comass_AlifeXII(int argc, char *argv[]){
 	FILE *fp;
 	int indefinite {1};
 
-	long rseed = initmyrand(437);//-1);//437);
-	//R.printasint();
+	long rseed = initmyrand(437);
 
 	unsigned int nsteps = A.nsteps;
 
-	//Prime the printout:
-	//FILE *fpo,*fpdiv;
-	FILE *fsumm,*ftmp;
+	FILE *ftmp;
 
 
 	char	fn[128],pfn[128];
 
 	sprintf(fn,"%s.spatial.summary.dat",argv[1]);
-	if((fsumm=fopen(fn,"w"))==NULL){
-		printf("Coundlnt open %s\n",fn);
-		getchar();
-	}
-	fprintf(fsumm,"Random seed is %ld\n",rseed);
-	fflush(fsumm);
-
+	randseedtofile(fn,rseed);
 
 	ftmp = fopen("epochs.dat","w");
 	fclose(ftmp);
 
     //Read ntrials (this and the block below are identical!)
-	unsigned int rerr=1,rlim=20;
+	unsigned int rerr,rlim=20;
 	if((fp=fopen(argv[2],"r"))!=NULL){
 		rerr = read_param_int(fp,"NTRIALS",&rlim,1);
 		switch(rerr){
@@ -857,8 +848,6 @@ int comass_AlifeXII(int argc, char *argv[]){
 		fclose(fp);
 	}
 	printf("NTRIALS = %u\n",rlim);
-
-
 
 
 	//Read nsteps:
@@ -886,7 +875,7 @@ int comass_AlifeXII(int argc, char *argv[]){
 	//counter for max no. symbols at any time step.
 	int *maxcode;
 
-  maxcode=NULL;
+	maxcode=NULL;
 	for(unsigned int rr=0;rr<rlim;rr++){
 
 		FILE *mc;
@@ -937,9 +926,7 @@ int comass_AlifeXII(int argc, char *argv[]){
 				else{
 					printf("Unable to write to %s\n",fn);
 				}
-			}
 
-			if(!(i%1000)){
 				setmaxcode(&A,maxcode);
 				printf("%03u At  time %d e=%d,div=%d\n",rr,i,(int)A.energy,div);
 				printsppct(&A,i);
@@ -980,7 +967,7 @@ int comass_AlifeXII(int argc, char *argv[]){
 				printf("DEATH\n");
 				printf("At  time %d e=%d,div=%d\t",i,(int)A.energy,div);
 				A.print_spp_count(stdout,0,-1);
-				nsteps=i;
+
 				break;
 			}
 			nsteps++;
@@ -1012,9 +999,10 @@ int comass_AlifeXII(int argc, char *argv[]){
 		A.clearout();
 	}
 
-	A.print_propensity(fsumm);
+	//TODO: where is this printing to?? do we need to? Issue rased on github
+	//A.print_propensity(fsumm);
+	//fclose(fsumm);
 
-	fclose(fsumm);
 	return 0;
 
 }
@@ -1188,19 +1176,7 @@ int comass_GA(int argc, char *argv[]){
 
 	unsigned long rseed = longinitmyrand(&seedin);//437);//-1);//437);
 	//unsigned long rseed = longinitmyrand(NULL);//437);//-1);//437);
-	FILE *frs;
-	if((frs=fopen("randseed.txt","w"))==NULL){
-		printf("Coundln't open randseed.txt\n");
-		getchar();
-	}
-	fprintf(frs,"(unsigned) random seed is %lu \n",rseed);
-	fflush(frs);
-	fclose(frs);
-
-	//fprintf(stdout,"(unsigned) random seed is %lu \n",rseed);
-
-
-
+	randseedtofile("randseed.txt",rseed);
 
 	eval  = (double *)malloc(POPN * sizeof(double));
 	params = (int **) malloc(POPN * sizeof(int *));
@@ -1411,12 +1387,13 @@ float *generate_avg_conc(char *fn, int *en){
 
 			// TODO: Can't quite get this right without the extra fgets after the while - 
 			// this'll fail - line_number[j]==1 (unlikely)
-			char *fgr;
 			while(l!=line_number[j]){
-				fgr = fgets(line,2000,fp);
+				fgets(line,2000,fp);
 				l++;
 			}
+			char *fgr;
 			fgr = fgets(line,2000,fp);
+
       if(fgr == NULL){
 				printf("WARNING: fgets is NULL in function generate_avg_conc\n");
 			}
@@ -1602,18 +1579,12 @@ int energetic_AlifeXII(int argc, char *argv[]){
 	char	fn[128],pfn[128];
 
 	sprintf(fn,"%s.spatial.summary.dat",argv[1]);
-	if((fsumm=fopen(fn,"w"))==NULL){
-		printf("Coundlnt open %s\n",fn);
-		getchar();
-	}
-	fprintf(fsumm,"Random seed is %ld\n",rseed);
-	fflush(fsumm);
-
+	randseedtofile(fn,rseed);
 
 	ftmp = fopen("epochs.dat","w");
 	fclose(ftmp);
 
-	unsigned int rerr=1,rlim=20;
+	unsigned int rerr,rlim=20;
 	if((fp=fopen(argv[2],"r"))!=NULL){
 		rerr = read_param_int(fp,"NTRIALS",&rlim,1);
 		switch(rerr){
@@ -1710,9 +1681,6 @@ int energetic_AlifeXII(int argc, char *argv[]){
 				else{
 					printf("Unable to write to %s\n",fn);
 				}
-			}
-
-			if(!(i%1000)){
 
 				printf("%03u At  time %d e=%d,div=%d\n",rr,i,(int)A.energy,div);
 				//A.print_agents_count(stdout);
@@ -1751,7 +1719,6 @@ int energetic_AlifeXII(int argc, char *argv[]){
 				printf("At  time %d e=%d,div=%d\t",i,(int)A.energy,div);
 				//A.print_agents_count(stdout);
 				A.print_spp_count(stdout,0,-1);
-				nsteps=i;
 
 				break;
 			}
@@ -1831,7 +1798,6 @@ int SmPm_conpop(int argc, char *argv[]){
 	FILE *fp;
 	float *score;
 
-	score = (float *) malloc(NCON*sizeof(float));
 
 	//437 divides at 167000
 	FILE *fpr;
@@ -1857,6 +1823,7 @@ int SmPm_conpop(int argc, char *argv[]){
         printf("ERROR: unable to open file %s\n",argv[2]);
     }
 
+	score = (float *) malloc(NCON*sizeof(float));
 	unsigned long rseed;
 
 
@@ -1874,7 +1841,7 @@ int SmPm_conpop(int argc, char *argv[]){
 	stringPM	*A[NCON];	//Array of containers;
 
 	//Prime the printout:
-	FILE *fpdiv,*fsumm,*ftmp;
+	FILE *fpdiv,*ftmp;
 
 	char	fn[128],pfn[128];
 
@@ -1890,14 +1857,7 @@ int SmPm_conpop(int argc, char *argv[]){
 	fclose(fpdiv);
 
 	sprintf(fn,"%s.spatial.summary.dat",argv[2]);
-	if((fsumm=fopen(fn,"w"))==NULL){
-		printf("Coundln't open %s\n",fn);
-		getchar();
-	}
-	fprintf(fsumm,"Random seed is %lu\n",rseed);
-	fflush(fsumm);
-    fclose(fsumm);
-
+	randseedtofile(fn,rseed);
 
 	ftmp = fopen("epochs.dat","w");
 	fclose(ftmp);
@@ -2168,7 +2128,6 @@ int SmPm_conpop(int argc, char *argv[]){
 	}
 
 	free(score);
-	fclose(fsumm);
 	return 0;
 
 }
@@ -2270,24 +2229,17 @@ void swdist(int argc, char *argv[]){
 
 	long rseed = initmyrand(437);
 
-	FILE *fsumm,*ftmp;
+	FILE *ftmp;
 
 	char	fn[128];
 
 	sprintf(fn,"%s.spatial.summary.dat",argv[1]);
-	if((fsumm=fopen(fn,"w"))==NULL){
-		printf("Coundln't open %s\n",fn);
-		getchar();
-	}
-	fprintf(fsumm,"Random seed is %ld\n",rseed);
-	fflush(fsumm);
-    fclose(fsumm);
-
+	randseedtofile(fn,rseed);
 
 	ftmp = fopen("epochs.dat","w");
 	fclose(ftmp);
 
-	unsigned int rerr=1,rlim=20;
+	unsigned int rerr,rlim=20;
 	if((fp=fopen(argv[2],"r"))!=NULL){
 		rerr = read_param_int(fp,"NTRIALS",&rlim,1);
 		switch(rerr){
@@ -2464,25 +2416,17 @@ int speigmonst(int argc, char *argv[]){
 
 	unsigned int nsteps = A.nsteps;
 
-	//Prime the printout:
-	//FILE *fpo,*fpdiv;
-	FILE *fsumm,*ftmp;
+	FILE *ftmp;
 
 	char	fn[128],pfn[128];
 
 	sprintf(fn,"%s.spatial.summary.dat",argv[1]);
-	if((fsumm=fopen(fn,"w"))==NULL){
-		printf("Coundlnt open %s\n",fn);
-		getchar();
-	}
-	fprintf(fsumm,"Random seed is %ld\n",rseed);
-	fflush(fsumm);
-
+	randseedtofile(fn,rseed);
 
 	ftmp = fopen("epochs.dat","w");
 	fclose(ftmp);
 
-	unsigned int rerr=1,rlim=20;
+	unsigned int rerr,rlim=20;
 	if((fp=fopen(argv[2],"r"))!=NULL){
 		rerr = read_param_int(fp,"NTRIALS",&rlim,1);
 		switch(rerr){
@@ -2597,9 +2541,7 @@ int speigmonst(int argc, char *argv[]){
 				else{
 					printf("Unable to write to %s\n",fn);
 				}
-			}
 
-			if(!(i%1000)){
 				setmaxcode(&A,maxcode);
 				printf("%03u At  time %d e=%d,div=%d\n",rr,i,(int)A.energy,div);
 				printsppct(&A,i);
@@ -2640,7 +2582,6 @@ int speigmonst(int argc, char *argv[]){
 				printf("DEATH\n");
 				printf("At  time %d e=%d,div=%d\t",i,(int)A.energy,div);
 				A.print_spp_count(stdout,0,B_UNBOUND);
-				nsteps=i;
 				break;
 			}
 			nsteps++;
@@ -2675,9 +2616,10 @@ int speigmonst(int argc, char *argv[]){
 		//A.clearout();
 	}
 
-	A.print_propensity(fsumm);
+	//TODO: where is this printing to?? do we need to? Issue rased on github
+	//A.print_propensity(fsumm);
+	//fclose(fsumm);
 
-	fclose(fsumm);
     free(repstring);
 	return 0;
 }
